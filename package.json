@@ -1,9 +1,15 @@
 {
   "name": "com.meta.xr.sdk.interaction",
   "displayName": "Meta XR Interaction SDK Essentials",
-  "version": "66.0.0",
+  "version": "67.0.0",
   "description": "Provides the core implementations of all the provided interaction models along with necessary shaders, materials, and prefabs.",
-  "samples": [],
+  "samples": [
+    {
+      "displayName": "UnityXR Integration",
+      "description": "Requires Unity OpenXR Plugin (com.unity.xr.openxr), along with Unity XR Hands (com.unity.xr.hands) for hand tracking.",
+      "path": "Samples~/UnityXR"
+    }
+  ],
   "unity": "2021.3",
   "unityRelease": "26f1",
   "author": {
@@ -17,10 +23,10 @@
   "keywords": [
     "Oculus",
     "Quest",
-    "Interaction",
-    "XR",
+    "Meta",
     "SDK",
-    "Meta"
+    "Interaction",
+    "XR"
   ],
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6",

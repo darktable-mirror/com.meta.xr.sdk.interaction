@@ -207,29 +207,35 @@ namespace Oculus.Interaction.GrabAPI
 
         public void Update(IHand hand)
         {
-            hand.GetJointPosesFromWrist(out ReadOnlyHandJointPoses poses);
-
-            if (poses.Count > 0)
-            {
-                _pinchData.SetJoints(poses);
-                Vector3 wristForward = Vector3.forward;
-                Vector3 hmdForward = Vector3.forward;
-
-                if (_hmd != null &&
-                    hand.GetJointPose(HandJointId.HandWristRoot, out Pose wristPose) &&
-                    _hmd.TryGetRootPose(out Pose centerEyePose))
-                {
-                    wristForward = -1.0f * wristPose.forward;
-                    hmdForward = -1.0f * centerEyePose.forward;
-                    if (hand.Handedness == Handedness.Right)
-                    {
-                        wristForward = -wristForward;
-                    }
-                }
-
-                ReturnValue rc = isdk_FingerPinchGrabAPI_UpdateHandWristHMDData(GetHandle(), _pinchData, wristForward, hmdForward);
-                Debug.Assert(rc != ReturnValue.Failure, "FingerPinchGrabAPI: isdk_FingerPinchGrabAPI_UpdateHandWristHMDData failed");
-            }
+            hand.GetJointPosesFromWrist(out var poses);
+            hand.GetJointPose(HandJointId.HandWristRoot, out Pose wristPose);
+            Update(poses, hand.Handedness, wristPose);
         }
+
+        internal void Update(IReadOnlyList<Pose> handPoses, Handedness handedness, Pose wristPose)
+        {
+            if (handPoses.Count <= 0)
+            {
+                return;
+            }
+            _pinchData.SetJoints(handPoses);
+            Vector3 wristForward = Vector3.forward;
+            Vector3 hmdForward = Vector3.forward;
+
+            if (_hmd != null &&
+                _hmd.TryGetRootPose(out Pose centerEyePose))
+            {
+                wristForward = -1.0f * wristPose.forward;
+                hmdForward = -1.0f * centerEyePose.forward;
+                if (handedness == Handedness.Right)
+                {
+                    wristForward = -wristForward;
+                }
+            }
+
+            ReturnValue rc = isdk_FingerPinchGrabAPI_UpdateHandWristHMDData(GetHandle(), _pinchData, wristForward, hmdForward);
+            Debug.Assert(rc != ReturnValue.Failure, "FingerPinchGrabAPI: isdk_FingerPinchGrabAPI_UpdateHandWristHMDData failed");
+        }
+
     }
 }

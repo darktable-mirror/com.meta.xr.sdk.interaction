@@ -49,8 +49,11 @@ namespace Oculus.Interaction
 
         public void UpdateTarget(Pose target)
         {
+            Pose source = new Pose(
+                _originalSource.position,
+                _originalTarget.rotation);
             Pose grabberDelta = PoseUtils.Delta(_originalTarget, target);
-            PoseUtils.Multiply(_originalSource, grabberDelta, ref _current);
+            PoseUtils.Multiply(source, grabberDelta, ref _current);
         }
 
         public void StopAndSetPose(Pose source)

@@ -132,6 +132,20 @@ namespace Oculus.Interaction.Editor
                         }),
                 }
             );
+
+            #endregion
+
+            #region TouchHandGrab
+
+            AutoWiring.Register(
+                typeof(FromHandPrefabDataSource),
+                new[] {
+                    new ComponentWiringStrategyConfig("_handSkeletonProvider", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToSceneComponent
+                        }),
+                }
+            );
             #endregion
         }
     }

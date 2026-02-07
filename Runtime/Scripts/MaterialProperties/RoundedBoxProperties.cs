@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -247,6 +251,17 @@ namespace Oculus.Interaction
 
         protected virtual void OnValidate()
         {
+#if UNITY_EDITOR
+            // If the current object is a Prefab source asset (not even an instance of it),
+            // we do not want to apply these updates on validation,
+            // as it may result on the prefab being marked as dirty
+            // which would throw an error if the prefab lives in a package
+            if(PrefabUtility.IsPartOfPrefabAsset(gameObject))
+            {
+                return;
+            }
+#endif
+
             UpdateSize();
             UpdateMaterialPropertyBlock();
         }

@@ -60,6 +60,13 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _useInitialPressPositionForDrag = true;
 
+        [Tooltip("If true, this module will disable other input modules in the event system " +
+            "and will be the only input module used in the scene.")]
+        [SerializeField]
+        private bool _exclusiveMode = false;
+
+        public bool ExclusiveMode { get => _exclusiveMode; set => _exclusiveMode = value; }
+
         private Camera _pointerEventCamera;
         private static PointableCanvasModule _instance = null;
         private static PointableCanvasModule Instance
@@ -86,6 +93,7 @@ namespace Oculus.Interaction
         private List<Pointer> _pointersForDeletion = new List<Pointer>();
         private Dictionary<IPointableCanvas, Action<PointerEvent>> _pointerCanvasActionMap =
             new Dictionary<IPointableCanvas, Action<PointerEvent>>();
+        private List<BaseInputModule> _inputModules = new List<BaseInputModule>();
 
         private Pointer[] _pointersToProcessScratch = Array.Empty<Pointer>();
 
@@ -130,31 +138,41 @@ namespace Oculus.Interaction
                     _pointerMap.Add(evt.Identifier, pointer);
                     break;
                 case PointerEventType.Unhover:
-                    pointer = _pointerMap[evt.Identifier];
-                    _pointerMap.Remove(evt.Identifier);
-                    pointer.MarkForDeletion();
-                    _pointersForDeletion.Add(pointer);
+                    if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
+                    {
+                        _pointerMap.Remove(evt.Identifier);
+                        pointer.MarkForDeletion();
+                        _pointersForDeletion.Add(pointer);
+                    }
                     break;
                 case PointerEventType.Select:
-                    pointer = _pointerMap[evt.Identifier];
-                    pointer.SetPosition(evt.Pose.position);
-                    pointer.Press();
+                    if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
+                    {
+                        pointer.SetPosition(evt.Pose.position);
+                        pointer.Press();
+                    }
                     break;
                 case PointerEventType.Unselect:
-                    pointer = _pointerMap[evt.Identifier];
-                    pointer.SetPosition(evt.Pose.position);
-                    pointer.Release();
+                    if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
+                    {
+                        pointer.SetPosition(evt.Pose.position);
+                        pointer.Release();
+                    }
                     break;
                 case PointerEventType.Move:
-                    pointer = _pointerMap[evt.Identifier];
-                    pointer.SetPosition(evt.Pose.position);
+                    if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
+                    {
+                        pointer.SetPosition(evt.Pose.position);
+                    }
                     break;
                 case PointerEventType.Cancel:
-                    pointer = _pointerMap[evt.Identifier];
-                    _pointerMap.Remove(evt.Identifier);
-                    ClearPointerSelection(pointer.PointerEventData);
-                    pointer.MarkForDeletion();
-                    _pointersForDeletion.Add(pointer);
+                    if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
+                    {
+                        _pointerMap.Remove(evt.Identifier);
+                        ClearPointerSelection(pointer.PointerEventData);
+                        pointer.MarkForDeletion();
+                        _pointersForDeletion.Add(pointer);
+                    }
                     break;
             }
         }
@@ -229,10 +247,17 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-
             Assert.IsNull(_instance, "There must be at most one PointableCanvasModule in the scene");
             _instance = this;
         }
+
+#if UNITY_EDITOR
+        protected override void Reset()
+        {
+            base.Reset();
+            _exclusiveMode = true;
+        }
+#endif
 
         protected override void OnDestroy()
         {
@@ -248,6 +273,10 @@ namespace Oculus.Interaction
         protected override void Start()
         {
             this.BeginStart(ref _started, () => base.Start());
+            if (_exclusiveMode)
+            {
+                DisableOtherModules();
+            }
             this.EndStart(ref _started);
         }
 
@@ -274,6 +303,33 @@ namespace Oculus.Interaction
             }
 
             base.OnDisable();
+        }
+
+        private void DisableOtherModules()
+        {
+            GetComponents(_inputModules);
+            foreach (var module in _inputModules)
+            {
+                if (module != this && module.enabled)
+                {
+                    module.enabled = false;
+                    Debug.Log($"PointableCanvasModule: Disabling {module.GetType().Name}.");
+                }
+            }
+        }
+
+        public override void UpdateModule()
+        {
+            base.UpdateModule();
+
+            if (_exclusiveMode)
+            {
+                if (eventSystem.currentInputModule != null &&
+                    eventSystem.currentInputModule != this)
+                {
+                    DisableOtherModules();
+                }
+            }
         }
 
         // Based On FindFirstRaycast

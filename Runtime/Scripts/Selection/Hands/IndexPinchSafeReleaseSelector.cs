@@ -64,6 +64,10 @@ namespace Oculus.Interaction
             set => _safeReleaseThreshold = value;
         }
 
+        /// <summary>
+        /// Turns true when the hand is pinching, then goes back to false only if the hand
+        /// releases the pinch with the index finger extended.
+        /// </summary>
         public bool Active => _active;
 
         private bool _wasPinching;
@@ -77,7 +81,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -102,7 +109,12 @@ namespace Oculus.Interaction
             {
                 Hand.WhenHandUpdated -= HandleHandUpdated;
 
-                _active = false;
+                if (_active)
+                {
+                    _active = false;
+                    this.WhenUnselected.Invoke();
+                }
+
                 _pendingUnselect = false;
             }
         }
@@ -130,23 +142,18 @@ namespace Oculus.Interaction
                 }
             }
 
-
-            if (_selectOnRelease)
+            if (_active && !isPinching && IsIndexExtended())
             {
-                if (_active && !isPinching && IsIndexExtended())
+                if (_selectOnRelease)
                 {
                     this.WhenSelected.Invoke();
-                    _active = false;
                     _pendingUnselect = true;
                 }
-            }
-            else
-            {
-                if (_active && !isPinching && IsIndexExtended())
+                else
                 {
                     this.WhenUnselected.Invoke();
-                    _active = false;
                 }
+                _active = false;
             }
         }
 
@@ -154,6 +161,7 @@ namespace Oculus.Interaction
         {
             if (Hand.GetFingerPinchStrength(HandFinger.Index) == 0f)
             {
+                // release pinch if no strength
                 return true;
             }
 
@@ -161,6 +169,7 @@ namespace Oculus.Interaction
                 || !Hand.GetJointPoseFromWrist(HandJointId.HandIndex2, out Pose index2)
                 || !Hand.GetJointPoseFromWrist(HandJointId.HandIndexTip, out Pose indexTip))
             {
+                // if hand not tracked, or if index finger has missing poses release pinch
                 return true;
             }
 
@@ -168,8 +177,8 @@ namespace Oculus.Interaction
             Vector3 medialDistalDir = (indexTip.position - index2.position).normalized;
 
             float angularDifference = Vector3.Dot(proximalDir, medialDistalDir);
+            // release if index curl is past threshold
             return angularDifference >= _safeReleaseThreshold;
-
         }
 
         [Obsolete("Disable the component to Cancel any ongoing pinch")]
