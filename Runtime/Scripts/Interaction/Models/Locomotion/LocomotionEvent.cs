@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Locomotion
@@ -95,6 +96,12 @@ namespace Oculus.Interaction.Locomotion
         public RotationType Rotation { get; }
 
         /// <summary>
+        /// A unique value associated with this specific event, meaning the semantic occurrence at a specific point in time which
+        /// motivated the creation of this data object.
+        /// </summary>
+        public ulong EventId { get; }
+
+        /// <summary>
         /// Constructor for combined translation-rotation locomotion events, such as teleportation with a turn.
         /// </summary>
         /// <param name="identifier">Numerical identifier of the emitting interactor (see <see cref="IInteractorView.Identifier"/> for details)</param>
@@ -105,6 +112,10 @@ namespace Oculus.Interaction.Locomotion
             TranslationType translationType, RotationType rotationType)
         {
             this.Identifier = identifier;
+            EventId = ++_nextEventId;
+            // At 100 pointer events per frame, this field is expected not to overflow for more than fifty million years, so hitting this
+            // assert suggests either a massive overproduction of pointer events or memory corruption.
+            Debug.Assert(_nextEventId != UInt64.MaxValue);
             this.Pose = pose;
             this.Translation = translationType;
             this.Rotation = rotationType;
@@ -139,5 +150,7 @@ namespace Oculus.Interaction.Locomotion
                 TranslationType.None, rotationType)
         {
         }
+
+        private static UInt64 _nextEventId = 0;
     }
 }

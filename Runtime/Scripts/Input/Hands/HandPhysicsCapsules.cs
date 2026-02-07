@@ -307,7 +307,6 @@ namespace Oculus.Interaction.Input
                 UpdateRigidbodies();
                 UpdateColliders();
             }
-
         }
 
         private void UpdateColliders()
@@ -331,13 +330,19 @@ namespace Oculus.Interaction.Input
                 if (_capsulesAreActive
                     && Hand.GetJointPose(jointId, out Pose bonePose))
                 {
-                    jointbody.MovePosition(bonePose.position);
-                    jointbody.MoveRotation(bonePose.rotation);
-
                     if (!jointGO.activeSelf)
                     {
+                        // Sync physics capsules immediately to bone pose when activated
+                        jointbody.position = jointGO.transform.position = bonePose.position;
+                        jointbody.rotation = jointGO.transform.rotation = bonePose.rotation;
+
                         jointGO.SetActive(true);
                         jointbody.WakeUp();
+                    }
+                    else
+                    {
+                        jointbody.MovePosition(bonePose.position);
+                        jointbody.MoveRotation(bonePose.rotation);
                     }
                 }
                 else if (jointGO.activeSelf)

@@ -24,7 +24,7 @@ namespace Oculus.Interaction
 {
     /// <summary>
     /// Draws debug gizmos representing a body skeleton. Joint positions, bones, and joint orientation axes can be drawn, and the visuals sized and colorized as desired.
-    /// There are two implementations of SkeletonDebugGizmos provided, <cref="BodyDebugGizmos" /> and <cref="BodyPoseDebugGizmos" />.
+    /// There are two implementations of SkeletonDebugGizmos provided, <see cref="BodyDebugGizmos" /> and <see cref="BodyPoseDebugGizmos" />.
     /// </summary>
     public abstract class SkeletonDebugGizmos : MonoBehaviour
     {
@@ -92,7 +92,7 @@ namespace Oculus.Interaction
 
         private float LineWidth => _radius / 2f;
 
-        protected abstract bool TryGetWorldJointPose(int jointId, out Pose pose);
+        protected abstract bool TryGetJointPose(int jointId, out Pose pose);
 
         protected abstract bool TryGetParentJointId(int jointId, out int parent);
 
@@ -102,7 +102,7 @@ namespace Oculus.Interaction
 
         protected void Draw(int joint, VisibilityFlags visibility)
         {
-            if (TryGetWorldJointPose(joint, out Pose pose))
+            if (TryGetJointPose(joint, out Pose pose))
             {
                 if (visibility.HasFlag(VisibilityFlags.Axes))
                 {
@@ -117,7 +117,7 @@ namespace Oculus.Interaction
                 }
                 if (visibility.HasFlag(VisibilityFlags.Bones) &&
                     TryGetParentJointId(joint, out int parent) &&
-                    TryGetWorldJointPose(parent, out Pose parentPose))
+                    TryGetJointPose(parent, out Pose parentPose))
                 {
                     DebugGizmos.Color = _boneColor;
                     DebugGizmos.LineWidth = LineWidth;

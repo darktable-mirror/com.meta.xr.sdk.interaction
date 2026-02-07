@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 3282029263655771837, guid: 885ecae56b16f13428a67de5ae482a72,
         type: 3}
       propertyPath: m_Name
-      value: ControllerHandGrabInteractor Variant
+      value: ControllerHandGrabInteractor
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

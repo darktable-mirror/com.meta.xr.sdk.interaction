@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-#nullable enable
 using UnityEditor;
 using UnityEngine;
 using Oculus.Interaction.Editor.QuickActions;

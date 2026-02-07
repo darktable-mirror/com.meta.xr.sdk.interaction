@@ -20,33 +20,50 @@
 
 using TMPro;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
     public class VersionTextVisual : MonoBehaviour
     {
         [SerializeField]
-        private TextMeshPro _text;
+        private TMP_Text _text;
+
+        [SerializeField]
+        private string _format = "Version: {0}";
+
+        #region Editor
+
+        protected virtual void Reset()
+        {
+            _text = GetComponent<TMP_Text>();
+        }
+
+        #endregion
 
         protected virtual void Start()
         {
             this.AssertField(_text, nameof(_text));
-            _text.text = "Version: " + Application.version;
+            this.AssertField(_format, nameof(_format));
+            _text.text = string.Format(_format, Application.version);
         }
 
         #region Inject
 
-        public void InjectAllVersionTextVisual(TextMeshPro text)
+        public void InjectAllVersionTextVisual(TMP_Text text, string format)
         {
             InjectText(text);
+            InjectFormat(format);
         }
 
-        public void InjectText(TextMeshPro text)
+        public void InjectText(TMP_Text text)
         {
             _text = text;
         }
 
+        public void InjectFormat(string format)
+        {
+            _format = format;
+        }
         #endregion
     }
 }

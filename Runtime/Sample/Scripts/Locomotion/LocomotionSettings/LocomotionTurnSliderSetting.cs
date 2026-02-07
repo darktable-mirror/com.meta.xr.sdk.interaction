@@ -105,7 +105,7 @@ namespace Oculus.Interaction.Locomotion
                 turn.SnapTurnDegrees = snapTurn;
                 turn.SmoothTurnCurve = smoothTurn;
             }
-            foreach (var turn in _controllerTurners)
+            foreach (var turn in _locomotionTurners)
             {
                 turn.SnapTurnDegrees = snapTurn;
                 turn.SmoothTurnCurve = smoothTurn;

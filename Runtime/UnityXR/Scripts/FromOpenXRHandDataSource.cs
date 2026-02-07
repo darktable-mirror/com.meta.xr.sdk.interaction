@@ -162,9 +162,11 @@ namespace Oculus.Interaction.Input.UnityXR
             for (int i = 0; i < Constants.NUM_HAND_JOINTS; i++)
             {
                 int parent = (int)HandJointUtils.JointParentList[i];
+#pragma warning disable 0618
                 _dataAsset.Joints[i] = parent < 0 ? Quaternion.identity :
                     Quaternion.Inverse(_dataAsset.JointPoses[parent].rotation) *
                     _dataAsset.JointPoses[i].rotation;
+#pragma warning restore 0618
             }
 
             UpdateHandScale(

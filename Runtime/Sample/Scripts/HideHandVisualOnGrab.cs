@@ -20,7 +20,6 @@
 
 using Oculus.Interaction.HandGrab;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Samples
 {

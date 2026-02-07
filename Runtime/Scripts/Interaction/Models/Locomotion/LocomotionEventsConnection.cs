@@ -36,11 +36,16 @@ namespace Oculus.Interaction.Locomotion
         [SerializeField, Interface(typeof(ILocomotionEventBroadcaster))]
         [Optional(OptionalAttribute.Flag.DontHide)]
         private List<UnityEngine.Object> _broadcasters;
-        private IEnumerable<ILocomotionEventBroadcaster> Broadcasters { get; set; }
+        private List<ILocomotionEventBroadcaster> Broadcasters { get; set; }
+
+        [Obsolete("Use the list of Handlers instead")]
+        [SerializeField, Interface(typeof(ILocomotionEventHandler))]
+        [Optional(OptionalAttribute.Flag.Obsolete)]
+        private UnityEngine.Object _handler;
 
         [SerializeField, Interface(typeof(ILocomotionEventHandler))]
-        private UnityEngine.Object _handler;
-        private ILocomotionEventHandler Handler { get; set; }
+        private List<UnityEngine.Object> _handlers;
+        private List<ILocomotionEventHandler> Handlers { get; set; }
 
         private bool _started;
 
@@ -49,34 +54,38 @@ namespace Oculus.Interaction.Locomotion
         /// for details, please refer to the related documentation provided for that interface.
         /// </summary>
         public event Action<LocomotionEvent> WhenLocomotionPerformed = delegate { };
-
         /// <summary>
         /// Implementation of <see cref="ILocomotionEventHandler.WhenLocomotionEventHandled"/>;
         /// for details, please refer to the related documentation provided for that interface.
         /// </summary>
-        public event Action<LocomotionEvent, Pose> WhenLocomotionEventHandled
-        {
-            add
-            {
-                Handler.WhenLocomotionEventHandled += value;
-            }
-            remove
-            {
-                Handler.WhenLocomotionEventHandled -= value;
-            }
-        }
+        public event Action<LocomotionEvent, Pose> WhenLocomotionEventHandled = delegate { };
 
         protected virtual void Awake()
         {
-            Broadcasters = _broadcasters.ConvertAll(b => b as ILocomotionEventBroadcaster);
-            Handler = _handler as ILocomotionEventHandler;
+            if (Broadcasters == null)
+            {
+                Broadcasters = _broadcasters.ConvertAll(b => b as ILocomotionEventBroadcaster);
+            }
+
+            if (Handlers == null)
+            {
+                Handlers = _handlers.ConvertAll(b => b as ILocomotionEventHandler);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (_handler is ILocomotionEventHandler handler
+                    && !Handlers.Contains(handler))
+                {
+                    Handlers.Add(handler);
+                }
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
             this.AssertCollectionItems(Broadcasters, nameof(Broadcasters));
-            this.AssertField(Handler, nameof(Handler));
+            this.AssertCollectionItems(Handlers, nameof(_handlers));
             this.EndStart(ref _started);
         }
 
@@ -87,6 +96,10 @@ namespace Oculus.Interaction.Locomotion
                 foreach (var eventRaiser in Broadcasters)
                 {
                     eventRaiser.WhenLocomotionPerformed += HandleLocomotionEvent;
+                }
+                foreach (var handler in Handlers)
+                {
+                    handler.WhenLocomotionEventHandled += HandlerWhenLocomotionEventHandled;
                 }
             }
         }
@@ -99,6 +112,10 @@ namespace Oculus.Interaction.Locomotion
                 {
                     eventRaiser.WhenLocomotionPerformed -= HandleLocomotionEvent;
                 }
+                foreach (var handler in Handlers)
+                {
+                    handler.WhenLocomotionEventHandled -= HandlerWhenLocomotionEventHandled;
+                }
             }
         }
 
@@ -106,24 +123,25 @@ namespace Oculus.Interaction.Locomotion
         /// Implementation of <see cref="ILocomotionEventHandler.HandleLocomotionEvent"/>;
         /// for details, please refer to the related documentation provided for that interface.
         /// </summary>
+        private void HandlerWhenLocomotionEventHandled(LocomotionEvent arg1, Pose arg2)
+        {
+            WhenLocomotionEventHandled.Invoke(arg1, arg2);
+        }
+
         public void HandleLocomotionEvent(LocomotionEvent locomotionEvent)
         {
             if (_started && this.isActiveAndEnabled)
             {
                 WhenLocomotionPerformed.Invoke(locomotionEvent);
-                Handler.HandleLocomotionEvent(locomotionEvent);
+
+                foreach (var handler in Handlers)
+                {
+                    handler.HandleLocomotionEvent(locomotionEvent);
+                }
             }
         }
 
         #region Inject
-        [Obsolete("Broadcasters is Optional, use with " + nameof(InjectOptionalBroadcasters))]
-        public void InjectAllLocomotionBroadcastersHandlerConnection(
-            IEnumerable<ILocomotionEventBroadcaster> broadcasters,
-            ILocomotionEventHandler handler)
-        {
-            InjectOptionalBroadcasters(broadcasters);
-            InjectHandler(handler);
-        }
 
         /// <summary>
         /// Injects all required dependencies for a dynamically instantiated
@@ -132,9 +150,9 @@ namespace Oculus.Interaction.Locomotion
         /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllLocomotionBroadcastersHandlerConnection(
-            ILocomotionEventHandler handler)
+            List<ILocomotionEventHandler> handlers)
         {
-            InjectHandler(handler);
+            InjectHandlers(handlers);
         }
 
         /// <summary>
@@ -143,9 +161,22 @@ namespace Oculus.Interaction.Locomotion
         /// This method exists to support Interaction SDK's dependency injection pattern and is not
         /// needed for typical Unity Editor-based usage.
         /// </summary>
-        public void InjectOptionalBroadcasters(IEnumerable<ILocomotionEventBroadcaster> broadcasters)
+        public void InjectOptionalBroadcasters(List<ILocomotionEventBroadcaster> broadcasters)
         {
             Broadcasters = broadcasters;
+            _broadcasters = broadcasters.ConvertAll(b => b as UnityEngine.Object);
+        }
+
+        /// <summary>
+        /// Sets the underlying <see cref="ILocomotionEventHandler"/> set for a dynamically instantiated
+        /// <see cref="LocomotionEventsConnection"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
+        public void InjectHandlers(List<ILocomotionEventHandler> handlers)
+        {
+            Handlers = handlers;
+            _handlers = handlers.ConvertAll(b => b as UnityEngine.Object);
         }
 
         /// <summary>
@@ -154,10 +185,10 @@ namespace Oculus.Interaction.Locomotion
         /// This method exists to support Interaction SDK's dependency injection pattern and is not
         /// needed for typical Unity Editor-based usage.
         /// </summary>
+        [Obsolete("Use the list version instead")]
         public void InjectHandler(ILocomotionEventHandler handler)
         {
             _handler = handler as UnityEngine.Object;
-            Handler = handler;
         }
 
         #endregion

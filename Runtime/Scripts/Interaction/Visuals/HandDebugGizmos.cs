@@ -26,10 +26,33 @@ namespace Oculus.Interaction
 {
     public class HandDebugGizmos : SkeletonDebugGizmos, IHandVisual
     {
+        public enum CoordSpace
+        {
+            World,
+            Local,
+        }
+
         [Tooltip("The IHand that will drive the visuals.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
+
+        /// <summary>
+        /// The coordinate space in which to draw the skeleton. World space draws the skeleton at the world Body location.
+        /// Local draws the skeleton relative to this transform's position, and can be placed, scaled, or mirrored as desired.
+        /// </summary>
+        [Tooltip("The coordinate space in which to draw the skeleton. " +
+            "World space draws the skeleton at the world Body location. " +
+            "Local draws the skeleton relative to this transform's position, and can be placed, scaled, or mirrored as desired.")]
+        [SerializeField]
+        private CoordSpace _space = CoordSpace.World;
+
+        public CoordSpace Space
+        {
+            get => _space;
+            set => _space = value;
+        }
+
         public bool ForceOffVisibility { get; set; }
         public bool IsVisible => _isVisible;
 
@@ -66,16 +89,16 @@ namespace Oculus.Interaction
             }
         }
 
-        public Pose GetJointPose(HandJointId jointId, Space space)
+        public Pose GetJointPose(HandJointId jointId, UnityEngine.Space space)
         {
-            if (space == Space.Self)
+            if (space == UnityEngine.Space.Self)
             {
                 if (Hand.GetJointPoseLocal(jointId, out Pose pose))
                 {
                     return pose;
                 }
             }
-            else if (space == Space.World)
+            else if (space == UnityEngine.Space.World)
             {
                 if (Hand.GetJointPose(jointId, out Pose pose))
                 {
@@ -109,9 +132,22 @@ namespace Oculus.Interaction
             return parent > (int)HandJointId.Invalid;
         }
 
-        protected override bool TryGetWorldJointPose(int jointId, out Pose pose)
+        protected override bool TryGetJointPose(int jointId, out Pose pose)
         {
-            return Hand.GetJointPose((HandJointId)jointId, out pose);
+            bool result;
+            switch (_space)
+            {
+                default:
+                case CoordSpace.World:
+                    result = Hand.GetJointPose((HandJointId)jointId, out pose);
+                    break;
+                case CoordSpace.Local:
+                    result = Hand.GetJointPoseFromWrist((HandJointId)jointId, out pose);
+                    pose.position = transform.TransformPoint(pose.position);
+                    pose.rotation = transform.rotation * pose.rotation;
+                    break;
+            }
+            return result;
         }
 
         #region Inject

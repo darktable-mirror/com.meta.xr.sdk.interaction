@@ -29,6 +29,11 @@
             "define": "USE_OPENXR"
         },
         {
+            "name": "Unity",
+            "expression": "",
+            "define": "ISDK_OPENXR_HAND"
+        },
+        {
             "define": "OVR_UNITY_PACKAGE_MANAGER",
             "name": "com.meta.xr.sdk.interaction",
             "expression": ""

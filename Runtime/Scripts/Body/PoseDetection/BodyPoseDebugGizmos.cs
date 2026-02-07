@@ -65,7 +65,7 @@ namespace Oculus.Interaction.Body.PoseDetection
             return modifiedFlags;
         }
 
-        protected override bool TryGetWorldJointPose(int jointId, out Pose pose)
+        protected override bool TryGetJointPose(int jointId, out Pose pose)
         {
             if (BodyPose.GetJointPoseFromRoot((BodyJointId)jointId, out pose))
             {

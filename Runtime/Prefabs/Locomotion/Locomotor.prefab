@@ -145,7 +145,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _broadcasters: []
-  _handler: {fileID: 3162065387456349882}
+  _handler: {fileID: 0}
+  _handlers:
+  - {fileID: 3162065387456349882}
 --- !u!1 &5568758619574605695
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,6 +229,8 @@ GameObject:
   - component: {fileID: 5638230483326723118}
   - component: {fileID: 4255218727687351022}
   - component: {fileID: 8596244716211811157}
+  - component: {fileID: 2595509757813100727}
+  - component: {fileID: 3463899404005865348}
   m_Layer: 0
   m_Name: SmoothControls
   m_TagString: Player
@@ -305,8 +309,8 @@ MonoBehaviour:
   _whenActivated:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3162065387456349882}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.FirstPersonLocomotor,
+      - m_Target: {fileID: 2595509757813100727}
+        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
           Oculus.Interaction
         m_MethodName: Jump
         m_Mode: 1
@@ -352,11 +356,11 @@ MonoBehaviour:
   _whenActivated:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3162065387456349882}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.FirstPersonLocomotor,
+      - m_Target: {fileID: 2595509757813100727}
+        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
           Oculus.Interaction
         m_MethodName: Run
-        m_Mode: 6
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -368,11 +372,11 @@ MonoBehaviour:
   _whenDeactivated:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3162065387456349882}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.FirstPersonLocomotor,
+      - m_Target: {fileID: 2595509757813100727}
+        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
           Oculus.Interaction
-        m_MethodName: Run
-        m_Mode: 6
+        m_MethodName: Walk
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -429,8 +433,8 @@ MonoBehaviour:
   _whenActivated:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3162065387456349882}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.FirstPersonLocomotor,
+      - m_Target: {fileID: 2595509757813100727}
+        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
           Oculus.Interaction
         m_MethodName: ToggleCrouch
         m_Mode: 1
@@ -446,6 +450,36 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _emitOnFirstUpdate: 0
+--- !u!114 &2595509757813100727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5568758620118834347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 949e33eb3289ef04ebbeb5f045a5add6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _context: {fileID: 0}
+--- !u!114 &3463899404005865348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5568758620118834347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ad4f1ddee798f45a20be4efda35c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _broadcasters:
+  - {fileID: 2595509757813100727}
+  _handler: {fileID: 0}
+  _handlers:
+  - {fileID: 2808450065386463857}
 --- !u!1 &5568758620377301194
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,7 +582,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _broadcasters:
   - {fileID: 5568758620377301184}
-  _handler: {fileID: 2808450065386463857}
+  _handler: {fileID: 0}
+  _handlers:
+  - {fileID: 2808450065386463857}
 --- !u!114 &5568758620377301188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,7 +661,7 @@ Transform:
   m_GameObject: {fileID: 5568758620505594004}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0}
+  m_LocalPosition: {x: 0, y: 0.705, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -678,7 +714,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.25
-  m_Height: 1.5
+  m_Height: 1.4
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2255489143462714392
@@ -733,6 +769,7 @@ MonoBehaviour:
   _airDamping: 1
   _jumpForce: 2.5
   _gravityFactor: 1
+  _coyoteTime: 0
   _flattenInputVelocity: 1
   _inputVelocityStabilization:
     serializedVersion: 2
@@ -777,6 +814,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _velocityDisabled: 0
+  _maxStartGroundDistance: 10
 --- !u!1 &8787784729061583929
 GameObject:
   m_ObjectHideFlags: 0

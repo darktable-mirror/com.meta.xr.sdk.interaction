@@ -227,6 +227,106 @@ namespace Oculus.Interaction
     }
 
     /// <summary>
+    /// Base class for Context-based decoration, specifically where the instance being decorated
+    /// (<typeparamref name="InstanceT"/>) and the  (<typeparamref name="DecorationT"/>) are not a class type.
+    /// Note that this class won't remove decoration relationships automatically and it needs to be manually
+    /// removed by the client.
+    /// </summary>
+    /// <typeparam name="InstanceT">The type of the instance being decorated</typeparam>
+    /// <typeparam name="DecorationT">The type of the decoration being added to instances</typeparam>
+    /// <remarks>
+    /// As with <see cref="ClassToClassDecorator{InstanceT, DecorationT}"/> and other descendants of
+    /// <see cref="DecoratorBase{InstanceT, DecorationT}"/>, a goal of ValueToValueDecorator is to be non-invasive and
+    /// avoid altering behavior based on decoration. However, because neither <see cref="InstanceT"/> nor <see cref="DecorationT"/> 
+    /// are a class type, its lifecycle cannot be used to determine when to automatically remove its entry in the decorator; thus,
+    /// even if the value decorated is no longer in use, decoration based on the instance lifecycle would continue to "pin the
+    /// decoration into existence" indefinitely, until the client actively calls RemoveDecoration.
+    /// </remarks>
+    public abstract class ValueToValueDecorator<InstanceT, DecorationT> : DecoratorBase<InstanceT, DecorationT> where InstanceT : struct where DecorationT : struct
+    {
+        private readonly Dictionary<InstanceT, DecorationT> _instanceToDecoration = new();
+
+        protected ValueToValueDecorator() { }
+
+        /// <summary>
+        /// Associates an instance with a decoration. If this instance was already decorated, the old decoration is
+        /// removed. If there were any outstanding asynchronous requests for the decoration of this instance (from prior
+        /// calls to <see cref="GetDecorationAsync(InstanceT)"/>, those requests will be fulfilled as part of this operation.
+        /// </summary>
+        /// <param name="instance">The instance to be decorated</param>
+        /// <param name="decoration">The decoration to be added to this instance</param>
+        public void AddDecoration(InstanceT instance, DecorationT decoration)
+        {
+            if (_instanceToDecoration.ContainsKey(instance))
+            {
+                RemoveDecoration(instance);
+            }
+
+            _instanceToDecoration.Add(instance, decoration);
+
+            CompleteAsynchronousRequests(instance, decoration);
+        }
+
+        /// <summary>
+        /// Removes the association between an instance and a decoration.
+        /// </summary>
+        /// <param name="instance">The instance from which decoration should be removed</param>
+        /// <remarks>
+        /// If this instance had no decoration, this does nothing. If a decoration was removed, note that
+        /// <see cref="GetDecorationAsync(InstanceT)"/> will resume returning uncompleted tasks for this instance, which
+        /// will be completed if and when the instance is decorated again.
+        /// </remarks>
+        public void RemoveDecoration(InstanceT instance)
+        {
+            if (_instanceToDecoration.TryGetValue(instance, out var reference))
+            {
+                _instanceToDecoration.Remove(instance);
+            }
+        }
+
+        /// <summary>
+        /// Synchronously retrieves the decoration associated with an instance, if one is available.
+        /// </summary>
+        /// <param name="instance">The instance for which to retrieve the decoration</param>
+        /// <param name="decoration">Out parameter to be populated with the decoration if one exists, otherwise null</param>
+        /// <returns>True if <paramref name="decoration"/> was populated with a valid decoration, otherwise false</returns>
+        public bool TryGetDecoration(InstanceT instance, out DecorationT decoration)
+        {
+            if (_instanceToDecoration.TryGetValue(instance, out decoration))
+            {
+                return true;
+            }
+            else
+            {
+                decoration = default;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves the decoration associated with an instance.
+        /// </summary>
+        /// <param name="instance">The instance for which to retrieve the decoration</param>
+        /// <returns>A task resulting in the decoration associated with <paramref name="instance"/></returns>
+        /// <remarks>
+        /// If the instance already has a decoration, the returned task is immediately completed with the currently-available
+        /// decoration. If no decoration is yet available for this instance, the returned task will only be completed during
+        /// the call to <see cref="AddDecoration(InstanceT, DecorationT)"/> for the instance in question.
+        /// </remarks>
+        public Task<DecorationT> GetDecorationAsync(InstanceT instance)
+        {
+            if (_instanceToDecoration.TryGetValue(instance, out DecorationT decoration))
+            {
+                return Task.FromResult(decoration);
+            }
+            else
+            {
+                return GetAsynchronousRequest(instance);
+            }
+        }
+    }
+
+    /// <summary>
     /// Base class for Context-based decoration, specifically where both the instance being decorated
     /// (<typeparamref name="InstanceT"/>) and the data being used as a decoration (<typeparamref name="DecorationT"/>)
     /// are class types. Automatically removes decorations when the decorated instance is cleaned up.

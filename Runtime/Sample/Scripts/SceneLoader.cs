@@ -22,6 +22,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 namespace Oculus.Interaction.Samples
 {
@@ -59,9 +60,34 @@ namespace Oculus.Interaction.Samples
             }
         }
 
+#if UNITY_EDITOR
+        private Dictionary<string, string> _sceneNameToPath = new();
+        internal void LoadByPath(string sceneName, string scenePath)
+        {
+            if (_loading)
+            {
+                return;
+            }
+            _sceneNameToPath[sceneName] = scenePath;
+            Load(sceneName);
+        }
+#endif
+
         private IEnumerator LoadSceneAsync(string sceneName)
         {
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+            AsyncOperation asyncLoad;
+#if UNITY_EDITOR
+            if (_sceneNameToPath.TryGetValue(sceneName, out string scenePath))
+            {
+                asyncLoad = UnityEditor.SceneManagement.EditorSceneManager
+                    .LoadSceneAsyncInPlayMode(scenePath, new LoadSceneParameters(LoadSceneMode.Single));
+            }
+            else
+#endif
+            {
+                asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+            }
+
             while (!asyncLoad.isDone)
             {
                 yield return null;

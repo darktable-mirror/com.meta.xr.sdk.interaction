@@ -241,7 +241,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private ISurface GenerateNavMeshSurface(GameObject root)
         {
             NavMeshSurface surface = AddComponent<NavMeshSurface>(root);
-            surface.AreaName = _walkableAreaName;
+            surface.InjectOptionalAreaName(_walkableAreaName);
             return surface;
         }
 
@@ -413,7 +413,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             {
                 if (interactor.TryGetComponent(out LocomotionEventsConnection locomotionEventconnection))
                 {
-                    locomotionEventconnection.InjectHandler(Locomotor);
+                    locomotionEventconnection.InjectHandlers(new() { Locomotor });
                 }
                 UnityObjectAddedBroadcaster.HandleObjectWasAdded(interactor);
             }

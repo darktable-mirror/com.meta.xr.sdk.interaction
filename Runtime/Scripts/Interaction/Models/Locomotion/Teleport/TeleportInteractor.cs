@@ -203,8 +203,14 @@ namespace Oculus.Interaction.Locomotion
         protected override void Awake()
         {
             base.Awake();
-            TeleportArc = _teleportArc as IPolyline;
-            Selector = _selector as ISelector;
+            if (TeleportArc == null)
+            {
+                TeleportArc = _teleportArc as IPolyline;
+            }
+            if (Selector == null)
+            {
+                Selector = _selector as ISelector;
+            }
 #pragma warning disable CS0618 // Type or member is obsolete
             Hmd = _hmd as IHmd;
 #pragma warning restore CS0618 // Type or member is obsolete

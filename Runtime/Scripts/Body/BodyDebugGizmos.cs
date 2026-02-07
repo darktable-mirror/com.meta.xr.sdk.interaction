@@ -25,7 +25,7 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction.Body
 {
     /// <summary>
-    /// Debugs an <cref"IBody" /> by drawing its axises and joints.
+    /// Debugs an <see cref"IBody" /> by drawing its axes and joints.
     /// </summary>
     public class BodyDebugGizmos : SkeletonDebugGizmos
     {
@@ -88,7 +88,7 @@ namespace Oculus.Interaction.Body
             }
         }
 
-        protected override bool TryGetWorldJointPose(int jointId, out Pose pose)
+        protected override bool TryGetJointPose(int jointId, out Pose pose)
         {
             bool result;
             switch (_space)

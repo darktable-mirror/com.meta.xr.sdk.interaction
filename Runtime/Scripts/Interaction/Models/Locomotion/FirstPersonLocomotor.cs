@@ -57,7 +57,7 @@ namespace Oculus.Interaction.Locomotion
     /// teleported to the character position if an input is registered. This can be manually controller by calling ResetPlayerToCharacter manually.
     /// </summary>
     public class FirstPersonLocomotor : MonoBehaviour,
-        ILocomotionEventHandler, IDeltaTimeConsumer
+        ILocomotionEventHandler, IDeltaTimeConsumer, ITimeConsumer
     {
         [Header("Character")]
         /// <summary>
@@ -279,6 +279,18 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
+        /// Extra time after starting to fall to allow for jumping
+        /// </summary>
+        [SerializeField]
+        [Tooltip("Extra time after starting to fall to allow jumping.")]
+        private float _coyoteTime = 0f;
+        public float CoyoteTime
+        {
+            get => _coyoteTime;
+            set => _coyoteTime = value;
+        }
+
+        /// <summary>
         /// Correct the input velocity so it always points in the XZ plane
         /// Use with the _inputVelocityStabilization curve to adjust the range
         /// </summary>
@@ -335,10 +347,19 @@ namespace Oculus.Interaction.Locomotion
         "Negative numbers disable this behavior.")]
         private float _maxStartGroundDistance = 10f;
 
+        [SerializeField, Optional]
+        private Context _context;
+
         private Func<float> _deltaTimeProvider = () => Time.deltaTime;
         public void SetDeltaTimeProvider(Func<float> deltaTimeProvider)
         {
             _deltaTimeProvider = deltaTimeProvider;
+        }
+
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
         }
 
         protected Action<LocomotionEvent, Pose> _whenLocomotionEventHandled = delegate { };
@@ -372,11 +393,22 @@ namespace Oculus.Interaction.Locomotion
         /// teleporting to a Hostpot that sets the Head (instead of the feet) to a specific pose.
         /// </summary>
         public bool IgnoringVelocity => _velocityDisabled || _isHeadInHotspot;
+        /// <summary>
+        /// The current Velocity of the Locomotor.
+        /// Use the setter with caution, a LocomotionEvent of type Velocity
+        /// is the preferred way of influencing the velocity of the character
+        /// </summary>
+        public Vector3 Velocity
+        {
+            get => _velocity;
+            set => _velocity = value;
+        }
 
         private Pose _accumulatedDeltaFrame;
         private Vector3 _velocity;
         private bool _isHeadInHotspot;
         private Vector3? _headHotspotCenter;
+        private float _leftGroundTime;
 
         private bool _isRunning;
         private bool _isCrouching;
@@ -393,6 +425,8 @@ namespace Oculus.Interaction.Locomotion
         private YieldInstruction _endOfFrame = new WaitForEndOfFrame();
         private Coroutine _endOfFrameRoutine = null;
 
+        private bool _jumpThisFrame = false;
+        private bool _endedFrameGrounded = true;
         protected bool _started;
 
         protected virtual void Start()
@@ -408,7 +442,7 @@ namespace Oculus.Interaction.Locomotion
                 && !_characterController.TryGround(_maxStartGroundDistance))
             {
                 this.LogWarning(whyItFailed: $"The ground could not be found below the locomotor for {_maxStartGroundDistance} meters. Velocity will be disabled.",
-                    howToFix: $"A) Add a ground collider under the character controller.\n" +
+                    howToFix: $"A) Add a ground collider under the character controller and/or adjust the {nameof(CharacterController)}.{nameof(CharacterController.LayerMask)}.\n" +
                     $"B) Set {nameof(_velocityDisabled)} to disable movement and prevent falling without showing this warning.\n" +
                     $"C) Set {nameof(_maxStartGroundDistance)} to 0 to disable this behaviour.\n");
                 DisableMovement();
@@ -449,6 +483,12 @@ namespace Oculus.Interaction.Locomotion
                 _characterController.Move(delta);
                 Pose endPose = _characterController.Pose;
                 AccumulateDelta(ref _accumulatedDeltaFrame, startPose, endPose);
+
+                if (_endedFrameGrounded
+                    && !IsGrounded)
+                {
+                    _leftGroundTime = _timeProvider();
+                }
             }
         }
 
@@ -461,6 +501,12 @@ namespace Oculus.Interaction.Locomotion
         {
             CatchUpPlayerToCharacter(_accumulatedDeltaFrame, GetCharacterFeet().y);
             _accumulatedDeltaFrame = Pose.identity;
+
+            if (!_jumpThisFrame)
+            {
+                _endedFrameGrounded = IsGrounded;
+            }
+            _jumpThisFrame = false;
         }
 
         /// <summary>
@@ -469,7 +515,8 @@ namespace Oculus.Interaction.Locomotion
         /// </summary>
         public void Jump()
         {
-            if (!IsGrounded)
+            bool coyoteMoment = _coyoteTime > 0f && _timeProvider() - _leftGroundTime <= _coyoteTime;
+            if (!IsGrounded && !coyoteMoment)
             {
                 return;
             }
@@ -482,7 +529,15 @@ namespace Oculus.Interaction.Locomotion
 
             TryExitHotspot(true);
 
+            if (coyoteMoment && _velocity.y < 0f)
+            {
+                _velocity.y = 0f;
+            }
+
             _velocity += Vector3.up * _jumpForce;
+            _leftGroundTime = 0;
+            _endedFrameGrounded = false;
+            _jumpThisFrame = true;
         }
 
         /// <summary>
@@ -594,6 +649,16 @@ namespace Oculus.Interaction.Locomotion
                 }
                 _whenLocomotionEventHandled.Invoke(locomotionEvent, locomotionEvent.Pose);
             }
+            else if (locomotionEvent.Translation == LocomotionEvent.TranslationType.None
+                && locomotionEvent.Rotation == LocomotionEvent.RotationType.None)
+            {
+                //empty event? check if there is an action payload
+                if (LocomotionActionsBroadcaster.TryGetLocomotionActions(locomotionEvent,
+                        out LocomotionActionsBroadcaster.LocomotionAction action, _context))
+                {
+                    TryPerformLocomotionActions(action);
+                }
+            }
             else //other events are stored to be excuted at the end of the frame
             {
                 if (locomotionEvent.Translation == LocomotionEvent.TranslationType.Absolute
@@ -660,7 +725,20 @@ namespace Oculus.Interaction.Locomotion
             AccumulateDelta(ref delta, startPose, endPose);
             _whenLocomotionEventHandled.Invoke(locomotionEvent, delta);
         }
-
+        private bool TryPerformLocomotionActions(LocomotionActionsBroadcaster.LocomotionAction action)
+        {
+            switch (action)
+            {
+                case LocomotionActionsBroadcaster.LocomotionAction.Crouch: Crouch(true); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.StandUp: Crouch(false); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.ToggleCrouch: ToggleCrouch(); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.Run: Run(true); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.Walk: Run(false); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.ToggleRun: ToggleRun(); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.Jump: Jump(); return true;
+                default: return false;
+            }
+        }
         private void AccumulateDelta(ref Pose accumulator, in Pose from, in Pose to)
         {
             accumulator.position = accumulator.position + to.position - from.position;
@@ -812,7 +890,7 @@ namespace Oculus.Interaction.Locomotion
             return speedFactor;
         }
 
-        public Quaternion FlattenForwardOffset(Quaternion rotation)
+        private Quaternion FlattenForwardOffset(Quaternion rotation)
         {
             Vector3 forward = rotation * Vector3.forward;
             Vector3 up = rotation * Vector3.up;
@@ -895,6 +973,11 @@ namespace Oculus.Interaction.Locomotion
         public void InjectOptionalMaxStartGroundDistance(float maxStartGroundDistance)
         {
             _maxStartGroundDistance = maxStartGroundDistance;
+        }
+
+        public void InjectOptionalContext(Context context)
+        {
+            _context = context;
         }
 
         #endregion

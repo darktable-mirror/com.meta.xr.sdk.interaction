@@ -33,23 +33,23 @@ namespace Oculus.Interaction.Surfaces
     /// </remarks>
     public class NavMeshSurface : MonoBehaviour, ISurface
     {
-        [SerializeField, Optional]
-        private string _areaName = string.Empty;
         /// <summary>
         /// Allows the specification of an area name to be used in association with Unity's NavMesh Areas feature.
         /// For more information, see Unity's documentation on NavMesh Areas.
         /// </summary>
-        public string AreaName
-        {
-            get
-            {
-                return _areaName;
-            }
-            set
-            {
-                _areaName = value;
-            }
-        }
+        [SerializeField, Optional]
+        [Tooltip("Allows the specification of an area name to be used in association with Unity's NavMesh Areas feature." +
+            "For more information, see Unity's documentation on NavMesh Areas.")]
+        private string _areaName = string.Empty;
+
+        /// <summary>
+        /// Allows the specification of the agent index to be used in association with Unity's NavMesh Agent feature.
+        /// For more information, see Unity's documentation on NavMesh Agents.
+        /// </summary>
+        [SerializeField, Optional]
+        [Tooltip("Allows the specification of the agent index to be used in association with Unity's NavMesh Agent feature." +
+            "For more information, see Unity's documentation on NavMesh Agents.")]
+        private int _agentIndex = 0;
 
         [SerializeField, Min(0)]
         private float _snapDistance = 0f;
@@ -115,19 +115,31 @@ namespace Oculus.Interaction.Surfaces
         /// the related documentation provided for that property.
         /// </summary>
         public Transform Transform => null;
+
         private int _areaMask;
+        private NavMeshQueryFilter _navMeshQuery;
+        protected bool _started;
 
         protected virtual void Start()
         {
-            if (!string.IsNullOrEmpty(AreaName))
+            this.BeginStart(ref _started);
+
+            if (!string.IsNullOrEmpty(_areaName))
             {
-                _areaMask = 1 << NavMesh.GetAreaFromName(AreaName);
+                _areaMask = 1 << NavMesh.GetAreaFromName(_areaName);
             }
             else
             {
                 _areaMask = NavMesh.AllAreas;
             }
 
+            _navMeshQuery = new NavMeshQueryFilter()
+            {
+                agentTypeID = NavMesh.GetSettingsByIndex(_agentIndex).agentTypeID,
+                areaMask = _areaMask
+            };
+
+            this.EndStart(ref _started);
         }
 
         /// <summary>
@@ -136,7 +148,7 @@ namespace Oculus.Interaction.Surfaces
         /// </summary>
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit surfaceHit, float maxDistance = 0)
         {
-            if (NavMesh.SamplePosition(point, out NavMeshHit navMeshHit, maxDistance + SnapDistance, _areaMask))
+            if (NavMesh.SamplePosition(point, out NavMeshHit navMeshHit, maxDistance + _snapDistance, _navMeshQuery))
             {
                 surfaceHit = new SurfaceHit()
                 {
@@ -168,7 +180,7 @@ namespace Oculus.Interaction.Surfaces
             surfaceHit = new SurfaceHit();
             surfaceHit.Distance = float.PositiveInfinity;
             Vector3 pos = startPoint + dir * stepSize * 0.5f;
-            float size = Mathf.Max(stepSize, SnapDistance);
+            float size = Mathf.Max(stepSize, _snapDistance);
             float radius = stepSize + Mathf.Sqrt(size * size * 2);
             for (int i = 0; i < steps; i++)
             {
@@ -218,11 +230,11 @@ namespace Oculus.Interaction.Surfaces
 
         private bool SnapSurfaceHit(ref SurfaceHit surfaceHit, Vector3 navMeshPoint)
         {
-            if (NavMesh.Raycast(navMeshPoint, surfaceHit.Point, out NavMeshHit hit, _areaMask))
+            if (NavMesh.Raycast(navMeshPoint, surfaceHit.Point, out NavMeshHit hit, _navMeshQuery))
             {
                 float distance = Vector3.Distance(hit.position, surfaceHit.Point);
                 surfaceHit.Point = hit.position;
-                if (distance > SnapDistance)
+                if (distance > _snapDistance)
                 {
                     return false;
                 }
@@ -283,5 +295,17 @@ namespace Oculus.Interaction.Surfaces
             UnityEditor.EditorApplication.ExecuteMenuItem("Window/AI/Navigation");
 #endif
         }
+
+        #region Injects
+        public void InjectOptionalAreaName(string areaName)
+        {
+            _areaName = areaName;
+        }
+
+        public void InjectOptionalAgentIndex(int agentIndex)
+        {
+            _agentIndex = agentIndex;
+        }
+        #endregion
     }
 }
