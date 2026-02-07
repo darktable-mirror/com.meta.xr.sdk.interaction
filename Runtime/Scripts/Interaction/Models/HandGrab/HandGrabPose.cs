@@ -20,6 +20,7 @@
 
 using Oculus.Interaction.Grab;
 using Oculus.Interaction.Grab.GrabSurfaces;
+using Oculus.Interaction.HandGrab.Visuals;
 using Oculus.Interaction.Input;
 using System;
 using UnityEngine;
@@ -56,6 +57,10 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Optional]
         [HideInInspector]
         private HandPose _handPose = new HandPose();
+
+        [SerializeField]
+        [HideInInspector]
+        private HandGhostProvider _ghostProvider;
 
         public HandPose HandPose => _usesHandPose ? _handPose : null;
 

@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction.Input;
 using System;
 using UnityEngine;
 
@@ -164,10 +165,10 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
 
         public Pose MirrorPose(in Pose pose, Transform relativeTo)
         {
-            Quaternion rotation = GetRotation(relativeTo);
-            Vector3 normal = Quaternion.Inverse(relativeTo.rotation) * rotation * Vector3.forward;
-            Vector3 tangent = Quaternion.Inverse(relativeTo.rotation) * (rotation * Vector3.up);
-            return pose.MirrorPoseRotation(normal, tangent);
+            Quaternion localRotation = Quaternion.Euler(_data.eulerAngles);
+            Vector3 mirrorPlane = localRotation * Vector3.right;
+            Quaternion reflectedRot = HandMirroring.Reflect(pose.rotation, mirrorPlane);
+            return new Pose(pose.position, reflectedRot);
         }
 
         public IGrabSurface CreateMirroredSurface(GameObject gameObject)

@@ -185,7 +185,8 @@ namespace Oculus.Interaction.Input
         };
 
         /// <summary>
-        /// Map HandJointId to HandFinger
+        /// Map HandJointId to joint index of each finger, where the joint index
+        /// starts at 0 (toward wrist) and increments for each joint toward the fingertip.
         /// </summary>
         public static readonly int[] JOINT_TO_FINGER_INDEX = new int[]
         {

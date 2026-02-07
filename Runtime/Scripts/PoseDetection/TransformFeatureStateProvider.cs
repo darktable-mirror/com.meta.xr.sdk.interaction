@@ -272,7 +272,7 @@ namespace Oculus.Interaction.PoseDetection
 
         private void UpdateJointData()
         {
-            _jointData.IsValid = Hand.GetRootPose(out _jointData.WristPose) &&
+            _jointData.IsValid = Hand.GetJointPose(HandJointId.HandWristRoot, out _jointData.WristPose) &&
                                  Hmd.TryGetRootPose(out _jointData.CenterEyePose);
             if (!_jointData.IsValid)
             {
@@ -362,7 +362,7 @@ namespace Oculus.Interaction.PoseDetection
 
             featureVec = isHandVector ?
                          TransformFeatureValueProvider.GetHandVectorForFeature(transformFeature,
-                            _jointData, in config) :
+                            _jointData) :
                          TransformFeatureValueProvider.GetTargetVectorForFeature(transformFeature,
                             _jointData, in config);
             wristPos = _jointData.WristPose.position;

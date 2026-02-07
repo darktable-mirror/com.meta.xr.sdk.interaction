@@ -25,7 +25,6 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.Input.Filter
 {
-
     // Temporary structure used to pass data to and from native components
     [StructLayout(LayoutKind.Sequential)]
 
@@ -84,7 +83,6 @@ namespace Oculus.Interaction.Input.Filter
                 new Quaternion(_rootRotX, _rootRotY, _rootRotZ, _rootRotW));
         }
     }
-
     /// <summary>
     /// Smoothes hand position input data. If you want to fine-tune the smoothing, it also accepts an optional set of Filter Parameters.
     /// Use High if your app requires a very steady hand and can tolerate some lag. High should probably only be used in controller circumstances.
@@ -127,7 +125,6 @@ namespace Oculus.Interaction.Input.Filter
         private const int _isdkOneEuroHandModifierId = 1;
         private const int _isdkSuccess = 0;
         #endregion Oculus Library Methods and Constants
-
         #region Tuneable Values
         [Header("Settings", order =-1)]
         [Tooltip("Applies a One Euro Filter when filter parameters are provided")]
@@ -150,6 +147,7 @@ namespace Oculus.Interaction.Input.Filter
             _handModifierHandle = isdk_DataModifier_Create(_isdkOneEuroHandModifierId, _dataSourceHandle);
             this.AssertIsTrue(_handModifierHandle >= 0, $"{_logPrefix} Unable to allocate one euro hand data modifier!");
         }
+
 
         protected virtual void OnDestroy()
         {
@@ -187,7 +185,6 @@ namespace Oculus.Interaction.Input.Filter
         {
             if (_filterParameters == null)
                 return true;
-
             int result = -1;
 
             // wrist position
@@ -274,7 +271,6 @@ namespace Oculus.Interaction.Input.Filter
             {
                 return false;
             }
-
             return true;
         }
 
@@ -283,7 +279,6 @@ namespace Oculus.Interaction.Input.Filter
             // null parameters implies don't filter
             if (_filterParameters == null)
                 return true;
-
             // pipe data asset into temp struct
             _handData.SetData(handDataAsset.Joints,handDataAsset.Root);
 
@@ -310,7 +305,6 @@ namespace Oculus.Interaction.Input.Filter
 
             // Copy results into our hand data asset
             _handData.GetData(ref handDataAsset.Joints, out handDataAsset.Root);
-
             return true;
         }
     }

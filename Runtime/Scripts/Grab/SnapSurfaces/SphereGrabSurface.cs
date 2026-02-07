@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction.Input;
 using System;
 using UnityEngine;
 
@@ -125,9 +126,9 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
 
         public Pose MirrorPose(in Pose pose, Transform relativeTo)
         {
-            Vector3 normal = Quaternion.Inverse(relativeTo.rotation) * GetDirection(relativeTo);
-            Vector3 tangent = Vector3.Cross(normal, Vector3.up);
-            return pose.MirrorPoseRotation(normal, tangent);
+            Vector3 mirrorPlane = Vector3.Cross(pose.position, Vector3.up).normalized;
+            Quaternion reflectedRot = HandMirroring.Reflect(pose.rotation, mirrorPlane);
+            return new Pose(pose.position, reflectedRot);
         }
 
         public bool CalculateBestPoseAtSurface(Ray targetRay, out Pose bestPose, Transform relativeTo)

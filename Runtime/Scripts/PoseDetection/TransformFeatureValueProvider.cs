@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
@@ -91,46 +92,62 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
+        [Obsolete("The " + nameof(TransformConfig) + " parameter is obsolete")]
         public static Vector3 GetHandVectorForFeature(TransformFeature transformFeature,
-            in TransformJointData transformJointData,
-            in TransformConfig transformConfig)
+           in TransformJointData transformJointData,
+           in TransformConfig transformConfig)
+        {
+            return GetHandVectorForFeature(transformFeature, in transformJointData);
+        }
+
+        public static Vector3 GetHandVectorForFeature(TransformFeature transformFeature,
+            in TransformJointData transformJointData)
         {
             TransformProperties transformProps =
                 new TransformProperties(transformJointData.CenterEyePose, transformJointData.WristPose,
                     transformJointData.Handedness, transformJointData.TrackingSystemUp,
                     transformJointData.TrackingSystemForward);
-            return GetHandVectorForFeature(transformFeature, in transformProps, in transformConfig);
+            return GetHandVectorForFeature(transformFeature, in transformProps);
         }
 
         private static Vector3 GetHandVectorForFeature(TransformFeature transformFeature,
-            in TransformProperties transformProps,
-            in TransformConfig transformConfig)
+            in TransformProperties transformProps)
         {
-            Vector3 handVector = Vector3.zero;
+            Vector3 handVector;
+            Quaternion rotation = transformProps.WristPose.rotation;
+            bool isLeft = transformProps.Handedness == Handedness.Left;
+
             switch (transformFeature)
             {
                 case TransformFeature.WristDown:
+                    handVector = rotation * (isLeft ? Constants.LeftPinkySide : Constants.RightPinkySide);
+                    break;
                 case TransformFeature.WristUp:
-                    handVector = transformProps.Handedness == Handedness.Left ?
-                        transformProps.WristPose.forward :
-                        -1.0f * transformProps.WristPose.forward;
+                    handVector = rotation * (isLeft ? Constants.LeftThumbSide : Constants.RightThumbSide);
                     break;
                 case TransformFeature.PalmDown:
+                    handVector = rotation * (isLeft ? Constants.LeftDorsal : Constants.RightDorsal);
+                    break;
                 case TransformFeature.PalmUp:
+                    handVector = rotation * (isLeft ? Constants.LeftPalmar : Constants.RightPalmar);
+                    break;
                 case TransformFeature.PalmTowardsFace:
+                    handVector = rotation * (isLeft ? Constants.LeftDorsal : Constants.RightDorsal);
+                    break;
                 case TransformFeature.PalmAwayFromFace:
-                    handVector = transformProps.Handedness == Handedness.Left ?
-                        transformProps.WristPose.up : -1.0f * transformProps.WristPose.up;
+                    handVector = rotation * (isLeft ? Constants.LeftPalmar : Constants.RightPalmar);
                     break;
                 case TransformFeature.FingersUp:
+                    handVector = rotation * (isLeft ? Constants.LeftDistal : Constants.RightDistal);
+                    break;
                 case TransformFeature.FingersDown:
-                    handVector = transformProps.Handedness == Handedness.Left ?
-                        transformProps.WristPose.right : -1.0f * transformProps.WristPose.right;
+                    handVector = rotation * (isLeft ? Constants.LeftProximal : Constants.RightProximal);
                     break;
                 case TransformFeature.PinchClear:
+                    handVector = rotation * (isLeft ? Constants.LeftPinkySide : Constants.RightPinkySide);
+                    break;
                 default:
-                    handVector = transformProps.Handedness == Handedness.Left ?
-                        transformProps.WristPose.forward : -1.0f * transformProps.WristPose.forward;
+                    handVector = rotation * (isLeft ? Constants.LeftPinkySide : Constants.RightPinkySide);
                     break;
             }
             return handVector;
@@ -157,34 +174,20 @@ namespace Oculus.Interaction.PoseDetection
                 case TransformFeature.WristDown:
                 case TransformFeature.PalmDown:
                 case TransformFeature.FingersDown:
-                    targetVector = OffsetVectorWithRotation(transformProps,
-                        GetVerticalVector(transformProps.CenterEyePose,
-                            transformProps.TrackingSystemUp, false,
-                            in transformConfig),
-                        in transformConfig);
-                    break;
                 case TransformFeature.WristUp:
                 case TransformFeature.PalmUp:
                 case TransformFeature.FingersUp:
                     targetVector = OffsetVectorWithRotation(transformProps,
                         GetVerticalVector(transformProps.CenterEyePose,
-                            transformProps.TrackingSystemUp, true,
+                            transformProps.TrackingSystemUp,
                             in transformConfig),
                         in transformConfig);
                     break;
                 case TransformFeature.PalmTowardsFace:
-                    targetVector = OffsetVectorWithRotation(transformProps,
-                        -1.0f * transformProps.CenterEyePose.forward,
-                        in transformConfig);
-                    break;
                 case TransformFeature.PalmAwayFromFace:
-                    targetVector = OffsetVectorWithRotation(transformProps,
-                        transformProps.CenterEyePose.forward,
-                        in transformConfig);
-                    break;
                 case TransformFeature.PinchClear:
                     targetVector = OffsetVectorWithRotation(transformProps,
-                        -1.0f * transformProps.CenterEyePose.forward,
+                        transformProps.CenterEyePose.forward,
                         in transformConfig);
                     break;
                 default:
@@ -196,10 +199,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetWristDownValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.WristDown,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.WristDown,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.WristDown,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.WristDown,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -207,10 +209,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetWristUpValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.WristUp,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.WristUp,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.WristUp,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.WristUp,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -218,10 +219,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetPalmDownValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.PalmDown,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.PalmDown,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.PalmDown,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.PalmDown,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -229,10 +229,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetPalmUpValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.PalmUp,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.PalmUp,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.PalmUp,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.PalmUp,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -240,10 +239,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetPalmTowardsFaceValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.PalmTowardsFace,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.PalmTowardsFace,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.PalmTowardsFace,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.PalmTowardsFace,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -251,10 +249,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetPalmAwayFromFaceValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.PalmAwayFromFace,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.PalmAwayFromFace,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.PalmAwayFromFace,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.PalmAwayFromFace,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -262,10 +259,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetFingersUpValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.FingersUp,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.FingersUp,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.FingersUp,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.FingersUp,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -273,10 +269,9 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetFingersDownValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.FingersDown,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.FingersDown,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.FingersDown,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.FingersDown,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
@@ -284,28 +279,27 @@ namespace Oculus.Interaction.PoseDetection
         private static float GetPinchClearValue(in TransformProperties transformProps,
             in TransformConfig transformConfig)
         {
-            var handVector = GetHandVectorForFeature(TransformFeature.PinchClear,
-                in transformProps,
-                in transformConfig);
-            var targetVector = GetTargetVectorForFeature(TransformFeature.PinchClear,
+            Vector3 handVector = GetHandVectorForFeature(TransformFeature.PinchClear,
+                in transformProps);
+            Vector3 targetVector = GetTargetVectorForFeature(TransformFeature.PinchClear,
                 in transformProps, in transformConfig);
             return Vector3.Angle(handVector, targetVector);
         }
 
         private static Vector3 GetVerticalVector(in Pose centerEyePose,
             in Vector3 trackingSystemUp,
-            bool isUp,
             in TransformConfig transformConfig)
         {
             switch (transformConfig.UpVectorType)
             {
                 case UpVectorType.Head:
-                    return isUp ? centerEyePose.up : -1.0f * centerEyePose.up;
+                    return centerEyePose.up;
                 case UpVectorType.Tracking:
-                    return isUp ? trackingSystemUp : -1.0f * trackingSystemUp;
+                    return trackingSystemUp;
                 case UpVectorType.World:
+                    return Vector3.up;
                 default:
-                    return isUp ? Vector3.up : Vector3.down;
+                    return Vector3.up;
             }
         }
 

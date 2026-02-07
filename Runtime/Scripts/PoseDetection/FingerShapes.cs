@@ -107,15 +107,6 @@ namespace Oculus.Interaction.PoseDetection
             }
         };
 
-        private static readonly HandJointId[] KNUCKLE_JOINTS =
-        {
-            HandJointId.HandThumb2,
-            HandJointId.HandIndex1,
-            HandJointId.HandMiddle1,
-            HandJointId.HandRing1,
-            HandJointId.HandPinky1
-
-        };
         #endregion
 
         public virtual float GetValue(HandFinger finger, FingerFeature feature, IHand hand)
@@ -140,7 +131,8 @@ namespace Oculus.Interaction.PoseDetection
         {
             Vector3 bone1 = p0.position - p1.position;
             Vector3 bone2 = p2.position - p1.position;
-            float angle = Vector3.SignedAngle(bone1, bone2, p1.forward * -1f);
+            Vector3 hinge = p1.rotation * Constants.LeftThumbSide;
+            float angle = Vector3.SignedAngle(bone1, bone2, hinge);
             if (angle < 0f) angle += 360f;
             return angle;
         }
@@ -185,11 +177,11 @@ namespace Oculus.Interaction.PoseDetection
                 return 0.0f;
             }
 
-            HandJointId knuckle = KNUCKLE_JOINTS[(int)finger];
-            Vector3 handDir = Vector3.up;
-            Vector3 fingerDir = Vector3.ProjectOnPlane(poses[knuckle].up, Vector3.forward);
-
-            return 180f + Vector3.SignedAngle(handDir, fingerDir, Vector3.back);
+            HandJointId knuckle = HandJointUtils.GetHandFingerProximal(finger);
+            Vector3 handDir = Constants.RightDorsal;
+            Vector3 knucklesUp = poses[knuckle].rotation * Constants.RightDorsal;
+            Vector3 fingerDir = Vector3.ProjectOnPlane(knucklesUp, Constants.RightThumbSide);
+            return 180f + Vector3.SignedAngle(handDir, fingerDir, Constants.RightPinkySide);
         }
 
         public float GetAbductionValue(HandFinger finger, IHand hand)

@@ -32,7 +32,7 @@ namespace Oculus.Interaction.Throw
         private int _minHighConfidenceSamples = 2;
 
         private int _consecutiveValidFrames = 1;
-        private float _lastProcessTime = 0;
+        private float _previousProcessTime = 0;
 
         private RandomSampleConsensus<Vector3> _ransac;
         private RingBuffer<TimedPose> _poses;
@@ -49,7 +49,7 @@ namespace Oculus.Interaction.Throw
         {
             TimedPose timedPose = new TimedPose(time, pose);
             _poses.Clear(timedPose);
-            _lastProcessTime = time;
+            _previousProcessTime = time;
             _consecutiveValidFrames = 1;
         }
 
@@ -66,9 +66,10 @@ namespace Oculus.Interaction.Throw
             }
             else
             {
-                if (_consecutiveValidFrames == 0)
+                if (_consecutiveValidFrames == 0
+                    && time != _previousProcessTime)
                 {
-                    TimedPose repeatedPose = RepeatLast(_lastProcessTime);
+                    TimedPose repeatedPose = RepeatLast(_previousProcessTime);
                     _poses.Add(repeatedPose);
                 }
                 _consecutiveValidFrames++;
@@ -77,7 +78,7 @@ namespace Oculus.Interaction.Throw
                 _poses.Add(timedPose);
             }
 
-            _lastProcessTime = time;
+            _previousProcessTime = time;
         }
 
         public void GetVelocities(out Vector3 velocity, out Vector3 torque)
@@ -97,7 +98,6 @@ namespace Oculus.Interaction.Throw
         {
             TimedPose lastPose = _poses.Peek();
             lastPose.time = time;
-
             return lastPose;
         }
 
@@ -134,11 +134,11 @@ namespace Oculus.Interaction.Throw
         private float ScoreDistance(Vector3 distance, Vector3[,] distances)
         {
             float score = 0f;
-            for (int y = 0; y < _samplesCount; ++y)
+            for (int i = 0; i < _samplesCount; ++i)
             {
-                for (int x = y + 1; x < _samplesCount; ++x)
+                for (int j = i + 1; j < _samplesCount; ++j)
                 {
-                    score += (distance - distances[y, x]).sqrMagnitude;
+                    score += (distance - distances[i, j]).sqrMagnitude;
                 }
             }
             return score;
@@ -162,13 +162,15 @@ namespace Oculus.Interaction.Throw
         private float ScoreAngularDistance(Vector3 angularDistance, Vector3[,] angularDistances)
         {
             float score = 0f;
-            for (int y = 0; y < _samplesCount; ++y)
+
+            Quaternion target = Quaternion.Euler(angularDistance);
+
+            for (int i = 0; i < _samplesCount; ++i)
             {
-                for (int x = y + 1; x < _samplesCount; ++x)
+                for (int j = i + 1; j < _samplesCount; ++j)
                 {
-                    score += Mathf.Abs(Quaternion.Dot(
-                        Quaternion.Euler(angularDistance),
-                        Quaternion.Euler(angularDistances[y, x])));
+                    Quaternion sample = Quaternion.Euler(angularDistances[i, j]);
+                    score += Mathf.Abs(Quaternion.Dot(target, sample));
                 }
             }
             return score;

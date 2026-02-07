@@ -21,7 +21,6 @@
 using Oculus.Interaction.Input;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {

@@ -59,6 +59,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             rowRect.y += EditorConstants.ROW_HEIGHT;
             rowRect = DrawFingersFreedomMenu(property, rowRect);
             rowRect = DrawJointAngles(property, rowRect);
+
             EditorGUI.indentLevel--;
             EditorGUI.EndProperty();
         }
@@ -93,7 +94,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             {
                 SerializedProperty jointRotations = property.FindPropertyRelative("_jointRotations");
                 EditorGUI.indentLevel++;
-                for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; i++)
+                for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length && i < jointRotations.arraySize; i++)
                 {
                     SerializedProperty finger = jointRotations.GetArrayElementAtIndex(i);
                     HandJointId jointID = FingersMetadata.HAND_JOINT_IDS[i];

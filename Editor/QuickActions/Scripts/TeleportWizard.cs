@@ -64,12 +64,12 @@ namespace Oculus.Interaction.Editor.QuickActions
         [SerializeField]
         [DeviceType, WizardSetting]
         [InspectorName("Add Interactor(s)")]
-        [Tooltip("The Controller interactors required for the new interactable" +
+        [Tooltip("The Controller interactors required for the new interactable " +
             "will be added, if not already present.")]
         private DeviceTypes _deviceTypes = DeviceTypes.All;
 
         [SerializeField, Interface(typeof(ILocomotionEventHandler))]
-        [Tooltip("The Locomotor receives events from the Interactor and effectively" +
+        [Tooltip("The Locomotor receives events from the Interactor and effectively " +
             "moves the player rig around the scene.")]
         [ConditionalHide(nameof(_deviceTypes), DeviceTypes.None,
             ConditionalHideAttribute.DisplayMode.HideIfTrue)]
@@ -85,7 +85,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private Transform _cameraRigAnchor;
 
         [SerializeField]
-        [Tooltip("The Center Eye transform of the player, to correctly orient the player on teleport.")]
+        [Tooltip("The Center Eye transform of the player, used to correctly orient the player on teleport.")]
         [ConditionalHide(nameof(_deviceTypes), DeviceTypes.None,
             ConditionalHideAttribute.DisplayMode.HideIfTrue)]
         [WizardDependency(FindMethod = nameof(FindCenterEyeAnchor))]
@@ -97,21 +97,22 @@ namespace Oculus.Interaction.Editor.QuickActions
         private TeleportInteractableType _interactableType = TeleportInteractableType.Hotspot;
 
         [SerializeField]
-        [Tooltip("Hotspot only: Collider to use for detecting de hotspot with the teleport arc.")]
+        [Tooltip("Hotspot only: Collider to use for detecting the hotspot with the teleport arc.")]
         [WizardDependency(FindMethod = nameof(FindHotspotCollider), FixMethod = nameof(FixHotspotCollider))]
         [ConditionalHide(nameof(_interactableType), TeleportInteractableType.Hotspot,
             ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
         private Collider _hotspotCollider;
 
         [SerializeField]
-        [Tooltip("Hotspot only: Moves the player exactly to the referenced transform of the interactable.")]
+        [Tooltip("Hotspot only: Moves the player to the referenced transform of the interactable.")]
         [WizardSetting]
         [ConditionalHide(nameof(_interactableType), TeleportInteractableType.Hotspot,
             ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
         private TeleportHotspotSnapType _hotspotSnap = TeleportHotspotSnapType.SnapPosition;
 
         [SerializeField]
-        [Tooltip("Hotspots only: when snapping, it aligns the player head to this transform. If left empty it will snap the feet.")]
+        [Tooltip("Hotspots only: when snapping, it aligns the player's head to this transform. " +
+            "If left empty it will snap the feet.")]
         [WizardDependency(Category = Category.Optional, FindMethod = "", FixMethod = "", ReadOnly = false)]
         [ConditionalHide(nameof(_interactableType), TeleportInteractableType.Hotspot,
             ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
@@ -126,7 +127,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         [SerializeField]
 
-        [Tooltip("Physics Layer only: The physics layers the teleport arc can query.")]
+        [Tooltip("Physics Layer(s) only: The physics layer(s) the teleport arc can query.")]
         [WizardSetting]
         [ConditionalHide(nameof(_interactableType), TeleportInteractableType.PhysicsLayer,
             ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
@@ -134,14 +135,14 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         [SerializeField]
         [Tooltip("The teleport interactable will allow teleporting here or block the teleport ray. " +
-            "You can take advantage of this with Plane or PhysicsLayers to easily block teleporting throught obstacles.")]
+            "You can take advantage of this with Plane or Physics Layers to easily block teleporting through obstacles.")]
         [WizardSetting]
         [BooleanDropdown(True = "Allows teleporting here", False = "Blocks the teleport ray")]
         private bool _allowsTeleport = true;
 
         [SerializeField]
-        [Tooltip("The main trainsform where the Teleport Interactable will be placed. " +
-            "In hotspot mode, the Ring for the feet will be placed here.")]
+        [Tooltip("The main transform where the Teleport Interactable will be placed. " +
+            "In hotspot mode, the Ring for the feet will appear here.")]
         [WizardDependency(FindMethod = nameof(FindTransform), FixMethod = nameof(FixTransform))]
         private Transform _targetTransform;
 

@@ -21,7 +21,6 @@
 using Oculus.Interaction.Input;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
@@ -46,13 +45,17 @@ namespace Oculus.Interaction
 
         protected virtual void Start()
         {
-            float handednessMult = _handPrefabDataSource.Handedness == Handedness.Left ? -1 : 1f;
-
             for (int i = 0; i < (int)HandJointId.HandEnd; i++)
             {
                 List<HandSphere> spheres = _sourceSphereMap[i];
                 HandJointId joint = (HandJointId)i;
                 Transform assocTransform = _handPrefabDataSource.GetTransformFor(joint);
+
+                if (assocTransform == null)
+                {
+                    continue;
+                }
+
                 foreach (Transform t in assocTransform)
                 {
                     if (t.name != "sphere")
@@ -60,23 +63,33 @@ namespace Oculus.Interaction
                         continue;
                     }
 
-                    spheres.Add(new HandSphere(t.localPosition * handednessMult, t.lossyScale.x / 2.0f, joint));
+                    Pose sphereOffset = t.GetPose(Space.Self);
+                    Vector3 position = sphereOffset.position;
+                    spheres.Add(new HandSphere(position, t.lossyScale.x * 0.5f, joint));
+
                     Destroy(t.gameObject);
                 }
             }
         }
 
-        public void GetSpheres(Handedness handedness, HandJointId joint, Pose pose, float scale,
+        public void GetSpheres(Handedness handedness, HandJointId jointId, Pose jointPose, float scale,
             List<HandSphere> spheres)
         {
-            int idx = (int)joint;
+            bool isMirror = handedness != _handPrefabDataSource.Handedness;
+
+            int idx = (int)jointId;
             for (int j = 0; j < _sourceSphereMap[idx].Count; j++)
             {
                 HandSphere sphere = _sourceSphereMap[idx][j];
-                Vector3 spherePosition = (handedness == Handedness.Left ? -1 : 1) * sphere.Position;
+                Vector3 jointOffset = sphere.Position * scale;
+                if (isMirror)
+                {
+                    jointOffset = HandMirroring.Mirror(jointOffset);
+                }
+                Vector3 spherePosition = jointPose.position + jointPose.rotation * jointOffset;
                 HandSphere target = new HandSphere(
-                    pose.rotation * spherePosition * scale + pose.position,
-                    sphere.Radius*scale,
+                    spherePosition,
+                    sphere.Radius * scale,
                     sphere.Joint);
                 spheres.Add(target);
             }

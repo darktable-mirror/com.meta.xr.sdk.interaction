@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -76,14 +77,23 @@ namespace Oculus.Interaction
 
         public static Transform FindChildRecursive(this Transform parent, string name)
         {
+            return parent.FindChildRecursive((child) => child.name.Contains(name));
+        }
+
+        public static Transform FindChildRecursive(this Transform parent, Predicate<Transform> predicate)
+        {
             foreach (Transform child in parent)
             {
-                if (child.name.Contains(name))
+                if (predicate.Invoke(child))
+                {
                     return child;
+                }
 
-                var result = child.FindChildRecursive(name);
+                Transform result = child.FindChildRecursive(predicate);
                 if (result != null)
+                {
                     return result;
+                }
             }
             return null;
         }

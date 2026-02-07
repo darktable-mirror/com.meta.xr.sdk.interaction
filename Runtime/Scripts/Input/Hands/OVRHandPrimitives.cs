@@ -33,6 +33,20 @@ namespace Oculus.Interaction.Input
     {
         public const int NUM_HAND_JOINTS = (int)HandJointId.HandEnd;
         public const int NUM_FINGERS = 5;
+
+        public static readonly Vector3 RightProximal = Vector3.left;
+        public static readonly Vector3 RightDistal = Vector3.right;
+        public static readonly Vector3 RightPinkySide = Vector3.back;
+        public static readonly Vector3 RightThumbSide = Vector3.forward;
+        public static readonly Vector3 RightPalmar = Vector3.down;
+        public static readonly Vector3 RightDorsal = Vector3.up;
+
+        public static readonly Vector3 LeftProximal = Vector3.right;
+        public static readonly Vector3 LeftDistal = Vector3.left;
+        public static readonly Vector3 LeftPinkySide = Vector3.forward;
+        public static readonly Vector3 LeftThumbSide = Vector3.back;
+        public static readonly Vector3 LeftPalmar = Vector3.up;
+        public static readonly Vector3 LeftDorsal = Vector3.down;
     }
 
     public enum Handedness
@@ -82,7 +96,7 @@ namespace Oculus.Interaction.Input
 
     public enum PalmGrabParamID
     {
-        PoseVolumeOffsetRightVec3=0,
+        PoseVolumeOffsetRightVec3 = 0,
         PoseVolumeOffsetLeftVec3,
         StartThresholdFloat,
         ReleaseThresholdFloat,
@@ -171,11 +185,39 @@ namespace Oculus.Interaction.Input
     {
         public static List<HandJointId[]> FingerToJointList = new List<HandJointId[]>()
         {
-            new[] {HandJointId.HandThumb0,HandJointId.HandThumb1,HandJointId.HandThumb2,HandJointId.HandThumb3},
-            new[] {HandJointId.HandIndex1, HandJointId.HandIndex2, HandJointId.HandIndex3},
-            new[] {HandJointId.HandMiddle1, HandJointId.HandMiddle2, HandJointId.HandMiddle3},
-            new[] {HandJointId.HandRing1,HandJointId.HandRing2,HandJointId.HandRing3},
-            new[] {HandJointId.HandPinky0, HandJointId.HandPinky1, HandJointId.HandPinky2, HandJointId.HandPinky3}
+            new[] {HandJointId.HandThumb0, HandJointId.HandThumb1, HandJointId.HandThumb2, HandJointId.HandThumb3, HandJointId.HandThumbTip},
+            new[] {HandJointId.HandIndex1, HandJointId.HandIndex2, HandJointId.HandIndex3, HandJointId.HandIndexTip},
+            new[] {HandJointId.HandMiddle1, HandJointId.HandMiddle2, HandJointId.HandMiddle3, HandJointId.HandMiddleTip},
+            new[] {HandJointId.HandRing1, HandJointId.HandRing2, HandJointId.HandRing3, HandJointId.HandRingTip},
+            new[] {HandJointId.HandPinky0, HandJointId.HandPinky1, HandJointId.HandPinky2, HandJointId.HandPinky3, HandJointId.HandPinkyTip }
+        };
+
+        public static HandFinger[] JointToFingerList = new[]
+        {
+            HandFinger.Invalid,
+            HandFinger.Invalid,
+            HandFinger.Thumb,
+            HandFinger.Thumb,
+            HandFinger.Thumb,
+            HandFinger.Thumb,
+            HandFinger.Index,
+            HandFinger.Index,
+            HandFinger.Index,
+            HandFinger.Middle,
+            HandFinger.Middle,
+            HandFinger.Middle,
+            HandFinger.Ring,
+            HandFinger.Ring,
+            HandFinger.Ring,
+            HandFinger.Pinky,
+            HandFinger.Pinky,
+            HandFinger.Pinky,
+            HandFinger.Pinky,
+            HandFinger.Thumb,
+            HandFinger.Index,
+            HandFinger.Middle,
+            HandFinger.Ring,
+            HandFinger.Pinky
         };
 
         public static HandJointId[] JointParentList = new[]
@@ -206,10 +248,12 @@ namespace Oculus.Interaction.Input
             HandJointId.HandPinky3
         };
 
+
         public static HandJointId[][] JointChildrenList = new[]
         {
             new []
             {
+                HandJointId.HandForearmStub,
                 HandJointId.HandThumb0,
                 HandJointId.HandIndex1,
                 HandJointId.HandMiddle1,
@@ -241,6 +285,7 @@ namespace Oculus.Interaction.Input
             new HandJointId[0]
         };
 
+        [Obsolete("Use " + nameof(JointToFingerList) + "instead.")]
         public static List<HandJointId> JointIds = new List<HandJointId>()
         {
             HandJointId.HandIndex1,

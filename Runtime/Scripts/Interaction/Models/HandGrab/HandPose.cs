@@ -100,11 +100,10 @@ namespace Oculus.Interaction.HandGrab
 #if UNITY_EDITOR
             IReadOnlyHandSkeletonJointList jointCollection = _handedness == Handedness.Left ?
                 HandSkeleton.DefaultLeftSkeleton : HandSkeleton.DefaultRightSkeleton;
-            int offset = (int)FingersMetadata.HAND_JOINT_IDS[0];
             for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; i++)
             {
                 HandJointId jointID = FingersMetadata.HAND_JOINT_IDS[i];
-                JointRotations[i] = jointCollection[i + offset].pose.rotation;
+                JointRotations[i] = jointCollection[(int)jointID].pose.rotation;
             }
 #endif
         }
@@ -151,18 +150,21 @@ namespace Oculus.Interaction.HandGrab
         public static void Lerp(in HandPose from, in HandPose to, float t, ref HandPose result)
         {
             t = Mathf.Clamp01(t);
-            for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; i++)
+            for (int i = 0; i < from.JointRotations.Length && i < to.JointRotations.Length; i++)
             {
-                result.JointRotations[i] = Quaternion.SlerpUnclamped(from.JointRotations[i], to.JointRotations[i], t);
+                result.JointRotations[i] = Quaternion.SlerpUnclamped(
+                    from.JointRotations[i],
+                    to.JointRotations[i],
+                    t);
             }
 
             HandPose dominantPose = t <= 0.5f ? from : to;
             result._handedness = dominantPose.Handedness;
+
             for (int i = 0; i < Constants.NUM_FINGERS; i++)
             {
                 result.FingersFreedom[i] = dominantPose.FingersFreedom[i];
             }
-
         }
     }
 }

@@ -193,9 +193,10 @@ namespace Oculus.Interaction
             private Vector3 _position;
             public Vector3 Position => _position;
 
+            private Vector3 _targetPosition;
+
             private GameObject _hoveredSelectable;
             public GameObject HoveredSelectable => _hoveredSelectable;
-
 
             private bool _pressing = false;
             private bool _pressed;
@@ -225,6 +226,7 @@ namespace Oculus.Interaction
                 pressed = _pressed;
                 released = _released;
                 _pressed = _released = false;
+                _position = _targetPosition;
             }
 
             public void MarkForDeletion()
@@ -235,7 +237,11 @@ namespace Oculus.Interaction
 
             public void SetPosition(Vector3 position)
             {
-                _position = position;
+                _targetPosition = position;
+                if(!_released)
+                {
+                    _position = position;
+                }
             }
 
             public void SetHoveredSelectable(GameObject hoveredSelectable)
@@ -357,6 +363,7 @@ namespace Oculus.Interaction
             Vector2 prevPosition = pointerEventData.position;
             pointerEventData.Reset();
 
+            Vector3 pointerPosition3D = pointer.Position;
             pointer.ReadAndResetPressedReleased(out pressed, out released);
 
             if (pointer.MarkedForDeletion)
@@ -370,7 +377,7 @@ namespace Oculus.Interaction
 
             Vector3 position = Vector3.zero;
             var plane = new Plane(-1f * canvas.transform.forward, canvas.transform.position);
-            var ray = new Ray(pointer.Position - canvas.transform.forward, canvas.transform.forward);
+            var ray = new Ray(pointerPosition3D - canvas.transform.forward, canvas.transform.forward);
 
             float enter;
             if (plane.Raycast(ray, out enter))
@@ -380,11 +387,11 @@ namespace Oculus.Interaction
 
             // We need to position our camera at an offset from the Pointer position or else
             // a graphic raycast may ignore a world canvas that's outside of our regular camera view(s)
-            _pointerEventCamera.transform.position = pointer.Position - canvas.transform.forward;
-            _pointerEventCamera.transform.LookAt(pointer.Position, canvas.transform.up);
+            _pointerEventCamera.transform.position = pointerPosition3D - canvas.transform.forward;
+            _pointerEventCamera.transform.LookAt(pointerPosition3D, canvas.transform.up);
 
-            Vector2 pointerPosition = _pointerEventCamera.WorldToScreenPoint(position);
-            pointerEventData.position = pointerPosition;
+            Vector2 pointerPosition2D = _pointerEventCamera.WorldToScreenPoint(position);
+            pointerEventData.position = pointerPosition2D;
 
             // RaycastAll raycasts against with every GraphicRaycaster in the scene,
             // including nested ones like in the case of a dropdown
@@ -399,8 +406,8 @@ namespace Oculus.Interaction
             _pointerEventCamera.transform.position = canvas.transform.position - canvas.transform.forward;
             _pointerEventCamera.transform.LookAt(canvas.transform.position, canvas.transform.up);
 
-            pointerPosition = _pointerEventCamera.WorldToScreenPoint(position);
-            pointerEventData.position = pointerPosition;
+            pointerPosition2D = _pointerEventCamera.WorldToScreenPoint(position);
+            pointerEventData.position = pointerPosition2D;
 
             if (pressed)
             {

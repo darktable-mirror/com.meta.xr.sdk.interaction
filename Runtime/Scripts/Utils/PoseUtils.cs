@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -280,6 +281,7 @@ namespace Oculus.Interaction
         /// <param name="normal">The direction of the mirror.</param>
         /// <param name="tangent">The tangent of the mirror.</param>
         /// <returns>A mirrored pose.</returns>
+        [Obsolete("Use " + nameof(Input.HandMirroring) + "." + nameof(Input.HandMirroring.Reflect) + " instead.")]
         public static Pose MirrorPoseRotation(this in Pose pose, Vector3 normal, Vector3 tangent)
         {
             Pose mirrorPose = pose;

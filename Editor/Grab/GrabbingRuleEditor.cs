@@ -69,12 +69,12 @@ namespace Oculus.Interaction.GrabAPI
                 {
                     rowRect.y += EditorConstants.ROW_HEIGHT;
                     SerializedProperty finger = property.FindPropertyRelative(FINGER_PROPERTY_NAMES[i]);
-                    HandFinger fingerID = (HandFinger)i;
+                    string fingerName = Enum.GetName(typeof(HandFingerFlags), 1 << i);
                     FingerRequirement current = (FingerRequirement)finger.intValue;
 
                     EditorGUI.BeginChangeCheck();
                     EditorGUI.showMixedValue = finger.hasMultipleDifferentValues;
-                    FingerRequirement selected = (FingerRequirement)EditorGUI.EnumPopup(rowRect, $"{fingerID}: ", current);
+                    FingerRequirement selected = (FingerRequirement)EditorGUI.EnumPopup(rowRect, $"{fingerName}: ", current);
                     EditorGUI.showMixedValue = false;
                     if (EditorGUI.EndChangeCheck())
                     {

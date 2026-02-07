@@ -38,7 +38,8 @@ namespace Oculus.Interaction.Utils
 
 
         [SerializeField]
-        private HandFingerJointFlags _includedJoints = HandFingerJointFlags.HandMaxSkinnable - 1;
+        private HandFingerJointFlags _includedJoints =
+            HandFingerJointFlags.HandMaxSkinnable - 1;
 
         [SerializeField]
         private bool _includeJointPosition = false;

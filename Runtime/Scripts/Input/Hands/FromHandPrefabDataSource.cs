@@ -20,7 +20,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Input
 {
@@ -39,7 +38,6 @@ namespace Oculus.Interaction.Input
         [HideInInspector]
         [SerializeField]
         private List<Transform> _jointTransforms = new List<Transform>();
-
         public List<Transform> JointTransforms => _jointTransforms;
 
         [SerializeField, Interface(typeof(IHandSkeletonProvider))]
@@ -88,18 +86,20 @@ namespace Oculus.Interaction.Input
             _handDataAsset.IsTracked = true;
             _handDataAsset.IsHighConfidence = true;
             _handDataAsset.RootPoseOrigin = PoseOrigin.SyntheticPose;
-            _handDataAsset.Root = transform.GetPose();
+            _handDataAsset.Root = this.transform.GetPose();
             _handDataAsset.HandScale = 1;
 
             for (var i = 0; i < Constants.NUM_HAND_JOINTS; ++i)
             {
                 Transform joint = _jointTransforms[i];
-                if (_jointTransforms[i] == null)
+                if (joint == null)
                 {
+                    _handDataAsset.Joints[i] = Quaternion.identity;
                     continue;
                 }
 
                 _handDataAsset.Joints[i] = joint.transform.localRotation;
+
             }
         }
 

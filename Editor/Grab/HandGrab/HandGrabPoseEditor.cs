@@ -31,7 +31,6 @@ namespace Oculus.Interaction.HandGrab.Editor
     public class HandGrabPoseEditor : UnityEditor.Editor
     {
         private HandGrabPose _handGrabPose;
-        private HandGhostProvider _ghostVisualsProvider;
         private HandGhost _handGhost;
         private Handedness _lastHandedness;
         private Transform _relativeTo;
@@ -39,6 +38,7 @@ namespace Oculus.Interaction.HandGrab.Editor
         private int _editMode = 0;
         private SerializedProperty _handPoseProperty;
         private SerializedProperty _relativeToProperty;
+        private SerializedProperty _ghostProviderProperty;
 
         private const float GIZMO_SCALE = 0.005f;
         private static readonly string[] EDIT_MODES = new string[] { "Edit fingers", "Follow Surface" };
@@ -52,6 +52,8 @@ namespace Oculus.Interaction.HandGrab.Editor
         {
             _handPoseProperty = serializedObject.FindProperty("_handPose");
             _relativeToProperty = serializedObject.FindProperty("_relativeTo");
+            _ghostProviderProperty = serializedObject.FindProperty("_ghostProvider");
+
             AssignMissingGhostProvider();
         }
 
@@ -81,19 +83,22 @@ namespace Oculus.Interaction.HandGrab.Editor
             {
                 DestroyGhost();
             }
+
             serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawGhostMenu(HandPose handPose)
         {
-            HandGhostProvider provider = EditorGUILayout.ObjectField("Ghost Provider", _ghostVisualsProvider, typeof(HandGhostProvider), false) as HandGhostProvider;
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(_ghostProviderProperty);
+            bool providerChanged = EditorGUI.EndChangeCheck();
+
             if (_handGhost == null
-                || _ghostVisualsProvider != provider
+                || providerChanged
                 || _lastHandedness != handPose.Handedness)
             {
-                RegenerateGhost(provider);
+                RegenerateGhost();
             }
-            _ghostVisualsProvider = provider;
             _lastHandedness = handPose.Handedness;
 
             if (_handGrabPose.SnapSurface == null)
@@ -133,15 +138,21 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private void AssignMissingGhostProvider()
         {
-            if (_ghostVisualsProvider != null)
+            if (_ghostProviderProperty.objectReferenceValue as HandGhostProvider != null)
             {
                 return;
             }
 
-            HandGhostProviderUtils.TryGetDefaultProvider(out _ghostVisualsProvider);
+
+            if (HandGhostProviderUtils.TryGetDefaultProvider(out var ghostVisualsProvider))
+            {
+                _ghostProviderProperty.objectReferenceValue = ghostVisualsProvider;
+                serializedObject.ApplyModifiedProperties();
+
+            }
         }
 
-        private void RegenerateGhost(HandGhostProvider provider)
+        private void RegenerateGhost()
         {
             DestroyGhost();
             CreateGhost();
@@ -149,12 +160,12 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private void CreateGhost()
         {
-            if (_ghostVisualsProvider == null)
+            if (_ghostProviderProperty.objectReferenceValue is not HandGhostProvider ghostVisualsProvider)
             {
                 return;
             }
             Transform relativeTo = _handGrabPose.RelativeTo;
-            HandGhost ghostPrototype = _ghostVisualsProvider.GetHand(_handGrabPose.HandPose.Handedness);
+            HandGhost ghostPrototype = ghostVisualsProvider.GetHand(_handGrabPose.HandPose.Handedness);
             _handGhost = GameObject.Instantiate(ghostPrototype, _handGrabPose.transform);
             _handGhost.gameObject.hideFlags = HideFlags.HideAndDontSave;
 
@@ -226,6 +237,11 @@ namespace Oculus.Interaction.HandGrab.Editor
                     continue;
                 }
 
+                if (i >= _handGrabPose.HandPose.JointRotations.Length)
+                {
+                    return;
+                }
+
                 Transform transform = jointMap.transform;
                 transform.localRotation = jointMap.RotationOffset * _handGrabPose.HandPose.JointRotations[i];
 
@@ -233,7 +249,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                 Handles.color = EditorConstants.PRIMARY_COLOR;
                 Quaternion entryRotation = transform.rotation;
                 Quaternion rotation = Handles.Disc(entryRotation, transform.position,
-                   transform.forward, scale, false, 0);
+                   transform.rotation * Constants.RightThumbSide, scale, false, 0);
                 if (rotation != entryRotation)
                 {
                     changed = true;
@@ -244,7 +260,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                     Handles.color = EditorConstants.SECONDARY_COLOR;
                     Quaternion curlRotation = rotation;
                     rotation = Handles.Disc(curlRotation, transform.position,
-                        transform.up, scale, false, 0);
+                        transform.rotation * Constants.RightDorsal, scale, false, 0);
                     if (rotation != curlRotation)
                     {
                         changed = true;

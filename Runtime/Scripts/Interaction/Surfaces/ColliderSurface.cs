@@ -40,13 +40,14 @@ namespace Oculus.Interaction.Surfaces
 
         public Bounds Bounds => _collider.bounds;
 
-        public bool Raycast(in Ray ray, out SurfaceHit hit, float maxDistance)
+        public bool Raycast(in Ray ray, out SurfaceHit hit, float maxDistance = 0)
         {
             hit = new SurfaceHit();
 
             RaycastHit hitInfo;
 
-            if (_collider.Raycast(ray, out hitInfo, maxDistance))
+            if (_collider.Raycast(ray, out hitInfo,
+                maxDistance <= 0 ? float.MaxValue : maxDistance))
             {
                 hit.Point = hitInfo.point;
                 hit.Normal = hitInfo.normal;

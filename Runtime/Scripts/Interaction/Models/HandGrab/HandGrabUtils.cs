@@ -97,7 +97,15 @@ namespace Oculus.Interaction.HandGrab
             Handedness oppositeHandedness = handPose.Handedness == Handedness.Left ? Handedness.Right : Handedness.Left;
 
             HandGrabPoseData mirrorData = SaveHandGrabPoseData(originalPoint);
-            mirrorData.handPose.Handedness = oppositeHandedness;
+            HandPose mirroredHandPose = mirrorData.handPose;
+
+
+            mirroredHandPose.Handedness = oppositeHandedness;
+
+            for (int i = 0; i < mirroredHandPose.JointRotations.Length; i++)
+            {
+                mirroredHandPose.JointRotations[i] = HandMirroring.Mirror(mirroredHandPose.JointRotations[i]);
+            }
 
             if (originalPoint.SnapSurface != null)
             {
@@ -105,9 +113,7 @@ namespace Oculus.Interaction.HandGrab
             }
             else
             {
-                mirrorData.gripPose = mirrorData.gripPose.MirrorPoseRotation(Vector3.forward, Vector3.up);
-                Vector3 translation = Vector3.Project(mirrorData.gripPose.position, Vector3.right);
-                mirrorData.gripPose.position = mirrorData.gripPose.position - 2f * translation;
+                mirrorData.gripPose = HandMirroring.Mirror(mirrorData.gripPose);
             }
 
             LoadHandGrabPoseData(mirrorPoint, mirrorData, relativeTo);

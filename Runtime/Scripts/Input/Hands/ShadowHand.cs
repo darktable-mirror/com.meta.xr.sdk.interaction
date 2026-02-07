@@ -32,7 +32,7 @@ namespace Oculus.Interaction.Input
         private Pose[] _worldJointMap;
         private Pose _rootPose;
         private float _rootScale;
-        private int _dirtyMap;
+        private ulong _dirtyMap;
 
         public ShadowHand()
         {
@@ -43,6 +43,7 @@ namespace Oculus.Interaction.Input
                 _localJointMap[i] = Pose.identity;
                 _worldJointMap[i] = Pose.identity;
             }
+
             _rootPose = Pose.identity;
             _rootScale = 1f;
             _dirtyMap = 0;
@@ -81,9 +82,9 @@ namespace Oculus.Interaction.Input
             MarkDirty(HandJointId.HandStart);
         }
 
-        private bool CheckDirtyBit(int i) => ((_dirtyMap >> i) & 1) == 1;
-        private void SetDirtyBit(int i) => _dirtyMap = _dirtyMap | (1 << i);
-        private void ClearDirtyBit(int i) => _dirtyMap = _dirtyMap & ~(1 << i);
+        private bool CheckDirtyBit(int i) => ((_dirtyMap >> i) & 1UL) == 1UL;
+        private void SetDirtyBit(int i) => _dirtyMap = _dirtyMap | (1UL << i);
+        private void ClearDirtyBit(int i) => _dirtyMap = _dirtyMap & ~(1UL << i);
 
         private void MarkDirty(HandJointId jointId)
         {
@@ -114,12 +115,15 @@ namespace Oculus.Interaction.Input
 
             ClearDirtyBit((int)jointId);
 
-            Pose parentWorldPose = (int)jointId == 0 ? _rootPose : GetWorldPose(parent);
+            Pose parentWorldPose = parent != HandJointId.Invalid ? GetWorldPose(parent) : _rootPose;
+
             Pose localPose = _localJointMap[(int)jointId];
-            _worldJointMap[(int)jointId] = new Pose(
-                parentWorldPose.position + parentWorldPose.rotation * localPose.position * _rootScale,
-                parentWorldPose.rotation * localPose.rotation
-            );
+            localPose.position *= _rootScale;
+
+            PoseUtils.Multiply(parentWorldPose, localPose,
+                ref _worldJointMap[(int)jointId]);
+
+
         }
 
         public void Copy(ShadowHand hand)
@@ -143,9 +147,10 @@ namespace Oculus.Interaction.Input
             shadow.SetRootScale(hand.Scale);
         }
 
-        public static void FromHandFingers(this ShadowHand shadow, IHand hand, bool flipHandedness)
+        public static void FromHandFingers(this ShadowHand shadow, IHand hand, bool flipHandedness = false)
         {
             hand.GetJointPosesLocal(out ReadOnlyHandJointPoses localJointPoses);
+
             if (localJointPoses.Count != (int)HandJointId.HandEnd)
             {
                 return;
@@ -153,9 +158,13 @@ namespace Oculus.Interaction.Input
 
             for (int i = 0; i < (int)HandJointId.HandEnd; i++)
             {
-                Pose pose = localJointPoses[i];
-                pose.position *= flipHandedness ? -1f : 1f;
-                shadow.SetLocalPose((HandJointId)i, pose);
+                Pose localJointPose = localJointPoses[i];
+                if (flipHandedness)
+                {
+                    localJointPose = HandMirroring.Mirror(localJointPose);
+                }
+
+                shadow.SetLocalPose((HandJointId)i, localJointPose);
             }
         }
 

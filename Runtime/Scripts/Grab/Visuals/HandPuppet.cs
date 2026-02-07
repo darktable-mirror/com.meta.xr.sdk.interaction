@@ -85,7 +85,7 @@ namespace Oculus.Interaction.HandGrab.Visuals
         /// </param>
         public void SetJointRotations(in Quaternion[] jointRotations)
         {
-            for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; ++i)
+            for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length && i< jointRotations.Length; ++i)
             {
                 HandJointMap jointMap = JointsCache[i];
                 if (jointMap != null)

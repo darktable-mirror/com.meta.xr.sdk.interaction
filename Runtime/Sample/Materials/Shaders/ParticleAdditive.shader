@@ -64,8 +64,7 @@ Shader "Unlit/ParticleAdditive"
             fixed4 frag(fragmentInput input) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, input.uv);
-                col.xyz = lerp(_AlphaColor.xyz, col.xyz, col.w);
-                col.w *= _AlphaColor.w;
+                col.rgb = lerp(_AlphaColor.rgb, col.rgb, col.a);
                 return col * input.color;
             }
             ENDCG

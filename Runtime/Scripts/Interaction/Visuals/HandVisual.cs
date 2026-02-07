@@ -37,27 +37,18 @@ namespace Oculus.Interaction
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        [SerializeField]
+        private bool _updateRootPose = true;
+
+        [SerializeField]
+        private bool _updateRootScale = true;
+
         /// <summary>
         /// Determines the appearance of the hand.
         /// </summary>
         [SerializeField]
         private SkinnedMeshRenderer _skinnedMeshRenderer;
 
-        /// <summary>
-        ///
-        /// </summary>
-        [SerializeField]
-        private bool _updateRootPose = true;
-
-        /// <summary>
-        ///
-        /// </summary>
-        [SerializeField]
-        private bool _updateRootScale = true;
-
-        /// <summary>
-        ///
-        /// </summary>
         [SerializeField, Optional]
         private Transform _root = null;
 
@@ -67,14 +58,36 @@ namespace Oculus.Interaction
         [HideInInspector]
         [SerializeField]
         private List<Transform> _jointTransforms = new List<Transform>();
+
+
         public event Action WhenHandVisualUpdated = delegate { };
 
-        public bool IsVisible => _skinnedMeshRenderer != null && _skinnedMeshRenderer.enabled;
+        public bool IsVisible => SkinnedMeshRenderer != null && SkinnedMeshRenderer.enabled;
 
         private int _wristScalePropertyId;
 
-        public IList<Transform> Joints => _jointTransforms;
-        public Transform Root => _root;
+        public IList<Transform> Joints
+        {
+            get => _jointTransforms;
+        }
+
+        public Transform Root
+        {
+            get => _root;
+            private set => _root = value;
+        }
+
+        private SkinnedMeshRenderer SkinnedMeshRenderer
+        {
+            get => _skinnedMeshRenderer;
+            set => _skinnedMeshRenderer = value;
+        }
+
+        private MaterialPropertyBlockEditor HandMaterialPropertyBlockEditor
+        {
+            get => _handMaterialPropertyBlockEditor;
+            set => _handMaterialPropertyBlockEditor = value;
+        }
 
         private bool _forceOffVisibility;
         public bool ForceOffVisibility
@@ -86,7 +99,7 @@ namespace Oculus.Interaction
             set
             {
                 _forceOffVisibility = value;
-                if(_started)
+                if (_started)
                 {
                     UpdateVisibility();
                 }
@@ -98,9 +111,9 @@ namespace Oculus.Interaction
         protected virtual void Awake()
         {
             Hand = _hand as IHand;
-            if (_root == null && _jointTransforms.Count > 0 && _jointTransforms[0] != null)
+            if (Root == null && Joints.Count > 0 && Joints[0] != null)
             {
-                _root = _jointTransforms[0].parent;
+                Root = Joints[0].parent;
             }
         }
 
@@ -108,8 +121,8 @@ namespace Oculus.Interaction
         {
             this.BeginStart(ref _started);
             this.AssertField(Hand, nameof(Hand));
-            this.AssertField(_skinnedMeshRenderer, nameof(_skinnedMeshRenderer));
-            if (_handMaterialPropertyBlockEditor != null)
+            this.AssertField(SkinnedMeshRenderer, nameof(SkinnedMeshRenderer));
+            if (HandMaterialPropertyBlockEditor != null)
             {
                 _wristScalePropertyId = Shader.PropertyToID("_WristScale");
             }
@@ -139,18 +152,18 @@ namespace Oculus.Interaction
             {
                 if (IsVisible || ForceOffVisibility)
                 {
-                    _skinnedMeshRenderer.enabled = false;
+                    SkinnedMeshRenderer.enabled = false;
                 }
             }
             else
             {
                 if (!IsVisible && !ForceOffVisibility)
                 {
-                    _skinnedMeshRenderer.enabled = true;
+                    SkinnedMeshRenderer.enabled = true;
                 }
                 else if (IsVisible && ForceOffVisibility)
                 {
-                    _skinnedMeshRenderer.enabled = false;
+                    SkinnedMeshRenderer.enabled = false;
                 }
             }
         }
@@ -166,19 +179,19 @@ namespace Oculus.Interaction
 
             if (_updateRootPose)
             {
-                if (_root != null && Hand.GetRootPose(out Pose handRootPose))
+                if (Root != null && Hand.GetRootPose(out Pose handRootPose))
                 {
-                    _root.position = handRootPose.position;
-                    _root.rotation = handRootPose.rotation;
+                    Root.position = handRootPose.position;
+                    Root.rotation = handRootPose.rotation;
                 }
             }
 
             if (_updateRootScale)
             {
-                if (_root != null)
+                if (Root != null)
                 {
-                    float parentScale = _root.parent != null ? _root.parent.lossyScale.x : 1f;
-                    _root.localScale = Hand.Scale / parentScale * Vector3.one;
+                    float parentScale = Root.parent != null ? Root.parent.lossyScale.x : 1f;
+                    Root.localScale = Hand.Scale / parentScale * Vector3.one;
                 }
             }
 
@@ -188,24 +201,24 @@ namespace Oculus.Interaction
             }
             for (var i = 0; i < Constants.NUM_HAND_JOINTS; ++i)
             {
-                if (_jointTransforms[i] == null)
+                if (Joints[i] == null)
                 {
                     continue;
                 }
-                _jointTransforms[i].SetPose(localJoints[i], Space.Self);
+                Joints[i].SetPose(localJoints[i], Space.Self);
             }
 
-            if (_handMaterialPropertyBlockEditor != null)
+            if (HandMaterialPropertyBlockEditor != null)
             {
-                _handMaterialPropertyBlockEditor.MaterialPropertyBlock.SetFloat(_wristScalePropertyId, Hand.Scale);
-                _handMaterialPropertyBlockEditor.UpdateMaterialPropertyBlock();
+                HandMaterialPropertyBlockEditor.MaterialPropertyBlock.SetFloat(_wristScalePropertyId, Hand.Scale);
+                HandMaterialPropertyBlockEditor.UpdateMaterialPropertyBlock();
             }
             WhenHandVisualUpdated.Invoke();
         }
 
         public Transform GetTransformByHandJointId(HandJointId handJointId)
         {
-            return _jointTransforms[(int)handJointId];
+            return Joints[(int)handJointId];
         }
 
         public Pose GetJointPose(HandJointId jointId, Space space)
@@ -229,7 +242,7 @@ namespace Oculus.Interaction
 
         public void InjectSkinnedMeshRenderer(SkinnedMeshRenderer skinnedMeshRenderer)
         {
-            _skinnedMeshRenderer = skinnedMeshRenderer;
+            SkinnedMeshRenderer = skinnedMeshRenderer;
         }
 
         public void InjectOptionalUpdateRootPose(bool updateRootPose)
@@ -244,12 +257,12 @@ namespace Oculus.Interaction
 
         public void InjectOptionalRoot(Transform root)
         {
-            _root = root;
+            Root = root;
         }
 
         public void InjectOptionalMaterialPropertyBlockEditor(MaterialPropertyBlockEditor editor)
         {
-            _handMaterialPropertyBlockEditor = editor;
+            HandMaterialPropertyBlockEditor = editor;
         }
 
         #endregion

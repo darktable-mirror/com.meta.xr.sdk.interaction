@@ -233,17 +233,24 @@ namespace Oculus.Interaction.Editor
                 {
                     await Task.Delay(500);
                 }
+
+                var recommendedVersion = (request.Status == StatusCode.Success &&
+                                          request.Result.Length == 1)?
+#if UNITY_2022_2_OR_NEWER
+                    request.Result[0].versions?.recommended : null;
+#else
+                    request.Result[0].versions?.verified : null;
+#endif
                 if (request.Status == StatusCode.Success &&
                     request.Result.Length == 1 &&
-                    !string.IsNullOrEmpty(request.Result[0].versions?.verified))
+                    !string.IsNullOrEmpty(recommendedVersion))
                 {
-                    string verifiedVersion = request.Result[0].versions.verified;
-                    Debug.Log($"Found verified version {verifiedVersion} for package {package}");
-                    verifiedPackages.Add($"{package}@{verifiedVersion}");
+                    Debug.Log($"Found recommended version {recommendedVersion} for package {package}");
+                    verifiedPackages.Add($"{package}@{recommendedVersion}");
                 }
                 else
                 {
-                    Debug.LogError($"Failed to retrieve verified version of package {package}");
+                    Debug.LogError($"Failed to retrieve recommended version of package {package}");
                 }
             }
             return verifiedPackages;

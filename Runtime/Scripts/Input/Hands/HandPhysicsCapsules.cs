@@ -157,7 +157,10 @@ namespace Oculus.Interaction.Input
             int capsulesCount = Constants.NUM_HAND_JOINTS;
             _capsules = new List<BoneCapsule>(capsulesCount);
             Capsules = _capsules.AsReadOnly();
-            for (int i = (int)HandJointId.HandThumb0; i < (int)HandJointId.HandEnd; ++i)
+
+            HandJointId firstThumbJoint = HandJointId.HandThumb0;
+
+            for (int i = (int)firstThumbJoint; i < (int)HandJointId.HandEnd; ++i)
             {
                 HandJointId currentJoint = (HandJointId)i;
                 HandJointId parentJoint = HandJointUtils.JointParentList[i];

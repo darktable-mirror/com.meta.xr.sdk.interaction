@@ -102,7 +102,7 @@ namespace Oculus.Interaction.Body.Input
         {
             if (_jointPosesCache == null)
             {
-                _jointPosesCache = new BodyJointsCache();
+                _jointPosesCache = new BodyJointsCache(SkeletonMapping);
             }
         }
 

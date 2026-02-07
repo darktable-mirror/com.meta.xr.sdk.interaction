@@ -114,9 +114,9 @@ namespace Oculus.Interaction.Input
 
             UpdateJointsRotation(data);
             UpdateRootPose(ref data.Root);
-
             data.RootPoseOrigin = PoseOrigin.SyntheticPose;
         }
+
 
         /// <summary>
         /// Updates the pose of the root of the hand
@@ -187,7 +187,10 @@ namespace Oculus.Interaction.Input
                         extraRotationAllowance = 0f;
                     }
 
-                    Quaternion maxRotation = desiredRotation * Quaternion.Euler(0f, 0f, -90f * extraRotationAllowance);
+                    Vector3 hingeAxis = Constants.RightThumbSide;
+                    Vector3 spreadAxis = Constants.RightDorsal;
+
+                    Quaternion maxRotation = desiredRotation * Quaternion.Euler(hingeAxis * -90f * extraRotationAllowance);
 
                     float overRotation = OverFlex(jointRotations[rawJointIndex], maxRotation);
                     extraRotationAllowance = Mathf.Max(extraRotationAllowance, overRotation);
@@ -202,13 +205,14 @@ namespace Oculus.Interaction.Input
                     else if (jointCanSpread)
                     {
                         Quaternion trackedRotation = jointRotations[rawJointIndex];
+
                         float spreadAngle = Vector3.SignedAngle(
-                            trackedRotation * Vector3.forward,
-                            maxRotation * Vector3.forward,
-                            trackedRotation * Vector3.up);
+                            trackedRotation * hingeAxis,
+                            maxRotation * hingeAxis,
+                            trackedRotation * spreadAxis);
 
                         float spreadFactor = 1f - Mathf.Clamp01(overRotation * _spreadAllowance);
-                        trackedRotation = trackedRotation * Quaternion.Euler(0f, spreadAngle * spreadFactor, 0f);
+                        trackedRotation = trackedRotation * Quaternion.Euler(spreadAxis * spreadAngle * spreadFactor);
                         jointRotations[rawJointIndex] = trackedRotation;
                     }
                 }
@@ -449,9 +453,10 @@ namespace Oculus.Interaction.Input
         /// <returns>A negative scalar proportional to how much the rotation is over the max one, a proportional positive scalar if under.</returns>
         private static float OverFlex(in Quaternion desiredLocalRot, in Quaternion maxLocalRot)
         {
-            Vector3 jointDir = desiredLocalRot * Vector3.right;
-            Vector3 jointTan = desiredLocalRot * Vector3.back;
-            Vector3 maxDir = maxLocalRot * Vector3.right;
+            Vector3 jointDir = desiredLocalRot * Constants.RightDistal;
+            Vector3 jointTan = desiredLocalRot * Constants.RightPinkySide;
+            Vector3 maxDir = maxLocalRot * Constants.RightDistal;
+
             Vector3 difference = Vector3.Cross(jointDir, maxDir);
             return Vector3.Dot(jointTan, difference);
         }

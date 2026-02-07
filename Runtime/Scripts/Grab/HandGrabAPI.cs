@@ -55,6 +55,16 @@ namespace Oculus.Interaction.GrabAPI
         {
             this.BeginStart(ref _started);
             this.AssertField(Hand, nameof(Hand));
+#if ISDK_OPENXR_HAND && OVR_INTERNAL_CODE
+            if (_fingerPinchGrabAPI == null)
+            {
+                _fingerPinchGrabAPI = new PinchGrabAPI(Hmd);
+            }
+            if (_fingerPalmGrabAPI == null)
+            {
+                _fingerPalmGrabAPI = new PalmGrabAPI();
+            }
+#else
             if (_fingerPinchGrabAPI == null)
             {
                 _fingerPinchGrabAPI = new FingerPinchGrabAPI(Hmd);
@@ -63,6 +73,7 @@ namespace Oculus.Interaction.GrabAPI
             {
                 _fingerPalmGrabAPI = new FingerPalmGrabAPI();
             }
+#endif
             this.EndStart(ref _started);
         }
 

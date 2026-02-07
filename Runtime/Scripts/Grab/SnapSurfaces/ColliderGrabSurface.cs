@@ -71,7 +71,7 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
 
         public Pose MirrorPose(in Pose gripPose, Transform relativeTo)
         {
-            return gripPose;
+            return Input.HandMirroring.Mirror(gripPose);
         }
 
         public IGrabSurface CreateMirroredSurface(GameObject gameObject)

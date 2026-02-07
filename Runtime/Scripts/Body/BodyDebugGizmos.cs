@@ -88,17 +88,17 @@ namespace Oculus.Interaction.Body
             }
         }
 
-        protected override bool TryGetWorldJointPose(BodyJointId jointId, out Pose pose)
+        protected override bool TryGetWorldJointPose(int jointId, out Pose pose)
         {
             bool result;
             switch (_space)
             {
                 default:
                 case CoordSpace.World:
-                    result = Body.GetJointPose(jointId, out pose);
+                    result = Body.GetJointPose((BodyJointId)jointId, out pose);
                     break;
                 case CoordSpace.Local:
-                    result = Body.GetJointPoseFromRoot(jointId, out pose);
+                    result = Body.GetJointPoseFromRoot((BodyJointId)jointId, out pose);
                     pose.position = transform.TransformPoint(pose.position);
                     pose.rotation = transform.rotation * pose.rotation;
                     break;
@@ -106,9 +106,16 @@ namespace Oculus.Interaction.Body
             return result;
         }
 
-        protected override bool TryGetParentJointId(BodyJointId jointId, out BodyJointId parent)
+        protected override bool TryGetParentJointId(int jointId, out int parent)
         {
-            return Body.SkeletonMapping.TryGetParentJointId(jointId, out parent);
+            if (Body.SkeletonMapping.TryGetParentJointId(
+                (BodyJointId)jointId, out BodyJointId parentJointId))
+            {
+                parent = (int)parentJointId;
+                return true;
+            }
+            parent = default;
+            return false;
         }
 
         private VisibilityFlags GetModifiedDrawFlags()
@@ -125,7 +132,7 @@ namespace Oculus.Interaction.Body
         {
             foreach (BodyJointId joint in Body.SkeletonMapping.Joints)
             {
-                Draw(joint, GetModifiedDrawFlags());
+                Draw((int)joint, GetModifiedDrawFlags());
             }
         }
 

@@ -19,9 +19,8 @@
  */
 
 using UnityEngine;
-using Oculus.Interaction.Body.Input;
 
-namespace Oculus.Interaction.Body
+namespace Oculus.Interaction
 {
     /// <summary>
     /// Draws debug gizmos representing a body skeleton. Joint positions, bones, and joint orientation axes can be drawn, and the visuals sized and colorized as desired.
@@ -93,15 +92,15 @@ namespace Oculus.Interaction.Body
 
         private float LineWidth => _radius / 2f;
 
-        protected abstract bool TryGetWorldJointPose(BodyJointId jointId, out Pose pose);
+        protected abstract bool TryGetWorldJointPose(int jointId, out Pose pose);
 
-        protected abstract bool TryGetParentJointId(BodyJointId jointId, out BodyJointId parent);
+        protected abstract bool TryGetParentJointId(int jointId, out int parent);
 
         protected bool HasNegativeScale => transform.lossyScale.x < 0 ||
                                            transform.lossyScale.y < 0 ||
                                            transform.lossyScale.z < 0;
 
-        protected void Draw(BodyJointId joint, VisibilityFlags visibility)
+        protected void Draw(int joint, VisibilityFlags visibility)
         {
             if (TryGetWorldJointPose(joint, out Pose pose))
             {
@@ -117,7 +116,7 @@ namespace Oculus.Interaction.Body
                     DebugGizmos.DrawPoint(pose.position);
                 }
                 if (visibility.HasFlag(VisibilityFlags.Bones) &&
-                    TryGetParentJointId(joint, out BodyJointId parent) &&
+                    TryGetParentJointId(joint, out int parent) &&
                     TryGetWorldJointPose(parent, out Pose parentPose))
                 {
                     DebugGizmos.Color = _boneColor;

@@ -51,7 +51,7 @@ namespace Oculus.Interaction.Body.PoseDetection
         {
             foreach (BodyJointId joint in BodyPose.SkeletonMapping.Joints)
             {
-                Draw(joint, GetVisibilityFlags());
+                Draw((int)joint, GetVisibilityFlags());
             }
         }
 
@@ -65,9 +65,9 @@ namespace Oculus.Interaction.Body.PoseDetection
             return modifiedFlags;
         }
 
-        protected override bool TryGetWorldJointPose(BodyJointId jointId, out Pose pose)
+        protected override bool TryGetWorldJointPose(int jointId, out Pose pose)
         {
-            if (BodyPose.GetJointPoseFromRoot(jointId, out pose))
+            if (BodyPose.GetJointPoseFromRoot((BodyJointId)jointId, out pose))
             {
                 pose.position = transform.TransformPoint(pose.position);
                 pose.rotation = transform.rotation * pose.rotation;
@@ -76,9 +76,16 @@ namespace Oculus.Interaction.Body.PoseDetection
             return false;
         }
 
-        protected override bool TryGetParentJointId(BodyJointId jointId, out BodyJointId parent)
+        protected override bool TryGetParentJointId(int jointId, out int parent)
         {
-            return BodyPose.SkeletonMapping.TryGetParentJointId(jointId, out parent);
+            if (BodyPose.SkeletonMapping.TryGetParentJointId(
+                (BodyJointId)jointId, out BodyJointId parentJointId))
+            {
+                parent = (int)parentJointId;
+                return true;
+            }
+            parent = default;
+            return false;
         }
 
         #region Inject

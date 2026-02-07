@@ -123,7 +123,7 @@ namespace Oculus.Interaction.Input.UnityXR
         private readonly HandDataAsset _dataAsset = new();
 
         // Meta Hand Aim Mocking
-        private readonly Pose[] _localJointCache = new Pose[Constants.NUM_HAND_JOINTS];
+        private HandJointCache _jointCache;
         private FingerPinchGrabAPI _fingerGrabAPI;
 
         protected abstract OpenXRHandDataAsset OpenXRData { get; }
@@ -156,33 +156,29 @@ namespace Oculus.Interaction.Input.UnityXR
         private void PopulateMockHandTrackingAim(Pose xrPalmPose)
         {
             // Update Joint Cache
-            for (int i = 0; i < Constants.NUM_HAND_JOINTS; i++)
-            {
-                _localJointCache[i].position = _dataAsset.Config.HandSkeleton.Joints[i].pose.position;
-                _localJointCache[i].rotation = _dataAsset.Joints[i];
-            }
+            _jointCache ??= new HandJointCache(_dataAsset.Config.HandSkeleton);
+            _jointCache.Update(_dataAsset, CurrentDataVersion);
+            _jointCache.GetAllPosesFromWrist(out var localJointPoses);
 
             _fingerGrabAPI ??= new FingerPinchGrabAPI(HmdData);
-            _fingerGrabAPI.Update(_localJointCache, _dataAsset.Config.Handedness, _dataAsset.Root);
-
-            _dataAsset.PointerPose =
-                xrPalmPose.GetTransformedBy(new Pose(TrackedRemoteAimOffset, Quaternion.identity));
-            _dataAsset.PointerPoseOrigin = PoseOrigin.SyntheticPose;
-
-            // Better source?
-            _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
-
+            _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root);
             PopulateMockHandTrackingAimFinger(HandFinger.Index);
             PopulateMockHandTrackingAimFinger(HandFinger.Middle);
             PopulateMockHandTrackingAimFinger(HandFinger.Ring);
             PopulateMockHandTrackingAimFinger(HandFinger.Pinky);
+
+
+            _dataAsset.PointerPose =
+                xrPalmPose.GetTransformedBy(new Pose(TrackedRemoteAimOffset, Quaternion.identity));
+            _dataAsset.PointerPoseOrigin = PoseOrigin.SyntheticPose;
+            _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
         }
 
         private void PopulateMockHandTrackingAimFinger(HandFinger finger)
         {
             var fingerIndex = (int)finger;
             _dataAsset.FingerPinchStrength[fingerIndex] =
-                _fingerGrabAPI.GetFingerPinchPercent(finger);
+                _fingerGrabAPI.GetFingerGrabScore(finger);
             _dataAsset.IsFingerPinching[fingerIndex] =
                 _dataAsset.FingerPinchStrength[fingerIndex] > PressThreshold;
         }

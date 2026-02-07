@@ -474,7 +474,7 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(HandDebugVisual), false, isFallback = true), CanEditMultipleObjects]
+    [CustomEditor(typeof(HandDebugGizmos), false, isFallback = true), CanEditMultipleObjects]
     public class HandDebugVisualEditorFallback : SimplifiedEditor { }
 }
 

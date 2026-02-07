@@ -78,13 +78,13 @@ namespace Oculus.Interaction
                 }
             }
 
-            TModel bestModel = default(TModel);
+            TModel bestModel = default;
             float bestScore = float.PositiveInfinity;
 
             for (int i = 0; i < _dataPointsCount; ++i)
             {
-                int y = Mathf.FloorToInt(Random.value * (_dataPointsCount - 1));
-                int x = y + Mathf.FloorToInt(Random.value * (_dataPointsCount - y - 1)) + 1;
+                int y = Random.Range(0, _dataPointsCount - 1);
+                int x = Random.Range(y + 1, _dataPointsCount);
 
                 TModel model = _modelSet[y, x];
                 float score = modelScorer(model, _modelSet);

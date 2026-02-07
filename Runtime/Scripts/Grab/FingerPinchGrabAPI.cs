@@ -19,12 +19,11 @@
  */
 
 using Oculus.Interaction.Input;
-using UnityEngine;
 using System;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Assertions.Must;
 
 namespace Oculus.Interaction.GrabAPI
 {
