@@ -403,11 +403,17 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets all the required values for a Poke Interactable on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllPokeInteractable(ISurfacePatch surfacePatch)
         {
             InjectSurfacePatch(surfacePatch);
         }
 
+        /// <summary>
+        /// Sets a surface patch for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSurfacePatch(ISurfacePatch surfacePatch)
         {
             _surfacePatch = surfacePatch as UnityEngine.Object;

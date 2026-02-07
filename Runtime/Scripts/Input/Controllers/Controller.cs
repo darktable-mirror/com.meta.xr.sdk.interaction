@@ -27,9 +27,9 @@ namespace Oculus.Interaction.Input
         DataModifier<ControllerDataAsset>,
         IController
     {
-        public Handedness Handedness => GetData().Config.Handedness;
+        public virtual Handedness Handedness => GetData().Config.Handedness;
 
-        public bool IsConnected
+        public virtual bool IsConnected
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Oculus.Interaction.Input
             }
         }
 
-        public bool IsPoseValid
+        public virtual bool IsPoseValid
         {
             get
             {
@@ -48,7 +48,7 @@ namespace Oculus.Interaction.Input
             }
         }
 
-        public bool IsPointerPoseValid
+        public virtual bool IsPointerPoseValid
         {
             get
             {
@@ -58,28 +58,37 @@ namespace Oculus.Interaction.Input
             }
         }
 
-        public event Action WhenUpdated = delegate { };
+        public virtual ControllerInput ControllerInput
+        {
+            get
+            {
+                var currentData = GetData();
+                return currentData.Input;
+            }
+        }
+
+        public virtual event Action WhenUpdated = delegate { };
 
         private ITrackingToWorldTransformer TrackingToWorldTransformer =>
             GetData().Config.TrackingToWorldTransformer;
 
-        public float Scale => TrackingToWorldTransformer != null
+        public virtual float Scale => TrackingToWorldTransformer != null
             ? TrackingToWorldTransformer.Transform.lossyScale.x
             : 1;
 
-        public bool IsButtonUsageAnyActive(ControllerButtonUsage buttonUsage)
+        public virtual bool IsButtonUsageAnyActive(ControllerButtonUsage buttonUsage)
         {
             var currentData = GetData();
             return
                 currentData.IsDataValid &&
-                (buttonUsage & currentData.ButtonUsageMask) != 0;
+                (buttonUsage & currentData.Input.ButtonUsageMask) != 0;
         }
 
-        public bool IsButtonUsageAllActive(ControllerButtonUsage buttonUsage)
+        public virtual bool IsButtonUsageAllActive(ControllerButtonUsage buttonUsage)
         {
             var currentData = GetData();
             return currentData.IsDataValid &&
-                   (buttonUsage & currentData.ButtonUsageMask) == buttonUsage;
+                   (buttonUsage & currentData.Input.ButtonUsageMask) == buttonUsage;
         }
 
         /// <summary>
@@ -87,7 +96,7 @@ namespace Oculus.Interaction.Input
         /// </summary>
         /// <param name="pose">Set to current pose if `IsPoseValid`; Pose.identity otherwise</param>
         /// <returns>Value of `IsPoseValid`</returns>
-        public bool TryGetPose(out Pose pose)
+        public virtual bool TryGetPose(out Pose pose)
         {
             if (!IsPoseValid)
             {
@@ -104,7 +113,7 @@ namespace Oculus.Interaction.Input
         /// </summary>
         /// <param name="pose">Set to current pose if `IsPoseValid`; Pose.identity otherwise</param>
         /// <returns>Value of `IsPoseValid`</returns>
-        public bool TryGetPointerPose(out Pose pose)
+        public virtual bool TryGetPointerPose(out Pose pose)
         {
             if (!IsPointerPoseValid)
             {
@@ -132,6 +141,12 @@ namespace Oculus.Interaction.Input
         }
 
         #region Inject
+
+        public void InjectAllController(UpdateModeFlags updateMode, IDataSource updateAfter,
+            IDataSource<ControllerDataAsset> modifyDataFromSource, bool applyModifier)
+        {
+            base.InjectAllDataModifier(updateMode, updateAfter, modifyDataFromSource, applyModifier);
+        }
 
         #endregion
     }

@@ -352,6 +352,11 @@ namespace Oculus.Interaction
             UniqueIdentifier.Release(_identifier);
         }
 
+        /// <summary>
+        /// Overrides the interactor's ComputeCandidate() method with a new method.
+        /// <param name="computeCandidate">The method used instead of the interactable's existing ComputeCandidate() method.</param>
+        /// <param name="shouldClearOverrideOnSelect">If true, clear the computeCandidate function once you select an interactable.</param>
+        /// </summary>
         public virtual void SetComputeCandidateOverride(Func<TInteractable> computeCandidate,
             bool shouldClearOverrideOnSelect = true)
         {
@@ -359,12 +364,20 @@ namespace Oculus.Interaction
             _clearComputeCandidateOverrideOnSelect = shouldClearOverrideOnSelect;
         }
 
+        /// <summary>
+        /// Clears the function provided in SetComputeCandidateOverride(). This is called when the interactor force releases an interactable.
+        /// </summary>
         public virtual void ClearComputeCandidateOverride()
         {
             _computeCandidateOverride = null;
             _clearComputeCandidateOverrideOnSelect = false;
         }
 
+        /// <summary>
+        /// Overrides the interactor's ComputeShouldSelect() method with a new method.
+        /// </summary>
+        /// <param name="computeShouldSelect">The method used instead of the interactor's existing ComputeShouldSelect() method.</param>
+        /// <param name="clearOverrideOnSelect">If true, clear the computeShouldSelect function once you select an interactable.</param>
         public virtual void SetComputeShouldSelectOverride(Func<bool> computeShouldSelect,
             bool clearOverrideOnSelect = true)
         {
@@ -372,12 +385,20 @@ namespace Oculus.Interaction
             _clearComputeShouldSelectOverrideOnSelect = clearOverrideOnSelect;
         }
 
+        /// <summary>
+        /// Clears the function provided in SetComputeShouldSelectOverride(). This is called when the interactor force releases an interactable.
+        /// </summary>
         public virtual void ClearComputeShouldSelectOverride()
         {
             _computeShouldSelectOverride = null;
             _clearComputeShouldSelectOverrideOnSelect = false;
         }
 
+        /// <summary>
+        /// Overrides the interactor's ComputeShouldUnselect() method with a new method.
+        /// </summary>
+        /// <param name="computeShouldUnselect">The method used instead of the interactor's existing ComputeShouldUnselect() method.</param>
+        /// <param name="clearOverrideOnUnselect">If true, clear the computeShouldUnselect function once you unselect an interactable.</param>
         public virtual void SetComputeShouldUnselectOverride(Func<bool> computeShouldUnselect,
             bool clearOverrideOnUnselect = true)
         {
@@ -385,12 +406,18 @@ namespace Oculus.Interaction
             _clearComputeShouldUnselectOverrideOnUnselect = clearOverrideOnUnselect;
         }
 
+        /// <summary>
+        /// Clears the function provided in SetComputeShouldUnselectOverride(). This is called when the interactor unselects an interactable.
+        /// </summary>
         public virtual void ClearComputeShouldUnselectOverride()
         {
             _computeShouldUnselectOverride = null;
             _clearComputeShouldUnselectOverrideOnUnselect = false;
         }
 
+        /// <summary>
+        /// Executes any logic that should run before the interactor-specific logic. Runs before Process() and Postprocess().
+        /// </summary>
         public void Preprocess()
         {
             DoPreprocess();
@@ -401,6 +428,10 @@ namespace Oculus.Interaction
             WhenPreprocessed();
         }
 
+        /// <summary>
+        /// Runs interactor-specific logic based on the interactor's current state. Runs after Preprocess() but before Postprocess().
+        /// Can be called multiple times per interaction frame.
+        /// </summary>
         public void Process()
         {
             switch (State)
@@ -418,6 +449,9 @@ namespace Oculus.Interaction
             WhenProcessed();
         }
 
+        /// <summary>
+        ///  Executes any logic that should run after the interactor-specific logic. Runs after both Process() and Preprocess().
+        /// </summary>
         public void Postprocess()
         {
             _selectorQueue.Clear();
@@ -425,6 +459,9 @@ namespace Oculus.Interaction
             WhenPostprocessed();
         }
 
+        /// <summary>
+        /// Determines what the interactable candidate should be.
+        /// </summary>
         public virtual void ProcessCandidate()
         {
             _candidate = null;
@@ -443,6 +480,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Causes the interactor to unselect or unhover an interactable. Called when an interactable is currently selected or hovered but a cancel <cref="IPointerEvent" /> occurs.
+        /// </summary>
         public void InteractableChangesUpdate()
         {
             if (_selectedInteractable != null &&
@@ -458,6 +498,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Hovers the current candidate.
+        /// </summary>
         public void Hover()
         {
             if (State != InteractorState.Normal)
@@ -469,6 +512,9 @@ namespace Oculus.Interaction
             State = InteractorState.Hover;
         }
 
+        /// <summary>
+        /// Unhovers the current candidate.
+        /// </summary>
         public void Unhover()
         {
             if (State != InteractorState.Hover)
@@ -480,7 +526,9 @@ namespace Oculus.Interaction
             State = InteractorState.Normal;
         }
 
-
+        /// <summary>
+        /// Selects the target interactable and sets the interactor's state to select.
+        /// </summary>
         public virtual void Select()
         {
             if (State != InteractorState.Hover)
@@ -511,6 +559,9 @@ namespace Oculus.Interaction
             State = InteractorState.Select;
         }
 
+        /// <summary>
+        /// Unselects the currently selected interactable and sets the interactor's state to hover.
+        /// </summary>
         public virtual void Unselect()
         {
             if (State != InteractorState.Select)
@@ -543,6 +594,11 @@ namespace Oculus.Interaction
             return CandidateTiebreaker.Compare(a, b);
         }
 
+        /// <summary>
+        /// Determines if an interactor can interact with an interactable.
+        /// </summary>
+        /// <param name="interactable">The interactable to check against.</param>
+        /// <returns>True if the interactor can interact with the given interactable.</returns>
         public virtual bool CanSelect(TInteractable interactable)
         {
             if (InteractableFilters == null)
@@ -607,6 +663,9 @@ namespace Oculus.Interaction
             InteractableUnselected(interactable);
         }
 
+        /// <summary>
+        /// Enables a disabled interactor.
+        /// </summary>
         public void Enable()
         {
             if (!UpdateActiveState())
@@ -621,6 +680,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Disables an interactor.
+        /// </summary>
         public void Disable()
         {
             if (State == InteractorState.Disabled)
@@ -682,6 +744,9 @@ namespace Oculus.Interaction
             Drive();
         }
 
+        /// <summary>
+        /// Coordinates all of the interactor's interaction logic.
+        /// </summary>
         public virtual void Drive()
         {
             Preprocess();
@@ -752,12 +817,19 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+
+        /// <summary>
+        /// Sets an IActiveState for the interactor on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalActiveState(IActiveState activeState)
         {
             _activeState = activeState as UnityEngine.Object;
             ActiveState = activeState;
         }
 
+        /// <summary>
+        /// Sets an set of interactable filters for the interactor on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalInteractableFilters(List<IGameObjectFilter> interactableFilters)
         {
             InteractableFilters = interactableFilters;
@@ -765,12 +837,18 @@ namespace Oculus.Interaction
                                     interactableFilter as UnityEngine.Object);
         }
 
+        /// <summary>
+        /// Sets a candidate tiebreaker for the interactor on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalCandidateTiebreaker(IComparer<TInteractable> candidateTiebreaker)
         {
             _candidateTiebreaker = candidateTiebreaker as UnityEngine.Object;
             CandidateTiebreaker = candidateTiebreaker;
         }
 
+        /// <summary>
+        /// Sets data for the interactor on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalData(object data)
         {
             _data = data as UnityEngine.Object;

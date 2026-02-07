@@ -335,6 +335,16 @@ namespace Oculus.Interaction.Input
         {
             _useLayer = useLayer;
         }
+        
+        public void InjectMask(HandFingerJointFlags mask)
+        {
+            _mask = mask;
+        }
+        
+        public void InjectJointsRadiusFeature(JointsRadiusFeature jointsRadiusFeature)
+        {
+            _jointsRadiusFeature = jointsRadiusFeature;
+        }
 
         #endregion
     }

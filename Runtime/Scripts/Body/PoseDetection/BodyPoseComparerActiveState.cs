@@ -27,6 +27,8 @@ namespace Oculus.Interaction.Body.PoseDetection
 {
     /// <summary>
     /// Compares a user-provided set of joints between two Body Poses.
+    /// You can select which joints to monitor and what the maximum angle delta between each joint should be.
+    /// If all joints are within this maximum range, the IActiveState becomes Active.
     /// </summary>
     public class BodyPoseComparerActiveState :
         MonoBehaviour, IActiveState, ITimeConsumer
@@ -63,16 +65,25 @@ namespace Oculus.Interaction.Body.PoseDetection
             public float Width = 4f;
         }
 
+        /// <summary>
+        /// The first body pose to compare.
+        /// </summary>
         [Tooltip("The first body pose to compare.")]
         [SerializeField, Interface(typeof(IBodyPose))]
         private UnityEngine.Object _poseA;
         private IBodyPose PoseA;
 
+        /// <summary>
+        /// The second body pose to compare.
+        /// </summary>
         [Tooltip("The second body pose to compare.")]
         [SerializeField, Interface(typeof(IBodyPose))]
         private UnityEngine.Object _poseB;
         private IBodyPose PoseB;
 
+        /// <summary>
+        /// A list of JointComparerConfigs which contains the parameters to test.
+        /// </summary>
         [SerializeField]
         private List<JointComparerConfig> _configs =
             new List<JointComparerConfig>()
@@ -80,6 +91,9 @@ namespace Oculus.Interaction.Body.PoseDetection
                 new JointComparerConfig()
             };
 
+        /// <summary>
+        /// A new state must be maintaned for at least this many seconds before the Active property changes.
+        /// </summary>
         [Tooltip("A new state must be maintaned for at least this " +
             "many seconds before the Active property changes.")]
         [SerializeField]

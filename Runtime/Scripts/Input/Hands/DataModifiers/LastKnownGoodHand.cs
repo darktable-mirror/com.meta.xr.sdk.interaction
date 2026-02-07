@@ -20,6 +20,9 @@
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Passes only the last known good hand data down the modifier chain. If the data it’s fed becomes invalid for any reason (tracking lost, low tracking quality), it maintains the last valid hand data.
+    /// </summary>
     public class LastKnownGoodHand : Hand
     {
         private readonly HandDataAsset _lastState = new HandDataAsset();

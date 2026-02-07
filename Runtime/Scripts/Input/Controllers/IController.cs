@@ -23,14 +23,18 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// The primary interface through which Controller data is accessed. Components consuming controller data should prefer to do so through this interface rather than the concrete Controller.
+    /// </summary>
     public interface IController
     {
         Handedness Handedness { get; }
+        float Scale { get; }
         bool IsConnected { get; }
         bool IsPoseValid { get; }
         bool TryGetPose(out Pose pose);
         bool TryGetPointerPose(out Pose pose);
-        float Scale { get; }
+        ControllerInput ControllerInput { get; }
         bool IsButtonUsageAnyActive(ControllerButtonUsage buttonUsage);
         bool IsButtonUsageAllActive(ControllerButtonUsage buttonUsage);
         event Action WhenUpdated;

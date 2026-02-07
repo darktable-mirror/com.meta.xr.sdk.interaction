@@ -24,6 +24,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// A group of IActiveStates that are evaluated with a given logical operator.
+    /// </summary>
     public class ActiveStateGroup : MonoBehaviour, IActiveState
     {
         public enum ActiveStateGroupLogicOperator
@@ -33,11 +36,17 @@ namespace Oculus.Interaction
             XOR = 2
         }
 
+        /// <summary>
+        /// The logic operator will be applied to these IActiveStates.
+        /// </summary>
         [Tooltip("The logic operator will be applied to these IActiveStates.")]
         [SerializeField, Interface(typeof(IActiveState))]
         private List<UnityEngine.Object> _activeStates;
         private List<IActiveState> ActiveStates;
 
+        /// <summary>
+        /// IActiveStates will have this boolean logic operator applied.
+        /// </summary>
         [Tooltip("IActiveStates will have this boolean logic operator applied.")]
         [SerializeField]
         private ActiveStateGroupLogicOperator _logicOperator = ActiveStateGroupLogicOperator.AND;

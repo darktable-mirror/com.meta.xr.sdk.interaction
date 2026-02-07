@@ -35,10 +35,18 @@ namespace Oculus.Interaction.HandGrab
     public class HandGrabUseInteractor : Interactor<HandGrabUseInteractor, HandGrabUseInteractable>
         , IHandGrabState
     {
+        /// <summary>
+        /// The hand to use.
+        /// </summary>
+        [Tooltip("The hand to use.")]
         [SerializeField, Optional, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        /// <summary>
+        /// API that gets the finger use strength.
+        /// </summary>
+        [Tooltip("API that gets the finger use strength.")]
         [SerializeField, Interface(typeof(IFingerUseAPI))]
         private UnityEngine.Object _useAPI;
         public IFingerUseAPI UseAPI { get; private set; }
@@ -79,6 +87,7 @@ namespace Oculus.Interaction.HandGrab
             base.Awake();
             Hand = _hand as IHand;
             UseAPI = _useAPI as IFingerUseAPI;
+            _nativeId = 0x4847726162557365;
         }
 
         protected override void Start()
@@ -236,6 +245,9 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
+        /// <summary>
+        /// Returns the fingers that are currently grabbing.
+        /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
             return _fingersInUse;
@@ -269,17 +281,26 @@ namespace Oculus.Interaction.HandGrab
 
         #region Inject
 
+        /// <summary>
+        /// Adds all required scripts for a <cref="HandGrabUseInteractor" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllHandGrabUseInteractor(IFingerUseAPI useApi)
         {
             InjectUseApi(useApi);
         }
 
+        /// <summary>
+        /// Adds an <cref="IFingerUseAPI" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectUseApi(IFingerUseAPI useApi)
         {
             _useAPI = useApi as UnityEngine.Object;
             UseAPI = useApi;
         }
 
+        /// <summary>
+        /// Adds an <cref="IHand" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;

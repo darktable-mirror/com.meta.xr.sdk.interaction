@@ -20,7 +20,6 @@
 
 using System;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Input
 {
@@ -49,6 +48,8 @@ namespace Oculus.Interaction.Input
         public bool IsConnected => Controller.IsConnected;
 
         public bool IsPoseValid => Controller.IsPoseValid;
+
+        public ControllerInput ControllerInput => Controller.ControllerInput;
 
         public event Action WhenUpdated
         {

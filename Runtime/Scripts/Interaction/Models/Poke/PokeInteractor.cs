@@ -51,7 +51,9 @@ namespace Oculus.Interaction
             private Dictionary<PokeInteractable, HitInfo> _surfacePatchHitCache;
             private Dictionary<PokeInteractable, HitInfo> _backingSurfaceHitCache;
             private Vector3 _origin;
-
+            /// <summary>
+            /// Detects where the surface was hit.
+            /// </summary>
             public bool GetPatchHit(PokeInteractable interactable, out SurfaceHit hit)
             {
                 if (!_surfacePatchHitCache.ContainsKey(interactable))
@@ -66,6 +68,9 @@ namespace Oculus.Interaction
                 return _surfacePatchHitCache[interactable].IsValid;
             }
 
+            /// <summary>
+            /// Detects where the backstop was hit.
+            /// </summary>
             public bool GetBackingHit(PokeInteractable interactable, out SurfaceHit hit)
             {
                 if (!_backingSurfaceHitCache.ContainsKey(interactable))
@@ -80,12 +85,18 @@ namespace Oculus.Interaction
                 return _backingSurfaceHitCache[interactable].IsValid;
             }
 
+            /// <summary>
+            /// Caches hit information for surfaces that are poked.
+            /// </summary>
             public SurfaceHitCache()
             {
                 _surfacePatchHitCache = new Dictionary<PokeInteractable, HitInfo>();
                 _backingSurfaceHitCache = new Dictionary<PokeInteractable, HitInfo>();
             }
 
+            /// <summary>
+            /// Clears the hit caches.
+            /// </summary>
             public void Reset(Vector3 origin)
             {
                 _origin = origin;
@@ -169,7 +180,7 @@ namespace Oculus.Interaction
             }
         }
 
-        public Action<bool> WhenPassedSurfaceChanged = delegate {};
+        public Action<bool> WhenPassedSurfaceChanged = delegate { };
         private SurfaceHitCache _hitCache;
 
         private Dictionary<PokeInteractable, Matrix4x4> _previousSurfaceTransformMap;
@@ -437,11 +448,18 @@ namespace Oculus.Interaction
 
                         if (normalDistanceEqual)
                         {
-                            if (ComputeCandidateTiebreaker(interactable, closestInteractable) > 0)
+                            // If the tiebreaker prefers the current interactable, then we use it
+                            var comparison = ComputeCandidateTiebreaker(interactable, closestInteractable);
+                            if (comparison > 0)
                             {
                                 closestNormalDistance = normalDistance;
                                 closestTangentDistance = tangentDistance;
                                 closestInteractable = interactable;
+                            }
+
+                            // If the tiebreaker returns anything but zero (equality) then we skip further calculations.
+                            if (comparison != 0)
+                            {
                                 continue;
                             }
                         }
@@ -460,7 +478,7 @@ namespace Oculus.Interaction
                             continue;
                         }
 
-                        if(tangentDistance < closestTangentDistance)
+                        if (tangentDistance < closestTangentDistance)
                         {
                             closestNormalDistance = normalDistance;
                             closestTangentDistance = tangentDistance;
@@ -651,13 +669,24 @@ namespace Oculus.Interaction
                         // If within the equal distance threshold
                         if (normalDistanceEqual)
                         {
-                            // Select this interactable if its tiebreakerscore is highest
-                            if (closestInteractable != null && ComputeCandidateTiebreaker(interactable, closestInteractable) > 0)
+                            // Select this interactable if its tiebreaker score is highest
+                            if (closestInteractable != null)
                             {
-                                closestInteractable = interactable;
-                                closestNormalDistance = normalDistance;
-                                closestTangentDistance = tangentDistance;
-                                continue;
+                                int comparison = ComputeCandidateTiebreaker(interactable, closestInteractable);
+
+                                // If the tiebreaker prefers the current interactable, then we use it
+                                if (comparison > 0)
+                                {
+                                    closestInteractable = interactable;
+                                    closestNormalDistance = normalDistance;
+                                    closestTangentDistance = tangentDistance;
+                                }
+
+                                // If the tiebreaker returns anything but zero (equality) then we skip further calculations.
+                                if (comparison != 0)
+                                {
+                                    continue;
+                                }
                             }
                         }
 
@@ -669,7 +698,7 @@ namespace Oculus.Interaction
 
                         // If normal distance is less than closest normal distance by over closeDistanceThreshold
                         // of the best closest interactable's close distance threshold
-                        if(closestInteractable == null || normalDistance < closestNormalDistance -
+                        if (closestInteractable == null || normalDistance < closestNormalDistance -
                             closestInteractable.CloseDistanceThreshold)
                         {
                             closestInteractable = interactable;
@@ -1042,32 +1071,50 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets all required values for a poke interactor on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllPokeInteractor(Transform pointTransform, float radius = 0.005f)
         {
             InjectPointTransform(pointTransform);
             InjectRadius(radius);
         }
 
+        /// <summary>
+        /// Sets a point transform for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectPointTransform(Transform pointTransform)
         {
             _pointTransform = pointTransform;
         }
 
+        /// <summary>
+        /// Sets a radius for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRadius(float radius)
         {
             _radius = radius;
         }
 
+        /// <summary>
+        /// Sets a touch release threshold for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalTouchReleaseThreshold(float touchReleaseThreshold)
         {
             _touchReleaseThreshold = touchReleaseThreshold;
         }
 
+        /// <summary>
+        /// Sets an equal distance threshold for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalEqualDistanceThreshold(float equalDistanceThreshold)
         {
             _equalDistanceThreshold = equalDistanceThreshold;
         }
 
+        /// <summary>
+        /// Obsolete, replaced by SetTimeProvider().
+        /// </summary>
         [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {

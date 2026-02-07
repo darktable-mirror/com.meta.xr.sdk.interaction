@@ -34,6 +34,10 @@ namespace Oculus.Interaction
         where TInteractor : Interactor<TInteractor, TInteractable>
         where TInteractable : Interactable<TInteractor, TInteractable>, ICollidersRef
     {
+        /// <summary>
+        /// <cref="ConicalFrustum"> used to detect and select objects.
+        /// </summary>
+        [Tooltip("Frustum used to detect and select objects.")]
         [SerializeField]
         private DistantPointDetectorFrustums _detectionFrustums;
         public DistantPointDetectorFrustums DetectionFrustums
@@ -49,6 +53,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// How long you must hover over an object before it's considered a candidate for interaction.
+        /// </summary>
+        [Tooltip("How long you must hover over an object before it's considered a candidate for interaction.")]
         [SerializeField]
         private float _detectionDelay = 0f;
         public float DetectionDelay
@@ -78,7 +86,9 @@ namespace Oculus.Interaction
             }
         }
 
-
+        /// <summary>
+        /// Determines the best available interactable.
+        /// </summary>
         public virtual TInteractable ComputeCandidate(
             InteractableRegistry<TInteractor, TInteractable> registry,
             TInteractor interactor,

@@ -122,6 +122,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Moves the tracked element using the <cref="ISnapPoseDelegate" />.
+        /// </summary>
         public void InteractorHoverUpdated(SnapInteractor interactor)
         {
             if (SnapPoseDelegate != null)
@@ -130,6 +133,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Sets the pose for the interactor.
+        /// <param name="interactor">The SnapInteractor object.</param>
+        /// <param name="result">The resulting pose.</param>
+        /// </summary>
         public bool PoseForInteractor(SnapInteractor interactor, out Pose result)
         {
             if (SnapPoseDelegate != null)
@@ -144,6 +152,11 @@ namespace Oculus.Interaction
             return true;
         }
 
+        /// <summary>
+        /// Generates a movement that when applied will move the interactor from a start to a target pose.
+        /// <param name="from">The starting position of the interactor.</param>
+        /// <param name="interactor">The interactor to move.</param>
+        /// </summary>
         public IMovement GenerateMovement(in Pose from, SnapInteractor interactor)
         {
             if (PoseForInteractor(interactor, out Pose to))
@@ -157,22 +170,35 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+
+        /// <summary>
+        /// Sets all required values for a snap interactable to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllSnapInteractable(Rigidbody rigidbody)
         {
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Sets a Rigidbody on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Sets a movement provider on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalMovementProvider(IMovementProvider provider)
         {
             _movementProvider = provider as UnityEngine.Object;
             MovementProvider = provider;
         }
 
+        /// <summary>
+        /// Sets a snap pose delegate on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalSnapPoseDelegate(ISnapPoseDelegate snapPoseDelegate)
         {
             _snapPoseDelegate = snapPoseDelegate as UnityEngine.Object;

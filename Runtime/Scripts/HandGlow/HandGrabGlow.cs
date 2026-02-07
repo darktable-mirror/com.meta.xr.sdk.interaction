@@ -41,13 +41,13 @@ namespace Oculus.Interaction
         private UnityEngine.Object _handGrabInteractor;
 
         [SerializeField]
+        private HandVisual _handVisual;
+
+        [SerializeField]
         private SkinnedMeshRenderer _handRenderer;
 
         [SerializeField]
         private MaterialPropertyBlockEditor _materialEditor;
-
-        [SerializeField]
-        private HandVisual _handVisual;
 
         [SerializeField]
         private Color _glowColorGrabing;

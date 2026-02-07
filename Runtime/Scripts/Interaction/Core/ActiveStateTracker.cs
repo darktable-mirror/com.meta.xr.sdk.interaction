@@ -20,8 +20,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -36,6 +34,9 @@ namespace Oculus.Interaction
     [DefaultExecutionOrder(1)]
     public class ActiveStateTracker : MonoBehaviour
     {
+        /// <summary>
+        /// The IActiveState to be tracked.
+        /// </summary>
         [Tooltip("The IActiveState to be tracked.")]
         [SerializeField, Interface(typeof(IActiveState))]
         private UnityEngine.Object _activeState;
@@ -43,14 +44,23 @@ namespace Oculus.Interaction
         private IActiveState ActiveState;
 
         [Header("Active state dependents")]
+        /// <summary>
+        /// If true, all children of this object will be included as dependents.
+        /// </summary>
         [SerializeField]
         [Tooltip("If true, all children of this object will be included as dependents.")]
         private bool _includeChildrenAsDependents = false;
 
+        /// <summary>
+        /// Sets the `active` field on whole GameObjects.
+        /// </summary>
         [SerializeField, Optional]
         [Tooltip("Sets the `active` field on whole GameObjects.")]
         private List<GameObject> _gameObjects;
 
+        /// <summary>
+        /// Sets the `enabled` field on individual components.
+        /// </summary>
         [SerializeField, Optional]
         [Tooltip("Sets the `enabled` field on individual components.")]
         private List<MonoBehaviour> _monoBehaviours;

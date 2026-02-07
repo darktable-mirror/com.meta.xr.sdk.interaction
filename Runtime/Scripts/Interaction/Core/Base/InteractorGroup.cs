@@ -450,6 +450,7 @@ namespace Oculus.Interaction
         public void InjectInteractors(List<IInteractor> interactors)
         {
             Interactors = interactors;
+            _interactors = interactors.ConvertAll(i => i as UnityEngine.Object);
         }
 
         public void InjectOptionalActiveState(IActiveState activeState)

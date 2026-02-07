@@ -23,22 +23,39 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Body.PoseDetection
 {
+    /// <summary>
+    /// Debugs each JointComparerConfig in a BodyPoseComparerActiveState.
+    /// Debug spheres are placed at each joint, and will change from Red to Orange to Green to signify the status of each joint (how close the joint is to being within the recognition threshold).
+    /// When all joints are green, the pose recognizer would be Active.
+    /// </summary>
     public class BodyPoseComparerActiveStateDebugVisual : MonoBehaviour
     {
+        /// <summary>
+        /// The PoseComparer to debug.
+        /// </summary>
         [Tooltip("The PoseComparer to debug.")]
         [SerializeField]
         private BodyPoseComparerActiveState _bodyPoseComparer;
 
+        /// <summary>
+        /// Gizmos will be drawn at joint positions of this body pose.
+        /// </summary>
         [Tooltip("Gizmos will be drawn at joint positions of this body pose.")]
         [SerializeField, Interface(typeof(IBodyPose))]
         private UnityEngine.Object _bodyPose;
         private IBodyPose BodyPose;
 
+        /// <summary>
+        /// The root transform of the body skeleton. Debug gizmos will be drawn in the local space of this transform.
+        /// </summary>
         [Tooltip("The root transform of the body skeleton. Debug " +
             "gizmos will be drawn in the local space of this transform.")]
         [SerializeField]
         private Transform _root;
 
+        /// <summary>
+        /// The radius of the debug spheres.
+        /// </summary>
         [Tooltip("The radius of the debug spheres.")]
         [SerializeField, Delayed]
         private float _radius = 0.1f;

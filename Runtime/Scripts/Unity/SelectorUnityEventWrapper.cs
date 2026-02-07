@@ -25,15 +25,27 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Exposes Unity Events that are raised when an <see cref="ISelector"/> selects or unselects.
+    /// </summary>
     public class SelectorUnityEventWrapper : MonoBehaviour
     {
+        /// <summary>
+        /// The <see cref="ISelector"/> this component will listen to.
+        /// </summary>
         [SerializeField, Interface(typeof(ISelector))]
         private UnityEngine.Object _selector;
         private ISelector Selector;
 
+        /// <summary>
+        /// Logic to execute when the selector selects.
+        /// </summary>
         [SerializeField]
         private UnityEvent _whenSelected;
 
+        /// <summary>
+        /// Logic to execute when the selector unselects.
+        /// </summary>
         [SerializeField]
         private UnityEvent _whenUnselected;
 

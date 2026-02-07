@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction.Input;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -115,6 +116,12 @@ namespace Oculus.Interaction
         #endregion
 
         #region Unity Lifecycle
+
+        protected override void Awake()
+        {
+            base.Awake();
+            _nativeId = 0x536e617049746f72;
+        }
 
         protected override void Start()
         {
@@ -374,32 +381,50 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets all required values for a <cref="SnapInteractor" /> on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllSnapInteractor(PointableElement pointableElement, Rigidbody rigidbody)
         {
             InjectPointableElement(pointableElement);
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Sets a <cref="PointableElement" /> on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectPointableElement(PointableElement pointableElement)
         {
             _pointableElement = pointableElement;
         }
 
+        /// <summary>
+        /// Sets a Rigidbody on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Sets a snap point on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalSnapPoseTransform(Transform snapPoint)
         {
             _snapPoseTransform = snapPoint;
         }
 
+        /// <summary>
+        /// Sets a time out interactable on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalTimeOutInteractable(SnapInteractable interactable)
         {
             _timeOutInteractable = interactable;
         }
 
+        /// <summary>
+        /// Sets a timeout on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionaTimeOut(float timeOut)
         {
             _timeOut = timeOut;

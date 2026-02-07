@@ -25,7 +25,7 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Exposes Unity pointer events that broadcast pointer events from an ‹see cref="IPointable"/› component (ex. a poke interactable on a button).
+    /// Exposes Unity pointer events that broadcast pointer events from an <see cref="IPointable"/> component (ex. a poke interactable on a button).
     /// </summary>
     public class PointableUnityEventWrapper : MonoBehaviour
     {

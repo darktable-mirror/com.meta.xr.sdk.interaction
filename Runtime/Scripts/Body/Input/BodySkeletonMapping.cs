@@ -60,12 +60,10 @@ namespace Oculus.Interaction.Body.Input
             return _forwardMap[sourceJointId];
         }
 
-        protected abstract TSourceJointId GetRoot();
-        protected abstract IReadOnlyDictionary<BodyJointId, JointInfo> GetJointMapping();
-
-        public BodySkeletonMapping()
+        protected BodySkeletonMapping(TSourceJointId root,
+            IReadOnlyDictionary<BodyJointId, JointInfo> jointMapping)
         {
-            _tree = new SkeletonTree(GetRoot(), GetJointMapping());
+            _tree = new SkeletonTree(root, jointMapping);
             _joints = new EnumerableHashSet<BodyJointId>(_tree.Nodes.Select(n => n.BodyJointId));
             _forwardMap = _tree.Nodes.ToDictionary((n) => n.SourceJointId, (n) => n.BodyJointId);
             _reverseMap = _tree.Nodes.ToDictionary((n) => n.BodyJointId, (n) => n.SourceJointId);

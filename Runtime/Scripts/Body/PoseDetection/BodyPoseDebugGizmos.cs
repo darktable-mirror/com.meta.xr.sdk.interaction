@@ -24,8 +24,15 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Body.PoseDetection
 {
+    /// <summary>
+    /// Debugs an <cref="IBodyPose" /> by drawing its axises and joints.
+    /// </summary>
     public class BodyPoseDebugGizmos : SkeletonDebugGizmos
     {
+        /// <summary>
+        /// The IBodyPose that will drive the visuals.
+        /// </summary>
+        [Tooltip("The IBodyPose that will drive the visuals.")]
         [SerializeField, Interface(typeof(IBodyPose))]
         private UnityEngine.Object _bodyPose;
         private IBodyPose BodyPose;

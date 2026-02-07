@@ -61,7 +61,22 @@ namespace Oculus.Interaction
         public IList<Transform> Joints => _jointTransforms;
         public Transform Root => _root;
 
-        public bool ForceOffVisibility { get; set; }
+        private bool _forceOffVisibility;
+        public bool ForceOffVisibility
+        {
+            get
+            {
+                return _forceOffVisibility;
+            }
+            set
+            {
+                _forceOffVisibility = value;
+                if(_started)
+                {
+                    UpdateVisibility();
+                }
+            }
+        }
 
         private bool _started = false;
 
@@ -83,7 +98,7 @@ namespace Oculus.Interaction
             {
                 _wristScalePropertyId = Shader.PropertyToID("_WristScale");
             }
-
+            UpdateVisibility();
             this.EndStart(ref _started);
         }
 
@@ -103,7 +118,7 @@ namespace Oculus.Interaction
             }
         }
 
-        public void UpdateSkeleton()
+        private void UpdateVisibility()
         {
             if (!Hand.IsTrackedDataValid)
             {
@@ -111,17 +126,27 @@ namespace Oculus.Interaction
                 {
                     _skinnedMeshRenderer.enabled = false;
                 }
+            }
+            else
+            {
+                if (!IsVisible && !ForceOffVisibility)
+                {
+                    _skinnedMeshRenderer.enabled = true;
+                }
+                else if (IsVisible && ForceOffVisibility)
+                {
+                    _skinnedMeshRenderer.enabled = false;
+                }
+            }
+        }
+
+        public void UpdateSkeleton()
+        {
+            UpdateVisibility();
+            if (!Hand.IsTrackedDataValid)
+            {
                 WhenHandVisualUpdated.Invoke();
                 return;
-            }
-
-            if (!IsVisible && !ForceOffVisibility)
-            {
-                _skinnedMeshRenderer.enabled = true;
-            }
-            else if(IsVisible && ForceOffVisibility)
-            {
-                _skinnedMeshRenderer.enabled = false;
             }
 
             if (_updateRootPose)

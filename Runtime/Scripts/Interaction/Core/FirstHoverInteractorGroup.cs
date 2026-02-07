@@ -109,31 +109,6 @@ namespace Oculus.Interaction
             return false;
         }
 
-        private bool TryReplaceHover()
-        {
-            for (int i = 0; i < Interactors.Count; i++)
-            {
-                IInteractor interactor = Interactors[i];
-                if (interactor.State != InteractorState.Disabled)
-                {
-                    continue;
-                }
-                interactor.Enable();
-                if (interactor.State == InteractorState.Normal)
-                {
-                    interactor.ProcessCandidate();
-                }
-            }
-
-            if (TryHover(_bestInteractorIndex))
-            {
-                return true;
-            }
-
-            DisableAllExcept(_bestInteractor);
-            return false;
-        }
-
         private void HoverAtIndex(int interactorIndex)
         {
             UnsuscribeBestInteractor();
@@ -159,8 +134,13 @@ namespace Oculus.Interaction
                 {
                     return;
                 }
+                this.ProcessCandidate();
+                TryHover(_bestInteractorIndex);
             }
-            State = InteractorState.Normal;
+            if (_bestInteractor == null)
+            {
+                State = InteractorState.Normal;
+            }
         }
 
         public override void Select()
@@ -236,20 +216,6 @@ namespace Oculus.Interaction
                 && _bestInteractor.State == InteractorState.Hover)
             {
                 State = InteractorState.Hover;
-            }
-        }
-
-        public override void Process()
-        {
-            base.Process();
-
-            if (_bestInteractor != null
-                && ShouldUnhover)
-            {
-                if (TryReplaceHover())
-                {
-                    _bestInteractor.Process();
-                }
             }
         }
 

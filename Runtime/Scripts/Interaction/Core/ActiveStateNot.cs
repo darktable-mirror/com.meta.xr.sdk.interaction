@@ -25,6 +25,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Gets the value of an <cref="IActiveState" /> and returns the opposite value.
+    /// </summary>
     public class ActiveStateNot : MonoBehaviour, IActiveState
     {
         [Tooltip("The IActiveState that the NOT operation will be applied to.")]

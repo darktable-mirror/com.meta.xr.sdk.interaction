@@ -181,8 +181,39 @@ namespace Oculus.Interaction.Body.Input
         Body_RightHandLittleDistal = Body_Start + 68,
         [InspectorName("Right Hand/Right Hand Little Tip")]
         Body_RightHandLittleTip = Body_Start + 69,
+
+        [InspectorName("Left Leg/Left Leg Upper")]
+        Body_LeftLegUpper = Body_Start + 70,
+        [InspectorName("Left Leg/Left Leg Lower")]
+        Body_LeftLegLower = Body_Start + 71,
+        [InspectorName("Left Foot/Left Foot Ankle Twist")]
+        Body_LeftFootAnkleTwist = Body_Start + 72,
+        [InspectorName("Left Foot/Left Foot Ankle")]
+        Body_LeftFootAnkle = Body_Start + 73,
+        [InspectorName("Left Foot/Left Foot Subtalar")]
+        Body_LeftFootSubtalar = Body_Start + 74,
+        [InspectorName("Left Foot/Left Foot Transverse")]
+        Body_LeftFootTransverse = Body_Start + 75,
+        [InspectorName("Left Foot/Left Foot Ball")]
+        Body_LeftFootBall = Body_Start + 76,
+
+        [InspectorName("Right Leg/Right Leg Upper")]
+        Body_RightLegUpper = Body_Start + 77,
+        [InspectorName("Right Leg/Right Leg Lower")]
+        Body_RightLegLower = Body_Start + 78,
+        [InspectorName("Right Foot/Right Foot Ankle Twist")]
+        Body_RightFootAnkleTwist = Body_Start + 79,
+        [InspectorName("Right Foot/Right Foot Ankle")]
+        Body_RightFootAnkle = Body_Start + 80,
+        [InspectorName("Right Foot/Right Foot Subtalar")]
+        Body_RightFootSubtalar = Body_Start + 81,
+        [InspectorName("Right Foot/Right Foot Transverse")]
+        Body_RightFootTransverse = Body_Start + 82,
+        [InspectorName("Right Foot/Right Foot Ball")]
+        Body_RightFootBall = Body_Start + 83,
+
         [InspectorName("Body End")]
-        Body_End = Body_Start + 70,
+        Body_End = Body_Start + 84,
     }
 
     public class ReadOnlyBodyJointPoses : IReadOnlyList<Pose>

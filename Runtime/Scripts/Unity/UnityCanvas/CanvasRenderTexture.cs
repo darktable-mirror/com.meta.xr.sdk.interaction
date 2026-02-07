@@ -28,6 +28,10 @@ using UnityEditor;
 
 namespace Oculus.Interaction.UnityCanvas
 {
+    /// <summary>
+    /// A component that, given a Canvas, renders the canvas to a RenderTexture.
+    /// Used in Interaction SDK's curved canvas.
+    /// </summary>
     [DisallowMultipleComponent]
     public class CanvasRenderTexture : MonoBehaviour
     {
@@ -51,10 +55,16 @@ namespace Oculus.Interaction.UnityCanvas
 
         private static readonly Vector2Int DEFAULT_TEXTURE_RES = new Vector2Int(128, 128);
 
+        /// <summary>
+        /// The Unity canvas that will be rendered.
+        /// </summary>
         [Tooltip("The Unity canvas that will be rendered.")]
         [SerializeField]
         private Canvas _canvas;
 
+        /// <summary>
+        /// If you need extra resolution, you can use this as a whole-integer multiplier of the final resolution used to render the texture.
+        /// </summary>
         [Tooltip("If you need extra resolution, you can use this as a whole-integer multiplier " +
             "of the final resolution used to render the texture.")]
         [Range(1, 3)]
@@ -62,27 +72,43 @@ namespace Oculus.Interaction.UnityCanvas
         [SerializeField]
         private int _renderScale = 1;
 
+        /// <summary>
+        /// If set to auto, texture dimensions will take the size of the attached RectTransform into consideration, in addition to the configured pixel-per-unit ratio.
+        /// </summary>
         [Tooltip("If set to auto, texture dimensions will take the size of the attached " +
             "RectTransform into consideration, in addition to the configured pixel-per-unit ratio.")]
         [SerializeField]
         private DriveMode _dimensionsDriveMode = DriveMode.Auto;
 
+        /// <summary>
+        /// The exact pixel resolution of the texture used for interface rendering.
+        /// </summary>
         [Tooltip("The exact pixel resolution of the texture used for interface rendering.")]
         [Delayed]
         [SerializeField]
         private Vector2Int _resolution = DEFAULT_TEXTURE_RES;
 
+        /// <summary>
+        /// Whether or not mip-maps should be auto-generated for the texture. Can help aliasing if the texture can be viewed from many difference distances.
+        /// </summary>
         [Tooltip("Whether or not mip-maps should be auto-generated for the texture. " +
             "Can help aliasing if the texture can be " +
         "viewed from many difference distances.")]
         [SerializeField]
         private bool _generateMipMaps = false;
 
+        /// <summary>
+        /// Pixels per unit ratio used to drive the texture dimensions.
+        /// </summary>
         [Tooltip("Pixels per unit ratio used to drive the texture dimensions.")]
         [SerializeField]
         private int _pixelsPerUnit = 100;
 
         [Header("Rendering Settings")]
+
+        /// <summary>
+        /// The layers to render when the rendering texture is created. All child renderers should be part of this mask.
+        /// </summary>
         [Tooltip("The layers to render when the rendering texture is created. " +
             "All child renderers should be part of this mask.")]
         [SerializeField]

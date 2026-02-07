@@ -27,18 +27,38 @@ using Oculus.Interaction.Grab;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Enables grab for objects within arm's reach that have a <cref="GrabInteractable" />.
+    /// It works with both controllers and hands, but for hands it's better to use <see cref="HandGrabInteractor"/>.
+    /// </summary>
     public class GrabInteractor : PointerInteractor<GrabInteractor, GrabInteractable>, IRigidbodyRef
     {
+        /// <summary>
+        /// The selection mechanism that broadcasts select and release events. For example, a <cref="ControllerSelector" />.
+        /// </summary>
+        [Tooltip("The selection mechanism that broadcasts select and release events. For example, a ControllerSelector.")]
         [SerializeField, Interface(typeof(ISelector))]
         private UnityEngine.Object _selector;
 
+        /// <summary>
+        /// The hand or controller's Rigidbody, which detects interactables.
+        /// </summary>
+        [Tooltip("The hand or controller's Rigidbody, which detects interactables.")]
         [SerializeField]
         private Rigidbody _rigidbody;
         public Rigidbody Rigidbody => _rigidbody;
 
+        /// <summary>
+        /// The center of the grab.
+        /// </summary>
+        [Tooltip("The center of the grab.")]
         [SerializeField, Optional]
         private Transform _grabCenter;
 
+        /// <summary>
+        /// The location where the interactable will move when selected.
+        /// </summary>
+        [Tooltip("The location where the interactable will move when selected.")]
         [SerializeField, Optional]
         private Transform _grabTarget;
 
@@ -46,6 +66,10 @@ namespace Oculus.Interaction
         private Tween _tween;
         private bool _outsideReleaseDist = false;
 
+        /// <summary>
+        /// Determines how the object will move when thrown.
+        /// </summary>
+        [Tooltip("Determines how the object will move when thrown.")]
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
@@ -125,7 +149,9 @@ namespace Oculus.Interaction
             return closestInteractable;
         }
 
-
+        /// <summary>
+        /// Forces the controller to select a certain interactable even if it's not the closest.
+        /// </summary>
         public void ForceSelect(GrabInteractable interactable)
         {
             _isSelectionOverriden = true;
@@ -135,6 +161,9 @@ namespace Oculus.Interaction
             SetComputeShouldUnselectOverride(() => !ReferenceEquals(interactable, SelectedInteractable), false);
         }
 
+        /// <summary>
+        /// Forces the controller to unselect the currently selected interactable.
+        /// </summary>
         public void ForceRelease()
         {
             _isSelectionOverriden = false;
@@ -265,33 +294,52 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+
+        /// <summary>
+        /// Adds a <cref="ISelector"/> and Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllGrabInteractor(ISelector selector, Rigidbody rigidbody)
         {
             InjectSelector(selector);
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Adds an <cref="ISelector"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSelector(ISelector selector)
         {
             _selector = selector as UnityEngine.Object;
             Selector = selector;
         }
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Adds a grab center to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabCenter(Transform grabCenter)
         {
             _grabCenter = grabCenter;
         }
 
+        /// <summary>
+        /// Adds a grab target to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabTarget(Transform grabTarget)
         {
             _grabTarget = grabTarget;
         }
 
+        /// <summary>
+        /// Adds a velocity calculator to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;

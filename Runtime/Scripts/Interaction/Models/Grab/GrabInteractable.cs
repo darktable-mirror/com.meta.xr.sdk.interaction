@@ -22,28 +22,55 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Makes an object grabbable by controllers so long as it's within arm's reach.
+    /// </summary>
     public class GrabInteractable : PointerInteractable<GrabInteractor, GrabInteractable>,
                                       IRigidbodyRef, ICollidersRef
     {
         private Collider[] _colliders;
         public Collider[] Colliders => _colliders;
 
+        /// <summary>
+        /// The Rigidbody of the object.
+        /// </summary>
+        [Tooltip("The Rigidbody of the object.")]
         [SerializeField]
         Rigidbody _rigidbody;
         public Rigidbody Rigidbody => _rigidbody;
 
+        /// <summary>
+        /// An optional origin point for the grab.
+        /// </summary>
+        [Tooltip("An optional origin point for the grab.")]
         [SerializeField, Optional]
         private Transform _grabSource;
 
+        /// <summary>
+        /// If true, use the closest point to the interactor as the grab source.
+        /// </summary>
+        [Tooltip("If true, use the closest point to the interactor as the grab source.")]
         [SerializeField]
         private bool _useClosestPointAsGrabSource;
 
+        /// <summary>
+        ///
+        /// </summary>
+        [Tooltip(" ")]
         [SerializeField]
         private float _releaseDistance = 0f;
 
+        /// <summary>
+        /// Forces a release on all other grabbing interactors when grabbed by a new interactor.
+        /// </summary>
+        [Tooltip("Forces a release on all other grabbing interactors when grabbed by a new interactor.")]
         [SerializeField]
         private bool _resetGrabOnGrabsUpdated = true;
 
+        /// <summary>
+        /// The <cref="PhysicsGrabbable" /> used when you grab the interactable.
+        /// </summary>
+        [Tooltip("The PhysicsGrabbable used when you grab the interactable.")]
         [SerializeField, Optional]
         private PhysicsGrabbable _physicsGrabbable = null;
 
@@ -106,6 +133,10 @@ namespace Oculus.Interaction
             this.EndStart(ref _started);
         }
 
+        /// <summary>
+        /// Determines the position of the grabbed object. This is used as the location from which the object will be grabbed.
+        /// </summary>
+        /// <param name="target">The Transform of the interactor.</param>
         public Pose GetGrabSourceForTarget(Pose target)
         {
             if (_grabSource == null && !_useClosestPointAsGrabSource)
@@ -123,6 +154,9 @@ namespace Oculus.Interaction
             return _grabSource.GetPose();
         }
 
+        /// <summary>
+        /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
+        /// </summary>
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -134,26 +168,41 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllGrabInteractable(Rigidbody rigidbody)
         {
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Adds a grab source to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabSource(Transform grabSource)
         {
             _grabSource = grabSource;
         }
 
+        /// <summary>
+        /// Adds a release distance to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalReleaseDistance(float releaseDistance)
         {
             _releaseDistance = releaseDistance;
         }
 
+        /// <summary>
+        /// Adds a physics grabbable to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {
             _physicsGrabbable = physicsGrabbable;

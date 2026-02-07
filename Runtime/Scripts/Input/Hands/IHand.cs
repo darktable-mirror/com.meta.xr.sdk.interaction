@@ -23,6 +23,9 @@ using System;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// The primary interface through which Hand data is accessed. Components consuming hand data should prefer to do so through this interface rather than the concrete Hand.
+    /// </summary>
     public interface IHand
     {
         Handedness Handedness { get; }

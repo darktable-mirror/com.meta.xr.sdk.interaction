@@ -39,6 +39,15 @@ namespace Oculus.Interaction
         [SerializeField]
         private SyntheticHand _syntheticHand;
 
+        #region Inject
+
+        public void InjectSyntheticHand(SyntheticHand syntheticHand)
+        {
+            _syntheticHand = syntheticHand;
+        }
+
+        #endregion
+
         protected bool _started = false;
 
         protected virtual void Start()

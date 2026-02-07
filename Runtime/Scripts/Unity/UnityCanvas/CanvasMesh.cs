@@ -24,17 +24,29 @@ using UnityEngine.Profiling;
 
 namespace Oculus.Interaction.UnityCanvas
 {
+    /// <summary>
+    /// Dynamically creates and resizes a mesh to fit a Unity canvas. There are two types of CanvasMesh components included in the Interaction SDK, <cref="CanvasCylinder" /> and <cref="CanvasRect" />.
+    /// </summary>
     [DisallowMultipleComponent]
     public abstract class CanvasMesh : MonoBehaviour
     {
+        /// <summary>
+        /// Mesh construction will be driven by this texture.
+        /// </summary>
         [Tooltip("Mesh construction will be driven by this texture.")]
         [SerializeField]
         protected CanvasRenderTexture _canvasRenderTexture;
 
+        /// <summary>
+        /// The mesh filter that will be driven.
+        /// </summary>
         [Tooltip("The mesh filter that will be driven.")]
         [SerializeField]
         protected MeshFilter _meshFilter;
 
+        /// <summary>
+        /// Optional mesh collider that will be driven.
+        /// </summary>
         [Tooltip("Optional mesh collider that will be driven.")]
         [SerializeField, Optional]
         protected MeshCollider _meshCollider = null;

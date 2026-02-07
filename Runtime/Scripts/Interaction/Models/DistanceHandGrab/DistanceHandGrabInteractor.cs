@@ -27,7 +27,7 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// The DistanceHandGrabInteractor allows grabbing DistanceHandGrabInteractables at a distance.
+    /// DistanceHandGrabInteractor lets you grab interactables at a distance with hands.
     /// It operates with HandGrabPoses to specify the final pose of the hand and manipulate the objects
     /// via IMovements in order to attract them, use them at a distance, etc.
     /// The DistanceHandGrabInteractor uses a IDistantCandidateComputer to detect far-away objects.
@@ -36,26 +36,57 @@ namespace Oculus.Interaction.HandGrab
         PointerInteractor<DistanceHandGrabInteractor, DistanceHandGrabInteractable>,
         IHandGrabInteractor, IDistanceInteractor
     {
+        /// <summary>
+        /// The <cref="IHand" /> to use.
+        /// </summary>
+        [Tooltip("The hand to use.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        /// <summary>
+        /// Detects when the hand grab selects or unselects.
+        /// </summary>
+        [Tooltip("Detects when the hand grab selects or unselects.")]
         [SerializeField]
         private HandGrabAPI _handGrabApi;
 
         [Header("Grabbing")]
+
+        /// <summary>
+        /// The grab types to support.
+        /// </summary>
+        [Tooltip("The grab types to support.")]
         [SerializeField]
         private GrabTypeFlags _supportedGrabTypes = GrabTypeFlags.Pinch;
 
+        /// <summary>
+        /// The point on the hand used as the origin of the grab.
+        /// </summary>
+        [Tooltip("The point on the hand used as the origin of the grab.")]
         [SerializeField]
         private Transform _grabOrigin;
 
+        /// <summary>
+        /// Specifies an offset from the wrist that can be used to search for the best HandGrabInteractable available,
+        /// act as a palm grab without a HandPose, and also act as an anchor for attaching the object.
+        /// </summary>
+        [Tooltip("Specifies an offset from the wrist that can be used to search for the best HandGrabInteractable available, act as a palm grab without a HandPose, and also act as an anchor for attaching the object.")]
         [SerializeField, Optional]
         private Transform _gripPoint;
 
+        /// <summary>
+        /// Specifies a moving point at the center of the tips of the currently pinching fingers.
+        /// It's used to align interactables that don’t have a HandPose to the center of the pinch.
+        /// </summary>
+        [Tooltip("Specifies a moving point at the center of the tips of the currently pinching fingers. It's used to align interactables that don’t have a HandPose to the center of the pinch.")]
         [SerializeField, Optional]
         private Transform _pinchPoint;
 
+        /// <summary>
+        /// Determines how the object will move when thrown.
+        /// </summary>
+        [Tooltip("Determines how the object will move when thrown.")]
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
@@ -96,6 +127,9 @@ namespace Oculus.Interaction.HandGrab
         public float WristStrength { get; private set; }
         public Pose WristToGrabPoseOffset { get; private set; }
 
+        /// <summary>
+        /// Returns the fingers that are grabbing the interactable.
+        /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
             return this.GrabbingFingers(SelectedInteractable);
@@ -115,6 +149,7 @@ namespace Oculus.Interaction.HandGrab
             base.Awake();
             Hand = _hand as IHand;
             VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
+            _nativeId = 0x4469737447726162;
         }
 
         protected override void Start()
@@ -348,6 +383,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         #region Inject
+        /// <summary>
+        /// Adds a <cref="DistanceHandGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllDistanceHandGrabInteractor(HandGrabAPI handGrabApi,
             DistantCandidateComputer<DistanceHandGrabInteractor, DistanceHandGrabInteractable> distantCandidateComputer,
             Transform grabOrigin,
@@ -360,43 +398,67 @@ namespace Oculus.Interaction.HandGrab
             InjectSupportedGrabTypes(supportedGrabTypes);
         }
 
+        /// <summary>
+        /// Adds a <cref="HandGrabAPI"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectHandGrabApi(HandGrabAPI handGrabApi)
         {
             _handGrabApi = handGrabApi;
         }
 
+        /// <summary>
+        /// Adds a <cref="DistantCandidateComputer"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectDistantCandidateComputer(
             DistantCandidateComputer<DistanceHandGrabInteractor, DistanceHandGrabInteractable> distantCandidateComputer)
         {
             _distantCandidateComputer = distantCandidateComputer;
         }
 
+        /// <summary>
+        /// Adds an <cref="IHand"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Adds a list of supported grabs to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSupportedGrabTypes(GrabTypeFlags supportedGrabTypes)
         {
             _supportedGrabTypes = supportedGrabTypes;
         }
 
+        /// <summary>
+        /// Adds a grab origin to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectGrabOrigin(Transform grabOrigin)
         {
             _grabOrigin = grabOrigin;
         }
 
+        /// <summary>
+        /// Adds a grip point to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGripPoint(Transform gripPoint)
         {
             _gripPoint = gripPoint;
         }
 
+        /// <summary>
+        /// Adds a pinch point to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalPinchPoint(Transform pinchPoint)
         {
             _pinchPoint = pinchPoint;
         }
 
+        /// <summary>
+        /// Adds a <cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;

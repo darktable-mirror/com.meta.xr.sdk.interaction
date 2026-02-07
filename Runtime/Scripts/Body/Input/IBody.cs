@@ -23,6 +23,9 @@ using System;
 
 namespace Oculus.Interaction.Body.Input
 {
+    /// <summary>
+    /// The primary interface through which Body data is accessed. Components consuming body data should prefer to do so through this interface rather than the concrete Body.
+    /// </summary>
     public interface IBody
     {
         /// <summary>

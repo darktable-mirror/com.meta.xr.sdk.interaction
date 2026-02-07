@@ -23,6 +23,10 @@ using Oculus.Interaction.Body.Input;
 
 namespace Oculus.Interaction.Body
 {
+    /// <summary>
+    /// Draws debug gizmos representing a body skeleton. Joint positions, bones, and joint orientation axes can be drawn, and the visuals sized and colorized as desired.
+    /// There are two implementations of SkeletonDebugGizmos provided, <cref="BodyDebugGizmos" /> and <cref="BodyPoseDebugGizmos" />.
+    /// </summary>
     public abstract class SkeletonDebugGizmos : MonoBehaviour
     {
         [System.Flags]
@@ -33,19 +37,31 @@ namespace Oculus.Interaction.Body
             Bones = 1 << 2,
         }
 
+        /// <summary>
+        /// Which components of the skeleton will be visualized.
+        /// </summary>
         [Tooltip("Which components of the skeleton will be visualized.")]
         [SerializeField]
         private VisibilityFlags _visibility =
             VisibilityFlags.Axes | VisibilityFlags.Joints;
 
+        /// <summary>
+        /// The joint debug spheres will be drawn with this color.
+        /// </summary>
         [Tooltip("The joint debug spheres will be drawn with this color.")]
         [SerializeField]
         private Color _jointColor = Color.white;
 
+        /// <summary>
+        /// The bone connecting lines will be drawn with this color.
+        /// </summary>
         [Tooltip("The bone connecting lines will be drawn with this color.")]
         [SerializeField]
         private Color _boneColor = Color.gray;
 
+        /// <summary>
+        /// The radius of the joint spheres and the thickness of the bone and axis lines.
+        /// </summary>
         [Tooltip("The radius of the joint spheres and the thickness " +
             "of the bone and axis lines.")]
         [SerializeField]

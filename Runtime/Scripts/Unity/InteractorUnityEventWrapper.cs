@@ -26,12 +26,12 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Exposes Unity events that broadcast state changes from an ‹see cref="IInteractorView"/› (an Interactor).
+    /// Exposes Unity events that broadcast state changes from an <see cref="IInteractorView"/> (an Interactor).
     /// </summary>
     public class InteractorUnityEventWrapper : MonoBehaviour
     {
         /// <summary>
-        /// The ‹see cref="IInteractorView"/› (Interactor) component to wrap.
+        /// The <see cref="IInteractorView"/> (Interactor) component to wrap.
         /// </summary>
         [Tooltip("The IInteractorView (Interactor) component to wrap.")]
         [SerializeField, Interface(typeof(IInteractorView))]

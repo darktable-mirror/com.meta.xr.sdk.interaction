@@ -25,7 +25,7 @@ namespace Oculus.Interaction
     /// <summary>
     /// This interactor group allows only the highest-priority interactor
     /// to be the one in Hover, and the rest will be disabled until it
-    /// unhovers or it is superseed but a higher-priority interactor.
+    /// unhovers or it is superseded by a higher-priority interactor.
     /// </summary>
     public class BestHoverInteractorGroup : InteractorGroup
     {
@@ -99,34 +99,31 @@ namespace Oculus.Interaction
             }
         }
 
-        private bool TryHover(int betterThan = -1, int skipIndex = -1)
+        private bool TryHover(int betterThan = -1)
         {
             if (TryGetBestCandidateIndex(IsNormalAndShouldHoverPredicate,
-                out int interactorIndex, betterThan, skipIndex))
+                out int interactorIndex, betterThan, betterThan))
             {
-                HoverAtIndex(interactorIndex);
-                return true;
+                if (_bestInteractor != null)
+                {
+                    _bestInteractor.Unhover();
+                }
+                if (_bestInteractor == null
+                    || CompareCandidates(_bestInteractorIndex, interactorIndex) > 0)
+                {
+                    HoverAtIndex(interactorIndex);
+                    return true;
+                }
             }
             return false;
         }
 
-        private bool TryReplaceHover(int betterThan)
+        private bool TryReplaceHover()
         {
-            for (int i = 0; i < Interactors.Count; i++)
-            {
-                IInteractor interactor = Interactors[i];
-                if (interactor.State != InteractorState.Disabled)
-                {
-                    continue;
-                }
-                interactor.Enable();
-                if (interactor.State == InteractorState.Normal)
-                {
-                    interactor.ProcessCandidate();
-                }
-            }
+            EnableAllExcept(_bestInteractor);
+            this.ProcessCandidate();
 
-            if (TryHover(betterThan, _bestInteractorIndex))
+            if (TryHover(_bestInteractorIndex))
             {
                 return true;
             }
@@ -246,7 +243,7 @@ namespace Oculus.Interaction
             if (_bestInteractor != null
                && State == InteractorState.Hover)
             {
-                if (TryReplaceHover(_bestInteractorIndex))
+                if (TryReplaceHover())
                 {
                     _bestInteractor.Process();
                 }

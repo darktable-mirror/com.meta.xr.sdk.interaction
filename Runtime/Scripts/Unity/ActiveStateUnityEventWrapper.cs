@@ -24,19 +24,28 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Exposes Unity events that broadcast state changes from an ‹see cref="IActiveState"/› component.
+    /// Exposes Unity events that broadcast state changes from an <see cref="IActiveState"/> component.
     /// </summary>
     public class ActiveStateUnityEventWrapper : MonoBehaviour
     {
+        /// <summary>
+        /// Events will fire based on the state of this IActiveState.
+        /// </summary>
         [Tooltip("Events will fire based on the state of this IActiveState.")]
         [SerializeField, Interface(typeof(IActiveState))]
         private UnityEngine.Object _activeState;
         private IActiveState ActiveState;
 
+        /// <summary>
+        /// This event will be fired when the provided IActiveState becomes active.
+        /// </summary>
         [Tooltip("This event will be fired when the provided IActiveState becomes active.")]
         [SerializeField]
         private UnityEvent _whenActivated;
 
+        /// <summary>
+        /// This event will be fired when the provided IActiveState becomes inactive.
+        /// </summary>
         [Tooltip("This event will be fired when the provided IActiveState becomes inactive.")]
         [SerializeField]
         private UnityEvent _whenDeactivated;
@@ -44,8 +53,11 @@ namespace Oculus.Interaction
         public UnityEvent WhenActivated => _whenActivated;
         public UnityEvent WhenDeactivated => _whenDeactivated;
 
+        /// <summary>
+        /// If true, the corresponding event will be fired at the beginning of Update.
+        /// </summary>
         [SerializeField]
-        [Tooltip("If true, the corresponding event will be fired at the beginning of Update")]
+        [Tooltip("If true, the corresponding event will be fired at the beginning of Update.")]
         private bool _emitOnFirstUpdate = true;
 
         private bool _emittedOnFirstUpdate = false;

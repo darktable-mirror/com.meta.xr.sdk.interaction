@@ -20,15 +20,16 @@
 
 using System;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
     public class PhysicsGrabbable : MonoBehaviour
     {
-        [SerializeField]
-        private Grabbable _grabbable;
+        [SerializeField, Interface(typeof(IPointable))]
+        [FormerlySerializedAs("_grabbable")]
+        private UnityEngine.Object _pointable;
+        private IPointable Pointable { get; set; }
 
         [SerializeField]
         private Rigidbody _rigidbody;
@@ -37,27 +38,33 @@ namespace Oculus.Interaction
         [Tooltip("If enabled, the object's mass will scale appropriately as the scale of the object changes.")]
         private bool _scaleMassWithSize = true;
 
-        private bool _savedIsKinematicState = false;
-        private bool _isBeingTransformed = false;
         private Vector3 _initialScale;
         private bool _hasPendingForce;
         private Vector3 _linearVelocity;
         private Vector3 _angularVelocity;
+        private int _selectorsCount = 0;
 
         protected bool _started = false;
 
         public event Action<Vector3, Vector3> WhenVelocitiesApplied = delegate { };
 
+        #region Editor
         private void Reset()
         {
-            _grabbable = this.GetComponent<Grabbable>();
+            _pointable = this.GetComponent<IPointable>() as UnityEngine.Object;
             _rigidbody = this.GetComponent<Rigidbody>();
+        }
+        #endregion
+
+        protected virtual void Awake()
+        {
+            Pointable = _pointable as IPointable;
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertField(_grabbable, nameof(_grabbable));
+            this.AssertAspect(Pointable, nameof(_pointable));
             this.AssertField(_rigidbody, nameof(_rigidbody));
             this.EndStart(ref _started);
         }
@@ -66,7 +73,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                _grabbable.WhenPointerEventRaised += HandlePointerEventRaised;
+                Pointable.WhenPointerEventRaised += HandlePointerEventRaised;
             }
         }
 
@@ -74,7 +81,13 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                _grabbable.WhenPointerEventRaised -= HandlePointerEventRaised;
+                Pointable.WhenPointerEventRaised -= HandlePointerEventRaised;
+
+                if (_selectorsCount != 0)
+                {
+                    _selectorsCount = 0;
+                    ReenablePhysics();
+                }
             }
         }
 
@@ -83,32 +96,40 @@ namespace Oculus.Interaction
             switch (evt.Type)
             {
                 case PointerEventType.Select:
-                    if (_grabbable.SelectingPointsCount == 1 && !_isBeingTransformed)
-                    {
-                        DisablePhysics();
-                    }
-
+                    AddSelection();
                     break;
+                case PointerEventType.Cancel:
                 case PointerEventType.Unselect:
-                    if (_grabbable.SelectingPointsCount == 0)
-                    {
-                        ReenablePhysics();
-                    }
-
+                    RemoveSelection();
                     break;
             }
         }
 
+        private void AddSelection()
+        {
+            if (_selectorsCount++ == 0)
+            {
+                DisablePhysics();
+            }
+        }
+
+        private void RemoveSelection()
+        {
+            if (--_selectorsCount == 0)
+            {
+                ReenablePhysics();
+            }
+            _selectorsCount = Mathf.Max(0, _selectorsCount);
+        }
+
         private void DisablePhysics()
         {
-            _isBeingTransformed = true;
             CachePhysicsState();
-            _rigidbody.isKinematic = true;
+            _rigidbody.LockKinematic();
         }
 
         private void ReenablePhysics()
         {
-            _isBeingTransformed = false;
             // update the mass based on the scale change
             if (_scaleMassWithSize)
             {
@@ -122,7 +143,7 @@ namespace Oculus.Interaction
             }
 
             // revert the original kinematic state
-            _rigidbody.isKinematic = _savedIsKinematicState;
+            _rigidbody.UnlockKinematic();
         }
 
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
@@ -145,21 +166,34 @@ namespace Oculus.Interaction
 
         private void CachePhysicsState()
         {
-            _savedIsKinematicState = _rigidbody.isKinematic;
             _initialScale = _rigidbody.transform.localScale;
         }
 
         #region Inject
 
-        public void InjectAllPhysicsGrabbable(Grabbable grabbable, Rigidbody rigidbody)
+        public void InjectAllPhysicsGrabbable(IPointable pointable, Rigidbody rigidbody)
         {
-            InjectGrabbable(grabbable);
+            InjectPointable(pointable);
             InjectRigidbody(rigidbody);
         }
 
+        [Obsolete("Use " + nameof(InjectAllPhysicsGrabbable) + " with " + nameof(IPointable) + " instead")]
+        public void InjectAllPhysicsGrabbable(Grabbable grabbable, Rigidbody rigidbody)
+        {
+            InjectPointable(grabbable);
+            InjectRigidbody(rigidbody);
+        }
+
+        [Obsolete("Use " + nameof(InjectPointable) + " instead")]
         public void InjectGrabbable(Grabbable grabbable)
         {
-            _grabbable = grabbable;
+            InjectPointable(grabbable);
+        }
+
+        public void InjectPointable(IPointable pointable)
+        {
+            _pointable = pointable as UnityEngine.Object;
+            Pointable = pointable;
         }
 
         public void InjectRigidbody(Rigidbody rigidbody)

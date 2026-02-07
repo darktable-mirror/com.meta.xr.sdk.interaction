@@ -109,7 +109,7 @@ namespace Oculus.Interaction.Input
         MiddleTip = 1 << HandJointId.HandMiddleTip,
         RingTip = 1 << HandJointId.HandRingTip,
         PinkyTip = 1 << HandJointId.HandPinkyTip,
-        All = (1 << HandJointId.HandEnd)-1
+        All = (1 << HandJointId.HandEnd) - 1
     }
 
     public static class HandFingerUtils
@@ -388,5 +388,42 @@ namespace Oculus.Interaction.Input
                 pose = new Pose(-joint.pose.position, joint.pose.rotation)
             }).ToArray()
         };
+
+
+        public static HandSkeleton FromJoints(Transform[] joints)
+        {
+            HandSkeletonJoint[] skeletonJoints = new HandSkeletonJoint[joints.Length];
+
+            for (int i = 0; i < joints.Length; i++)
+            {
+                Pose jointPose = joints[i].GetPose(Space.Self);
+                skeletonJoints[i] = new HandSkeletonJoint()
+                {
+                    parent = FindParentIndex(i),
+                    pose = jointPose
+                };
+
+            }
+
+            HandSkeleton skeleton = new HandSkeleton() { joints = skeletonJoints };
+            return skeleton;
+
+            int FindParentIndex(int jointIndex)
+            {
+                Transform parent = joints[jointIndex].parent;
+                if (parent == null)
+                {
+                    return -1;
+                }
+                for (int i = jointIndex - 1; i >= 0; i--)
+                {
+                    if (joints[i] == parent)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+        }
     }
 }

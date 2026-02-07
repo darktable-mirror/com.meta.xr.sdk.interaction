@@ -24,7 +24,7 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Associate a primary interactor to this GameObject
+    /// Associates a primary interactor to this GameObject.
     /// </summary>
     public class SecondaryInteractorConnection : MonoBehaviour
     {

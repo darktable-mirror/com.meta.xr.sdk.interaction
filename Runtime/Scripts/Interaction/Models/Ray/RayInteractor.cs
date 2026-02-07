@@ -27,15 +27,30 @@ namespace Oculus.Interaction
 {
     public class RayInteractor : PointerInteractor<RayInteractor, RayInteractable>
     {
+        /// <summary>
+        /// A selector indicating when the Interactor should select or unselect the best available interactable.
+        /// </summary>
+        [Tooltip("A selector indicating when the Interactor should select or unselect the best available interactable.")]
         [SerializeField, Interface(typeof(ISelector))]
         private UnityEngine.Object _selector;
 
+        /// <summary>
+        /// The origin of the ray.
+        /// </summary>
+        [Tooltip("The origin of the ray.")]
         [SerializeField]
         private Transform _rayOrigin;
 
+        /// <summary>
+        /// The maximum length of the ray.
+        /// </summary>
+        [Tooltip("The maximum length of the ray.")]
         [SerializeField]
         private float _maxRayLength = 5f;
 
+        /// <summary>
+        /// (Meters, World) The threshold below which distances to a surface are treated as equal for the purposes of ranking.
+        /// </summary>
         [SerializeField]
         [Tooltip("(Meters, World) The threshold below which distances to a surface " +
                  "are treated as equal for the purposes of ranking.")]
@@ -218,23 +233,35 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+        /// <summary>
+        /// Sets all required values for a <cref="RayInteractor" /> on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllRayInteractor(ISelector selector, Transform rayOrigin)
         {
             InjectSelector(selector);
             InjectRayOrigin(rayOrigin);
         }
 
+        /// <summary>
+        /// Sets a selector for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSelector(ISelector selector)
         {
             _selector = selector as UnityEngine.Object;
             Selector = selector;
         }
 
+        /// <summary>
+        /// Sets a ray origin for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRayOrigin(Transform rayOrigin)
         {
             _rayOrigin = rayOrigin;
         }
 
+        /// <summary>
+        /// Sets an equal distance threshold for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalEqualDistanceThreshold(float equalDistanceThreshold)
         {
             _equalDistanceThreshold = equalDistanceThreshold;

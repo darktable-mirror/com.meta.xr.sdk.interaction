@@ -110,6 +110,7 @@ namespace Oculus.Interaction
             OpenHand = _openHand as IHand;
             HandSphereMap = _handSphereMap as IHandSphereMap;
             GrabPrerequisite = _grabPrerequisite as IActiveState;
+            _nativeId = 0x546f756368477262;
 
             _fingerStatuses = new FingerStatus[Constants.NUM_FINGERS];
             for (int i = 0; i < Constants.NUM_FINGERS; i++)

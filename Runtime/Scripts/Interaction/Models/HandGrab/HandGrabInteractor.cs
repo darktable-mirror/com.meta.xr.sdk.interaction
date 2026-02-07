@@ -28,24 +28,39 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// The HandGrabInteractor allows grabbing objects while having the hands snap to them
-    /// adopting a previously authored HandPose.
-    /// There are different snapping techniques available, and when None is selected it will
-    /// behave as a normal GrabInteractor.
+    /// Enables hand grab for objects within arm's reach that have a <cref="GrabInteractable" />.
+    /// When grabbing an object, the hands visually snap to any <cref="HandPose" /> you've provided.
+    /// To enable grab for controllers, use <see cref="GrabInteractor"/>.
     /// </summary>
     public class HandGrabInteractor : PointerInteractor<HandGrabInteractor, HandGrabInteractable>,
         IHandGrabInteractor, IRigidbodyRef
     {
+        /// <summary>
+        /// The <cref="IHand"> that should be able to grab.
+        /// </summary>
+        [Tooltip("The IHand that should be able to grab.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        /// <summary>
+        /// The hand's Rigidbody, which detects interactables.
+        /// </summary>
+        [Tooltip("The hand's Rigidbody, which detects interactables.")]
         [SerializeField]
         private Rigidbody _rigidbody;
 
+        /// <summary>
+        /// Detects when the hand grab selects or unselects.
+        /// </summary>
+        [Tooltip("Detects when the hand grab selects or unselects.")]
         [SerializeField]
         private HandGrabAPI _handGrabApi;
 
+        /// <summary>
+        /// The grab types that the hand supports.
+        /// </summary>
+        [Tooltip("The grab types that the hand supports.")]
         [SerializeField]
         private GrabTypeFlags _supportedGrabTypes = GrabTypeFlags.All;
 
@@ -69,18 +84,49 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
+        /// <summary>
+        /// The origin of the grab.
+        /// </summary>
+        [Tooltip("The origin of the grab.")]
         [SerializeField]
         private Transform _grabOrigin;
 
+        /// <summary>
+        /// Specifies an offset from the wrist that can be used to search for the best HandGrabInteractable available,
+        /// act as a palm grab without a HandPose, and also act as an anchor for attaching the object.
+        /// </summary>
+        [Tooltip("Specifies an offset from the wrist that can be used to search for the best "
+        + "HandGrabInteractable available, act as a palm grab without a HandPose, and " +
+        "also act as an anchor for attaching the object.")]
         [SerializeField, Optional]
         private Transform _gripPoint;
+
+        /// <summary>
+        /// Collider used to detect a palm grab.
+        /// </summary>
+        [Tooltip("Collider used to detect a palm grab.")]
         [SerializeField, Optional]
         private SphereCollider _gripCollider;
+
+        /// <summary>
+        /// Specifies a moving point at the center of the tips of the currently pinching fingers.
+        /// It's used to align interactables that don’t have a HandPose to the center of the pinch.
+        /// </summary>
+        [Tooltip("Specifies a moving point at the center of the tips of the currently pinching fingers. It's used to align interactables that don’t have a HandPose to the center of the pinch.")]
         [SerializeField, Optional]
         private Transform _pinchPoint;
+
+        /// <summary>
+        /// Collider used to detect a pinch grab.
+        /// </summary>
+        [Tooltip("Collider used to detect a pinch grab.")]
         [SerializeField, Optional]
         private SphereCollider _pinchCollider;
 
+        /// <summary>
+        /// Determines how the object will move when thrown.
+        /// </summary>
+        [Tooltip("Determines how the object will move when thrown.")]
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
@@ -114,6 +160,9 @@ namespace Oculus.Interaction.HandGrab
         public float WristStrength { get; private set; }
         public Pose WristToGrabPoseOffset { get; private set; }
 
+        /// <summary>
+        /// Returns the fingers that are grabbing the interactable.
+        /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
             return this.GrabbingFingers(SelectedInteractable);
@@ -224,7 +273,6 @@ namespace Oculus.Interaction.HandGrab
         /// by another hand grabbing the object. In those cases it will come out of the release
         /// state once the grabbing gesture properly finishes.
         /// </summary>
-        /// <param name="interactable">The selected item</param>
         protected override void DoSelectUpdate()
         {
             _handGrabShouldUnselect = false;
@@ -276,7 +324,7 @@ namespace Oculus.Interaction.HandGrab
 
         /// <summary>
         /// When releasing an active interactable, calculate the releasing point in similar
-        /// fashion to  InteractableSelected
+        /// fashion to  InteractableSelected.
         /// </summary>
         /// <param name="interactable">The released interactable</param>
         protected override void InteractableUnselected(HandGrabInteractable interactable)
@@ -431,10 +479,10 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Enforces selection on the passed interactable. Grabbing it in the next interaction iteration.
+        /// Forces the interactor to select the passed interactable, which will be grabbed in the next interaction iteration.
         /// </summary>
-        /// <param name="interactable">The interactable to grab</param>
-        /// <param name="allowManualRelease">If false, the interactable can only be released by calling ForceRelease</param>
+        /// <param name="interactable">The interactable to grab.</param>
+        /// <param name="allowManualRelease">If false, the interactable can only be released by calling ForceRelease.</param>
         public void ForceSelect(HandGrabInteractable interactable, bool allowManualRelease = false)
         {
             _selectedInteractableOverride = interactable;
@@ -446,7 +494,7 @@ namespace Oculus.Interaction.HandGrab
             }
         }
         /// <summary>
-        /// Enforces deselection in the currently grabbed interactable (if any)
+        /// Forces the interactor to deselect the currently grabbed interactable (if any).
         /// </summary>
         public void ForceRelease()
         {
@@ -544,6 +592,9 @@ namespace Oculus.Interaction.HandGrab
 
         #region Inject
 
+        /// <summary>
+        /// Adds everything contained in <cref="HandGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllHandGrabInteractor(HandGrabAPI handGrabApi,
             Transform grabOrigin,
             IHand hand, Rigidbody rigidbody, GrabTypeFlags supportedGrabTypes)
@@ -555,52 +606,82 @@ namespace Oculus.Interaction.HandGrab
             InjectSupportedGrabTypes(supportedGrabTypes);
         }
 
+        /// <summary>
+        /// Adds a <cref="HandGrabAPI" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectHandGrabApi(HandGrabAPI handGrabAPI)
         {
             _handGrabApi = handGrabAPI;
         }
 
+        /// <summary>
+        /// Adds a <cref="IHand" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Adds a list of <cref="GrabTypeFlags" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSupportedGrabTypes(GrabTypeFlags supportedGrabTypes)
         {
             _supportedGrabTypes = supportedGrabTypes;
         }
 
+        /// <summary>
+        /// Adds a grab origin to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectGrabOrigin(Transform grabOrigin)
         {
             _grabOrigin = grabOrigin;
         }
 
+        /// <summary>
+        /// Adds a grip point to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGripPoint(Transform gripPoint)
         {
             _gripPoint = gripPoint;
         }
 
+        /// <summary>
+        /// Adds a grip collider to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGripCollider(SphereCollider gripCollider)
         {
             _gripCollider = gripCollider;
         }
 
+        /// <summary>
+        /// Adds a pinch point to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalPinchPoint(Transform pinchPoint)
         {
             _pinchPoint = pinchPoint;
         }
 
+        /// <summary>
+        /// Adds a pinch collider to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalPinchCollider(SphereCollider pinchCollider)
         {
             _pinchCollider = pinchCollider;
         }
 
+        /// <summary>
+        /// Adds a velocity calculator to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;

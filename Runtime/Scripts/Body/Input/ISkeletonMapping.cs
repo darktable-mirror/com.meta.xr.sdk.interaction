@@ -22,6 +22,9 @@ using Oculus.Interaction.Collections;
 
 namespace Oculus.Interaction.Body.Input
 {
+    /// <summary>
+    /// Represents the different joint sets and parent/child relationships found in different skeletons.
+    /// </summary>
     public interface ISkeletonMapping
     {
         /// <summary>

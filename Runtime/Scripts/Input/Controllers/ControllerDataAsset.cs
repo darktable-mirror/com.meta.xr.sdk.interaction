@@ -29,25 +29,27 @@ namespace Oculus.Interaction.Input
         public bool IsDataValid;
         public bool IsConnected;
         public bool IsTracked;
-        public ControllerButtonUsage ButtonUsageMask;
+        public ControllerInput Input;
         public Pose RootPose;
         public PoseOrigin RootPoseOrigin;
         public Pose PointerPose;
         public PoseOrigin PointerPoseOrigin;
+        public bool IsDominantHand;
         public ControllerDataSourceConfig Config;
 
-            public void CopyFrom(ControllerDataAsset source)
+        public void CopyFrom(ControllerDataAsset source)
         {
             IsDataValid = source.IsDataValid;
             IsConnected = source.IsConnected;
             IsTracked = source.IsTracked;
+            IsDominantHand = source.IsDominantHand;
             Config = source.Config;
             CopyPosesAndStateFrom(source);
         }
 
         public void CopyPosesAndStateFrom(ControllerDataAsset source)
         {
-            ButtonUsageMask = source.ButtonUsageMask;
+            Input = source.Input;
             RootPose = source.RootPose;
             RootPoseOrigin = source.RootPoseOrigin;
             PointerPose = source.PointerPose;

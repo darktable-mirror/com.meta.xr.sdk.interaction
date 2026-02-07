@@ -48,9 +48,16 @@ namespace Oculus.Interaction
         [SerializeField]
         private int _maxInteractors = -1;
 
+        /// <summary>
+        /// The max selecting Interactors that this Interactable can
+        /// have acting on it. -1 signifies no limit (can have any number of Interactors).
+        /// </summary>
         [SerializeField]
         private int _maxSelectingInteractors = -1;
 
+        /// <summary>
+        /// A data object that can provide additional information.
+        /// </summary>
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
         public object Data { get; protected set; } = null;
@@ -153,6 +160,9 @@ namespace Oculus.Interaction
 
         public IEnumerableHashSet<TInteractor> SelectingInteractors => _selectingInteractors;
 
+        /// <summary>
+        /// Adds an interactor to the interactable.
+        /// </summary>
         public void AddInteractor(TInteractor interactor)
         {
             _interactors.Add(interactor);
@@ -160,6 +170,9 @@ namespace Oculus.Interaction
             UpdateInteractableState();
         }
 
+        /// <summary>
+        /// Removes an interactor from the interactable.
+        /// </summary>
         public void RemoveInteractor(TInteractor interactor)
         {
             if (!_interactors.Remove(interactor))
@@ -171,6 +184,9 @@ namespace Oculus.Interaction
             UpdateInteractableState();
         }
 
+        /// <summary>
+        /// Adds a selecting interactor to the interactable.
+        /// </summary>
         public void AddSelectingInteractor(TInteractor interactor)
         {
             _selectingInteractors.Add(interactor);
@@ -178,6 +194,9 @@ namespace Oculus.Interaction
             UpdateInteractableState();
         }
 
+        /// <summary>
+        /// Removes a selecting interactor from the interactable.
+        /// </summary>
         public void RemoveSelectingInteractor(TInteractor interactor)
         {
             if (!_selectingInteractors.Remove(interactor))
@@ -207,6 +226,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Determines if the interactable can be interacted on by the given interactor.
+        /// </summary>
+        /// <param name="interactor"> The interactor that intends to interact with the interactable.</param>
+        /// <returns>True if the interactor can interact with the interactable, false otherwise.</returns>
         public bool CanBeSelectedBy(TInteractor interactor)
         {
             if (State == InteractableState.Disabled)
@@ -243,11 +267,21 @@ namespace Oculus.Interaction
             return true;
         }
 
+        /// <summary>
+        /// Determines if the interactable is being hovered by the given interactor.
+        /// </summary>
+        /// <param name="interactor">The interactor to check for hovering.</param>
+        /// <returns>True if the interactor is hovering the interactable, false otherwise.</returns>
         public bool HasInteractor(TInteractor interactor)
         {
             return _interactors.Contains(interactor);
         }
 
+        /// <summary>
+        /// Determines if the interactable is being selected by the given interactor.
+        /// </summary>
+        /// <param name="interactor">The interactor to check for selecting.</param>
+        /// <returns>True if the interactor is selecting the interactable, false otherwise.</returns>
         public bool HasSelectingInteractor(TInteractor interactor)
         {
             return _selectingInteractors.Contains(interactor);
@@ -294,6 +328,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Uses an interactor's unique ID to remove it from this interactable.
+        /// </summary>
+        /// <param name="id">The ID of the interactor to remove.</param>
         public void RemoveInteractorByIdentifier(int id)
         {
             TInteractor foundInteractor = null;
@@ -376,6 +414,9 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets interactor filters for this interactable on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalInteractorFilters(List<IGameObjectFilter> interactorFilters)
         {
             InteractorFilters = interactorFilters;
@@ -383,6 +424,9 @@ namespace Oculus.Interaction
                                     interactorFilter as UnityEngine.Object);
         }
 
+        /// <summary>
+        /// Sets data for this interactable on a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalData(object data)
         {
             _data = data as UnityEngine.Object;

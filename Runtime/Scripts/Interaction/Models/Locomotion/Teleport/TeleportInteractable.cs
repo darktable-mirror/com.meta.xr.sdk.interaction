@@ -84,6 +84,9 @@ namespace Oculus.Interaction.Locomotion
             };
     }
 
+    /// <summary>
+    /// Makes an object a teleport hotspot.
+    /// </summary>
     public class TeleportInteractable : Interactable<TeleportInteractor, TeleportInteractable>
     {
         [SerializeField]
@@ -202,6 +205,9 @@ namespace Oculus.Interaction.Locomotion
             this.EndStart(ref _started);
         }
 
+        /// <summary>
+        /// Determines if a <cref="TeleportInteractor" /> is close enough to target this interactable.
+        /// </summary>
         public bool IsInRange(Pose origin, float maxSqrDistance)
         {
             if (SurfaceBounds == null)
@@ -232,6 +238,9 @@ namespace Oculus.Interaction.Locomotion
             return false;
         }
 
+        /// <summary>
+        /// Detects a hit from the teleport raycast on the object.
+        /// </summary>
         public bool DetectHit(Vector3 from, Vector3 to, out TeleportHit hit)
         {
             Vector3 dir = to - from;
@@ -247,6 +256,10 @@ namespace Oculus.Interaction.Locomotion
             return false;
         }
 
+        /// <summary>
+        /// Used when the interactor is looking for a teleport target. If you specify a target point, it'll use that.
+        /// Otherwise it uses wherever the teleport arc is pointing.
+        /// </summary>
         public Pose TargetPose(Pose hitPose)
         {
             Pose targetPose = hitPose;
@@ -261,16 +274,27 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Inject
+        /// <summary>
+        /// Sets all required values for a <cref="TeleportInteractable" /> for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllTeleportInteractable(ISurface surface)
         {
             InjectSurface(surface);
         }
+
+        /// <summary>
+        /// Sets an <cref="ISurface" /> for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSurface(ISurface surface)
         {
             _surface = surface as UnityEngine.Object;
             Surface = surface;
             SurfaceBounds = surface as IBounds;
         }
+
+        /// <summary>
+        /// Sets a target point for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalTargetPoint(Transform targetPoint)
         {
             _targetPoint = targetPoint;

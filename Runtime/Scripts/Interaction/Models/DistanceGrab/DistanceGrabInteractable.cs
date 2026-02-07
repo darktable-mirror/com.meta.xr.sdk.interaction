@@ -24,10 +24,7 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This interactable is used for grabbing items at a distance.
-    /// Upon selection the Movement Provider specifies how the grabber and the grabbable will be aligned, by
-    /// default this can be moving the object towards a controller, but it could also enable other scenarios such as
-    /// moving it with deltas in its own place or allowing a pull motion, etc.
+    /// This interactable makes an object grabbable at a distance.
     /// </summary>
     public class DistanceGrabInteractable : PointerInteractable<DistanceGrabInteractor, DistanceGrabInteractable>,
         IRigidbodyRef, IRelativeToRef, ICollidersRef
@@ -35,23 +32,40 @@ namespace Oculus.Interaction
         private Collider[] _colliders;
         public Collider[] Colliders => _colliders;
 
+        /// <summary>
+        /// The RigidBody of the interactable.
+        /// </summary>
+        [Tooltip("The RigidBody of the interactable.")]
         [SerializeField]
         Rigidbody _rigidbody;
         public Rigidbody Rigidbody => _rigidbody;
 
+        /// <summary>
+        /// An optional origin point for the grab.
+        /// </summary>
+        [Tooltip("An optional origin point for the grab.")]
         [SerializeField, Optional]
         private Transform _grabSource;
 
+        /// <summary>
+        /// Forces a release on all other grabbing interactors when grabbed by a new interactor.
+        /// </summary>
+        [Tooltip("Forces a release on all other grabbing interactors when grabbed by a new interactor.")]
         [SerializeField]
         private bool _resetGrabOnGrabsUpdated = true;
 
+        /// <summary>
+        /// <cref="PhysicsGrabbable" /> used when you grab the interactable.
+        /// </summary>
+        [Tooltip("PhysicsGrabbable used when you grab the interactable.")]
         [SerializeField, Optional]
         private PhysicsGrabbable _physicsGrabbable = null;
 
         /// <summary>
-        /// The movement provider specifies how the selected interactable will
-        /// align with the grabber.
+        /// The <cref="IMovementProvider" /> specifies how the interactable will align with the grabber when selected.
+        /// If no <cref="IMovementProvider" /> is set, the <cref="MoveTowardsTargetProvider" /> is created and used as the provider.
         /// </summary>
+        [Tooltip("The IMovementProvider specifies how the interactable will align with the grabber when selected. If no IMovementProvider is set, the MoveTowardsTargetProvider is created and used as the provider.")]
         [Header("Snap")]
         [SerializeField, Optional, Interface(typeof(IMovementProvider))]
         private UnityEngine.Object _movementProvider;
@@ -107,6 +121,9 @@ namespace Oculus.Interaction
             this.EndStart(ref _started);
         }
 
+        /// <summary>
+        /// Moves the interactable to the provided position.
+        /// </summary>
         public IMovement GenerateMovement(in Pose to)
         {
             Pose source = _grabSource.GetPose();
@@ -116,6 +133,9 @@ namespace Oculus.Interaction
             return movement;
         }
 
+        /// <summary>
+        /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
+        /// </summary>
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -127,26 +147,41 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllGrabInteractable(Rigidbody rigidbody)
         {
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Adds a grab source to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabSource(Transform grabSource)
         {
             _grabSource = grabSource;
         }
 
+        /// <summary>
+        /// Adds a <cref="PhysicsGrabbable" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {
             _physicsGrabbable = physicsGrabbable;
         }
 
+        /// <summary>
+        /// Adds a <cref="IMovementProvider" /> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalMovementProvider(IMovementProvider provider)
         {
             _movementProvider = provider as UnityEngine.Object;

@@ -43,7 +43,28 @@ namespace Oculus.Interaction
         [SerializeField]
         private float _offsetAlongNormal = 0.005f;
 
+        [Tooltip("Players head transform, used to maintain the same cursor size on screen as it is moved in the scene.")]
+        [SerializeField, Optional]
+        private Transform _playerHead;
+        private Vector3 _startScale;
+
         #region Properties
+
+        public Transform PlayerHead
+        {
+            get
+            {
+                return _playerHead;
+            }
+            set
+            {
+                _playerHead = value;
+                if (_started && value is null)
+                {
+                    this.transform.localScale = _startScale;
+                }
+            }
+        }
 
         public Color HoverColor
         {
@@ -109,6 +130,7 @@ namespace Oculus.Interaction
             this.AssertField(_rayInteractor, nameof(_rayInteractor));
             this.AssertField(_renderer, nameof(_renderer));
             UpdateVisual();
+            _startScale = transform.localScale;
             this.EndStart(ref _started);
         }
 
@@ -153,6 +175,12 @@ namespace Oculus.Interaction
             Vector3 collisionNormal = _rayInteractor.CollisionInfo.Value.Normal;
             this.transform.position = _rayInteractor.End + collisionNormal * _offsetAlongNormal;
             this.transform.rotation = Quaternion.LookRotation(_rayInteractor.CollisionInfo.Value.Normal, Vector3.up);
+
+            if (PlayerHead != null)
+            {
+                float distance = Vector3.Distance(this.transform.position, PlayerHead.position);
+                this.transform.localScale = _startScale * distance;
+            }
 
             var selection = _rayInteractor.State == InteractorState.Select;
 

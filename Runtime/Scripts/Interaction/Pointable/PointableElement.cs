@@ -99,6 +99,13 @@ namespace Oculus.Interaction
         protected virtual void Awake()
         {
             ForwardElement = _forwardElement as IPointableElement;
+
+            _points = new List<Pose>();
+            _pointIds = new List<int>();
+
+            _selectingPoints = new List<Pose>();
+            _selectingPointIds = new List<int>();
+
         }
 
         protected virtual void Start()
@@ -109,13 +116,6 @@ namespace Oculus.Interaction
             {
                 this.AssertField(ForwardElement, nameof(ForwardElement));
             }
-
-            _points = new List<Pose>();
-            _pointIds = new List<int>();
-
-            _selectingPoints = new List<Pose>();
-            _selectingPointIds = new List<int>();
-
 
             this.EndStart(ref _started);
         }

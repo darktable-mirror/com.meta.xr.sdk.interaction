@@ -33,10 +33,13 @@ namespace Oculus.Interaction.Locomotion
     public class TeleportInteractor : Interactor<TeleportInteractor, TeleportInteractable>,
         ILocomotionEventBroadcaster
     {
+        /// <summary>
+        /// A selector indicating when the Interactor should select or unselect the best available interactable.
+        /// </summary>
         [SerializeField, Interface(typeof(ISelector))]
         [Tooltip("A selector indicating when the Interactor should" +
             "Select or Unselect the best available interactable." +
-            "Typically when using controllers this selector is drivenby the joystick value," +
+            "Typically when using controllers this selector is driven by the joystick value," +
             "and for hands it is driven by the index pinch value.")]
         private UnityEngine.Object _selector;
 
@@ -82,6 +85,9 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// The starting point of the teleport arc.
+        /// </summary>
         public Pose ArcOrigin
         {
             get
@@ -95,6 +101,10 @@ namespace Oculus.Interaction.Locomotion
         private TeleportHit _arcEnd;
         public TeleportHit ArcEnd => _arcEnd;
 
+        /// <summary>
+        /// The location to teleport to. If the interactor has an interactable, then that's the teleport location.
+        /// Otherwise it just projects the end of the arc onto the ground and uses that as the target.
+        /// </summary>
         public Pose TeleportTarget
         {
             get
@@ -129,6 +139,7 @@ namespace Oculus.Interaction.Locomotion
             TeleportArc = _teleportArc as IPolyline;
             Selector = _selector as ISelector;
             Hmd = _hmd as IHmd;
+            _nativeId = 0x4c6f636f6d6f7469;
         }
 
         protected override void Start()
@@ -294,20 +305,36 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Inject
+
+        /// <summary>
+        /// Sets all required values for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllTeleportInteractor(ISelector selector)
         {
             InjectSelector(selector);
         }
+
+        /// <summary>
+        /// Sets the selection mechanism for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSelector(ISelector selector)
         {
             _selector = selector as UnityEngine.Object;
             Selector = selector;
         }
+
+        /// <summary>
+        /// Sets the HMD (Head Mounted Display) for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalHmd(IHmd hmd)
         {
             _hmd = hmd as UnityEngine.Object;
             Hmd = hmd;
         }
+
+        /// <summary>
+        /// Sets the teleport arc for a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalTeleportArc(IPolyline teleportArc)
         {
             _teleportArc = teleportArc as UnityEngine.Object;

@@ -20,6 +20,10 @@
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// By default, InteractorGroups are prioritized in list-order (first = highest priority). An <cref="ICandidateComparer" /> can prioritize <cref="IInteractor" />s in a different order based on their CandidateProperties.
+    /// For instance, for those IInteractors whose CandidateProperties can be cast to an ICandidatePosition, a CandidatePositionComparer can prioritize IInteractors by their candidates’ position as measured by a distance to a common location.
+    /// </summary>
     public interface ICandidateComparer
     {
         int Compare(object a, object b) ;

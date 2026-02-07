@@ -24,21 +24,37 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This interactor allows grabbing objects at a distance and will move them using configurable IMovements.
+    /// DistanceGrabInteractor lets you grab interactables at a distance with controllers and will move them using configurable IMovements.
     /// It uses a IDistantCandidateComputer in order to Hover the best candidate.
     /// </summary>
     public class DistanceGrabInteractor : PointerInteractor<DistanceGrabInteractor, DistanceGrabInteractable>,
         IDistanceInteractor
     {
+        /// <summary>
+        /// The selection mechanism used to trigger the grab.
+        /// </summary>
+        [Tooltip("The selection mechanism to trigger the grab.")]
         [SerializeField, Interface(typeof(ISelector))]
         private UnityEngine.Object _selector;
 
+        /// <summary>
+        /// The center of the grab.
+        /// </summary>
+        [Tooltip("The center of the grab.")]
         [SerializeField, Optional]
         private Transform _grabCenter;
 
+        /// <summary>
+        /// The location where the interactable will move when selected.
+        /// </summary>
+        [Tooltip("The location where the interactable will move when selected.")]
         [SerializeField, Optional]
         private Transform _grabTarget;
 
+        /// <summary>
+        /// Determines how the object will move when thrown.
+        /// </summary>
+        [Tooltip("Determines how the object will move when thrown.")]
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
@@ -49,19 +65,27 @@ namespace Oculus.Interaction
 
         private IMovement _movement;
 
+        /// <summary>
+        /// The origin of the frustrums used by <cref="DistantCandidateComputer" />.
+        /// </summary>
         public Pose Origin => _distantCandidateComputer.Origin;
 
+        /// <summary>
+        /// The hitpoint of your controller's frustrum.
+        /// </summary>
         public Vector3 HitPoint { get; private set; }
 
+        /// <summary>
+        /// A reference to the main Transform of the current Interactable.
+        /// </summary>
         public IRelativeToRef DistanceInteractable => this.Interactable;
-
-        public float BestInteractableWeight { get; private set; } = float.MaxValue;
 
         protected override void Awake()
         {
             base.Awake();
             Selector = _selector as ISelector;
             VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
+            _nativeId = 0x4469737447726162;
         }
 
         protected override void Start()
@@ -167,6 +191,9 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+        /// <summary>
+        /// Adds a <cref="DistanceGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectAllDistanceGrabInteractor(ISelector selector,
             DistantCandidateComputer<DistanceGrabInteractor, DistanceGrabInteractable> distantCandidateComputer)
         {
@@ -174,27 +201,42 @@ namespace Oculus.Interaction
             InjectDistantCandidateComputer(distantCandidateComputer);
         }
 
+        /// <summary>
+        /// Adds an <cref="ISelector"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectSelector(ISelector selector)
         {
             _selector = selector as UnityEngine.Object;
             Selector = selector;
         }
 
+        /// <summary>
+        /// Adds a <cref="DistantCandidateComputer"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectDistantCandidateComputer(DistantCandidateComputer<DistanceGrabInteractor, DistanceGrabInteractable> distantCandidateComputer)
         {
             _distantCandidateComputer = distantCandidateComputer;
         }
 
+        /// <summary>
+        /// Adds a grab center to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabCenter(Transform grabCenter)
         {
             _grabCenter = grabCenter;
         }
 
+        /// <summary>
+        /// Adds a grab target to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalGrabTarget(Transform grabTarget)
         {
             _grabTarget = grabTarget;
         }
 
+        /// <summary>
+        /// Adds a <cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
+        /// </summary>
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;

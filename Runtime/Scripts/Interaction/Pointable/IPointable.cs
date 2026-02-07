@@ -49,6 +49,9 @@ namespace Oculus.Interaction
         }
     }
 
+    /// <summary>
+    /// Broadcasts a set of <cref="PointerEvent" />s every time it changes state.
+    /// </summary>
     public interface IPointable
     {
         event Action<PointerEvent> WhenPointerEventRaised;

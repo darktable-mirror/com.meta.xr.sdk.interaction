@@ -25,12 +25,12 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Exposes Unity events that broadcast state changes from an ‹see cref="IInteractableView"/› (an Interactable).
+    /// Exposes Unity events that broadcast state changes from an <see cref="IInteractableView"/> (an Interactable).
     /// </summary>
     public class InteractableUnityEventWrapper : MonoBehaviour
     {
         /// <summary>
-        /// The ‹see cref="IInteractableView"/› (Interactable) component to wrap.
+        /// The <see cref="IInteractableView"/> (Interactable) component to wrap.
         /// </summary>
         [Tooltip("The IInteractableView (Interactable) component to wrap.")]
         [SerializeField, Interface(typeof(IInteractableView))]

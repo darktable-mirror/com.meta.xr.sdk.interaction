@@ -24,6 +24,9 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Body
 {
+    /// <summary>
+    /// Debugs an <cref"IBody" /> by drawing its axises and joints.
+    /// </summary>
     public class BodyDebugGizmos : SkeletonDebugGizmos
     {
         public enum CoordSpace
@@ -32,10 +35,17 @@ namespace Oculus.Interaction.Body
             Local,
         }
 
+        /// <summary>
+        /// The IBody that will drive the visuals.
+        /// </summary>
         [SerializeField, Interface(typeof(IBody))]
         private UnityEngine.Object _body;
         private IBody Body;
 
+        /// <summary>
+        /// The coordinate space in which to draw the skeleton. World space draws the skeleton at the world Body location.
+        /// Local draws the skeleton relative to this transform's position.
+        /// </summary>
         [Tooltip("The coordinate space in which to draw the skeleton. " +
             "World space draws the skeleton at the world Body location. " +
             "Local draws the skeleton relative to this transform.")]
