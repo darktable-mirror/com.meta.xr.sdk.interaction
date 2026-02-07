@@ -23,10 +23,13 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Used on a SerializedField surfaces the expectation that this field can remain empty.
+    /// Used on a SerializedField and surfaces the expectation that this field can remain empty.
     /// </summary>
     public class OptionalAttribute : PropertyAttribute
     {
+        /// <summary>
+        /// Flags that determine the visibility of the Optional tag in the editor.
+        /// </summary>
         [System.Flags]
         public enum Flag
         {
@@ -50,10 +53,21 @@ namespace Oculus.Interaction
             Obsolete = 1 << 2,
         }
 
+        /// <summary>
+        /// These flags determine the behavior of the Optional tag in the editor.
+        /// </summary>
         public Flag Flags { get; private set; } = Flag.None;
 
+        /// <summary>
+        /// Create a new Optional attribute with default flags.
+        /// </summary>
         public OptionalAttribute() { }
 
+        /// <summary>
+        /// Create a new Optional attribute with the specified flags.
+        /// </summary>
+        /// <param name="flags">The flags that determine the behavior of
+        /// this attribute.</param>
         public OptionalAttribute(Flag flags)
         {
             Flags = flags;

@@ -33,25 +33,85 @@ namespace Oculus.Interaction.Input.Compatibility.OVR
 namespace Oculus.Interaction.Input
 #endif
 {
+    /// <summary>
+    /// A set of hand skeleton constants used globally throughout Interaction SDK.
+    /// </summary>
     public static class Constants
     {
+        /// <summary>
+        /// The number of joints in the hand skeleton.
+        /// </summary>
         public const int NUM_HAND_JOINTS = (int)HandJointId.HandEnd;
+
+        /// <summary>
+        /// The number of fingers in the hand skeleton.
+        /// </summary>
         public const int NUM_FINGERS = 5;
 
+        /// <summary>
+        /// The local proximal (toward-palm) axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightProximal = Vector3.left;
+
+        /// <summary>
+        /// The local distal (away-from-palm) axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightDistal = Vector3.right;
+
+        /// <summary>
+        /// The local to-pinky axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightPinkySide = Vector3.back;
+
+        /// <summary>
+        /// The local to-thumb axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightThumbSide = Vector3.forward;
+
+        /// <summary>
+        /// The local palmar (palm facing) axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightPalmar = Vector3.down;
+
+        /// <summary>
+        /// The local dorsal (back-of-hand facing) axis of a Right hand joint.
+        /// </summary>
         public static readonly Vector3 RightDorsal = Vector3.up;
 
+        /// <summary>
+        /// The local proximal (toward-palm) axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftProximal = Vector3.right;
+
+        /// <summary>
+        /// The local distal (away-from-palm) axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftDistal = Vector3.left;
+
+        /// <summary>
+        /// The local to-pinky axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftPinkySide = Vector3.forward;
+
+        /// <summary>
+        /// The local to-thumb axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftThumbSide = Vector3.back;
+
+        /// <summary>
+        /// The local palmar (palm facing) axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftPalmar = Vector3.up;
+
+        /// <summary>
+        /// The local dorsal (back-of-hand facing) axis of a Left hand joint.
+        /// </summary>
         public static readonly Vector3 LeftDorsal = Vector3.down;
 
+        /// <summary>
+        /// The rotation of the left hand's root bone. This is unique to the OVR hand skeleton,
+        /// as its left wrist orientation is a mirror of the right wrist.
+        /// </summary>
         public static readonly Quaternion LeftRootRotation = Quaternion.Euler(180f, 0f, 0f);
     }
 
@@ -140,8 +200,16 @@ namespace Oculus.Interaction.Input
         All = (1 << HandJointId.HandEnd) - 1
     }
 
+    /// <summary>
+    /// Utility methods for working with <see cref="HandFinger"/> data.
+    /// </summary>
     public static class HandFingerUtils
     {
+        /// <summary>
+        /// Convert the provided <see cref="HandFinger"/> to <see cref="HandFingerFlags"/>.
+        /// </summary>
+        /// <param name="handFinger">The finger to convert to flags.</param>
+        /// <returns>Flags representing the provided finger.</returns>
         public static HandFingerFlags ToFlags(HandFinger handFinger)
         {
             return (HandFingerFlags)(1 << (int)handFinger);
@@ -189,6 +257,10 @@ namespace Oculus.Interaction.Input
 
     public class HandJointUtils
     {
+        /// <summary>
+        /// A list of joint arrays representing <see cref="HandJointId"/>s for each finger.
+        /// The list is indexed by the integer value of <see cref="HandFinger"/>.
+        /// </summary>
         public static List<HandJointId[]> FingerToJointList = new List<HandJointId[]>()
         {
             new[] {HandJointId.HandThumb0, HandJointId.HandThumb1, HandJointId.HandThumb2, HandJointId.HandThumb3, HandJointId.HandThumbTip},
@@ -198,6 +270,12 @@ namespace Oculus.Interaction.Input
             new[] {HandJointId.HandPinky0, HandJointId.HandPinky1, HandJointId.HandPinky2, HandJointId.HandPinky3, HandJointId.HandPinkyTip }
         };
 
+        /// <summary>
+        /// An array indexed by the integer value of <see cref="HandJointId"/>
+        /// which provides the corresponding <see cref="HandFinger"/>, if applicable.
+        /// If the joint used to index into this array is not a finger joint,
+        /// the value at that index will be <see cref="HandFinger.Invalid"/>
+        /// </summary>
         public static HandFinger[] JointToFingerList = new[]
         {
             HandFinger.Invalid,
@@ -226,6 +304,12 @@ namespace Oculus.Interaction.Input
             HandFinger.Pinky
         };
 
+        /// <summary>
+        /// An array indexed by the integer value of <see cref="HandJointId"/>
+        /// which provides the parent <see cref="HandJointId"/>, if applicable.
+        /// If the joint used to index into this array does not have a valid parent,
+        /// the value at that index will be <see cref="HandFinger.Invalid"/>
+        /// </summary>
         public static HandJointId[] JointParentList = new[]
         {
             HandJointId.Invalid,
@@ -254,7 +338,12 @@ namespace Oculus.Interaction.Input
             HandJointId.HandPinky3
         };
 
-
+        /// <summary>
+        /// An array indexed by the integer value of <see cref="HandJointId"/>
+        /// which provides an array of child <see cref="HandJointId"/>s, if applicable.
+        /// If the joint used to index into this array does not have children,
+        /// the value at that index will be a zero-length array.
+        /// </summary>
         public static HandJointId[][] JointChildrenList = new[]
         {
             new []
@@ -313,16 +402,34 @@ namespace Oculus.Interaction.Input
             HandJointId.HandThumb3
         };
 
+        /// <summary>
+        /// This array is indexed by the integer value of <see cref="HandFinger"/>, and
+        /// contains the Proximal <see cref="HandJointId"/> at each finger index.
+        /// </summary>
         private static readonly HandJointId[] _handFingerProximals =
         {
             HandJointId.HandThumb2, HandJointId.HandIndex1, HandJointId.HandMiddle1,
             HandJointId.HandRing1, HandJointId.HandPinky1
         };
 
+        /// <summary>
+        /// Returns the Tip joint corresponding to the provided <see cref="HandFinger"/>.
+        /// </summary>
+        /// <param name="finger">The finger to retrieve the tip for.</param>
+        /// <returns>The fingertip joint.</returns>
         public static HandJointId GetHandFingerTip(HandFinger finger)
         {
             return HandJointId.HandMaxSkinnable + (int)finger;
         }
+
+        /// <summary>
+        /// Returns true for HandJointIds that represent finger tips.
+        /// </summary>
+        public static bool IsFingerTip(HandJointId joint) => joint == HandJointId.HandThumbTip ||
+                                                             joint == HandJointId.HandIndexTip ||
+                                                             joint == HandJointId.HandMiddleTip ||
+                                                             joint == HandJointId.HandRingTip ||
+                                                             joint == HandJointId.HandPinkyTip;
 
         /// <summary>
         /// Returns the "proximal" JointId for the given finger.

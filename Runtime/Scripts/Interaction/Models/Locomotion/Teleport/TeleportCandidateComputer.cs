@@ -18,9 +18,10 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
 using UnityEngine;
 using static Oculus.Interaction.Locomotion.TeleportInteractor;
+using InteractableSet = Oculus.Interaction.InteractableRegistry<Oculus.Interaction.Locomotion.TeleportInteractor, Oculus.Interaction.Locomotion.TeleportInteractable>.InteractableSet;
+
 
 namespace Oculus.Interaction.Locomotion
 {
@@ -76,7 +77,7 @@ namespace Oculus.Interaction.Locomotion
 
         public virtual TeleportInteractable ComputeCandidate(
             IPolyline TeleportArc,
-            IEnumerable<TeleportInteractable> interactables,
+            in InteractableSet interactables,
             ComputeCandidateTiebreakerDelegate tiebreaker,
             out TeleportHit hitPose)
         {

@@ -18,9 +18,11 @@
  * limitations under the License.
  */
 
+using System.Collections;
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Oculus.Interaction.DebugTree
 {
@@ -82,16 +84,19 @@ namespace Oculus.Interaction.DebugTree
 
             if (_buildTreeOnStart)
             {
-                BuildTree();
+                StartCoroutine(BuildTree());
             }
         }
 
-        public void BuildTree()
+        public IEnumerator BuildTree()
         {
+            _tree = CreateTree(Value);
+            Task task = _tree.RebuildAsync();
+            yield return new WaitUntil(() => task.IsCompleted);
+
             _nodeToUI.Clear();
             ClearContentArea();
             SetTitleText();
-            _tree = InstantiateTree(Value);
             BuildTreeRecursive(_contentArea, _tree.GetRootNode(), true);
         }
 
@@ -133,7 +138,7 @@ namespace Oculus.Interaction.DebugTree
             }
         }
 
-        protected abstract DebugTree<TLeaf> InstantiateTree(TLeaf value);
+        protected abstract DebugTree<TLeaf> CreateTree(TLeaf value);
         protected abstract string TitleForValue(TLeaf value);
 
 #if UNITY_EDITOR

@@ -25,7 +25,8 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction.Input
 {
     /// <summary>
-    /// A set of constants that are passed to each child of a Hand modifier tree from the root DataSource.
+    /// A utility component that delegates all of its <see cref="IHmd"/>
+    /// implementation to the provided <see cref="IHmd"/> source object.
     /// </summary>
     public class HmdRef : MonoBehaviour, IHmd
     {
@@ -33,6 +34,10 @@ namespace Oculus.Interaction.Input
         private UnityEngine.Object _hmd;
         private IHmd Hmd;
 
+        /// <summary>
+        /// Implementation of <see cref="IHmd.WhenUpdated"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public event Action WhenUpdated
         {
             add => Hmd.WhenUpdated += value;
@@ -49,17 +54,32 @@ namespace Oculus.Interaction.Input
             this.AssertField(Hmd, nameof(Hmd));
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IHmd.TryGetRootPose(out Pose)"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool TryGetRootPose(out Pose pose)
         {
             return Hmd.TryGetRootPose(out pose);
         }
 
         #region Inject
+
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated <see cref="HmdRef"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHmdRef(IHmd hmd)
         {
             InjectHmd(hmd);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHmd"/> for a dynamically instantiated <see cref="HmdRef"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHmd(IHmd hmd)
         {
             _hmd = hmd as UnityEngine.Object;

@@ -24,8 +24,8 @@ using UnityEngine;
 namespace Oculus.Interaction.Input
 {
     /// <summary>
-    /// ControllerRef is a utility component that delegates all of its IController implementation
-    /// to the provided Controller object.
+    /// A utility component that delegates all of its <see cref="IController"/>
+    /// implementation to the provided <see cref="IController"/> source object.
     /// </summary>
     public class ControllerRef : MonoBehaviour, IController, IActiveState
     {
@@ -43,50 +43,105 @@ namespace Oculus.Interaction.Input
             this.AssertField(Controller, nameof(Controller));
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.Handedness"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public Handedness Handedness => Controller.Handedness;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsConnected"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool IsConnected => Controller.IsConnected;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsPoseValid"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool IsPoseValid => Controller.IsPoseValid;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.ControllerInput"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public ControllerInput ControllerInput => Controller.ControllerInput;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.WhenUpdated"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public event Action WhenUpdated
         {
             add => Controller.WhenUpdated += value;
             remove => Controller.WhenUpdated -= value;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.Active"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool Active => IsConnected;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.TryGetPose"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool TryGetPose(out Pose pose)
         {
             return Controller.TryGetPose(out pose);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.TryGetPointerPose"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool TryGetPointerPose(out Pose pose)
         {
             return Controller.TryGetPointerPose(out pose);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.Scale"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public float Scale => Controller.Scale;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsButtonUsageAnyActive"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool IsButtonUsageAnyActive(ControllerButtonUsage buttonUsage)
         {
             return Controller.IsButtonUsageAnyActive(buttonUsage);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsButtonUsageAllActive"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool IsButtonUsageAllActive(ControllerButtonUsage buttonUsage)
         {
             return Controller.IsButtonUsageAllActive(buttonUsage);
         }
 
         #region Inject
+
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated <see cref="ControllerRef"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllControllerRef(IController controller)
         {
             InjectController(controller);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IController"/> for a dynamically instantiated <see cref="ControllerRef"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectController(IController controller)
         {
             _controller = controller as UnityEngine.Object;

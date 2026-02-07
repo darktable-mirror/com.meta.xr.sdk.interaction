@@ -78,7 +78,9 @@ namespace Oculus.Interaction.Locomotion
     }
 
     /// <summary>
-    /// Makes an object a teleport hotspot.
+    /// A target to which a <see cref="TeleportInteractor"/> can teleport. This class encapsulates the target-specific information
+    /// the teleportation interaction needs in order to execute properly, including the location, targeting information, and optionally
+    /// details about how the player should be positioned after teleport.
     /// </summary>
     public class TeleportInteractable : Interactable<TeleportInteractor, TeleportInteractable>
     {
@@ -86,7 +88,8 @@ namespace Oculus.Interaction.Locomotion
         [Tooltip("Indicates if the interactable is valid for teleport. Setting it to false can be convenient to block the arc.")]
         private bool _allowTeleport = true;
         /// <summary>
-        ///  Indicates if the interactable is valid for teleport. Setting it to false can be convenient to block the arc.
+        ///  Indicates if the interactable is valid for teleport. Setting it to false can be convenient to block the arc (this will
+        ///  cause <see cref="TeleportInteractor.HasValidDestination"/> to return false).
         /// </summary>
         public bool AllowTeleport
         {
@@ -104,7 +107,9 @@ namespace Oculus.Interaction.Locomotion
         [Tooltip("An override for the Interactor EqualDistanceThreshold used when comparing the interactable against other interactables that does not allow teleport.")]
         private float _equalDistanceToBlockerOverride;
         /// <summary>
-        /// An override for the Interactor EqualDistanceThreshold used when comparing the interactable against other interactables that does not allow teleport.
+        /// An override for the Interactor EqualDistanceThreshold used when comparing the interactable against other interactables
+        /// that do not allow teleport. This can allow an interactable to more easily "present itself as equidistant" to something else,
+        /// increasing the ease of selecting it specifically in preference to other interactions.
         /// </summary>
         public float EqualDistanceToBlockerOverride
         {
@@ -123,6 +128,8 @@ namespace Oculus.Interaction.Locomotion
         private int _tieBreakerScore;
         /// <summary>
         /// Establishes the priority when several interactables are hit at the same time (EqualDistanceThreshold) by the arc.
+        /// Overriding equivalence comparison with <see cref="EqualDistanceToBlockerOverride"/> will cause this value to be
+        /// consulted more frequently.
         /// </summary>
         public int TieBreakerScore
         {
@@ -139,7 +146,22 @@ namespace Oculus.Interaction.Locomotion
         [SerializeField, Interface(typeof(ISurface))]
         [Tooltip("Surface against which the interactor will check collision with the arc.")]
         private UnityEngine.Object _surface;
+        /// <summary>
+        /// The surface against which the interactor will check collisions with <see cref="TeleportInteractor.TeleportArc"/>.
+        /// </summary>
+        /// <remarks>
+        /// By default, the precise collision point will be treated as the teleport target destination, which is useful when
+        /// specifying a single large teleport target (such as the floor of a room) as a single interactable. However, this
+        /// can be overridden by supplying a target point (see <see cref="TargetPose(Pose)"/>), which if
+        /// provided will supersede the actual collision and allow the interactable to function as a "hotspot" target moving
+        /// the player to a specific location.
+        /// </remarks>
         public ISurface Surface { get; private set; }
+
+        /// <summary>
+        /// The bounds constraining the region from which this interactable can be targeted. This can be used to disallow
+        /// targeting of an interactable from beyond a certain range.
+        /// </summary>
         public IBounds SurfaceBounds { get; private set; }
 
         [Header("Target", order = -1)]
@@ -151,8 +173,14 @@ namespace Oculus.Interaction.Locomotion
         [Tooltip("When true, the player will also face the direction specified by the target point.")]
         private bool _faceTargetDirection;
         /// <summary>
-        /// When true, the player will also face the direction specified by the target point.
+        /// Specifies whether teleporting to this interactable should override the player's orientation to match that of the
+        /// target point (see <see cref="TargetPose(Pose)"/>).
         /// </summary>
+        /// <remarks>
+        /// This is useful for scenarios such as a "hotspot" in front of a control panel, where the goal is to make it easy
+        /// for the player to quickly stand in a certain spot facing a certain direction. Note that this setting is only meaningful
+        /// if a target point is supplied.
+        /// </remarks>
         public bool FaceTargetDirection
         {
             get
@@ -169,8 +197,14 @@ namespace Oculus.Interaction.Locomotion
         [Tooltip("When true, instead of aligning the players feet to the TargetPoint it will align the head.")]
         private bool _eyeLevel;
         /// <summary>
-        ///  When true, instead of aligning the players feet to the TargetPoint it will align the head.
+        /// Allows overriding the default teleport behavior, which aligns the user's feet/floor with the teleport target, to instead
+        /// align the user's head/eyes to the target.
         /// </summary>
+        /// <remarks>
+        /// This is useful for scenarios such as a "hotspot" in front of a window, where the goal is to make it easy
+        /// for the player to quickly stand in a certain spot and see something specific. Note that this setting is only meaningful
+        /// if a target point is supplied (see <see cref="TargetPose(Pose)"/>).
+        /// </remarks>
         public bool EyeLevel
         {
             get
@@ -199,7 +233,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Determines if a <cref="TeleportInteractor" /> is close enough to target this interactable.
+        /// Determines if a <see cref="TeleportInteractor"/> is close enough to target this interactable. This is
+        /// called by internal logic of <see cref="TeleportInteractor"/> and should not be invoked independently.
         /// </summary>
         public bool IsInRange(Pose origin, float maxSqrDistance)
         {
@@ -234,6 +269,10 @@ namespace Oculus.Interaction.Locomotion
         /// <summary>
         /// Detects a hit from the teleport raycast on the object.
         /// </summary>
+        /// <param name="from">The origin, in world space from which to cast the ray</param>
+        /// <param name="to">The target, in world space, through which the cast ray should pass(in </param>
+        /// <param name="hit">Information about the hit, if one occurred</param>
+        /// <returns>True if a hit was detected, false otherwise</returns>
         public bool DetectHit(Vector3 from, Vector3 to, out TeleportHit hit)
         {
             Vector3 dir = to - from;
@@ -267,7 +306,9 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
         /// <summary>
-        /// Sets all required values for a <cref="TeleportInteractable" /> for a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated TeleportInteractable; effectively wraps
+        /// <see cref="InjectSurface(ISurface)"/>, since all other dependencies are optional. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllTeleportInteractable(ISurface surface)
         {
@@ -275,7 +316,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets an <cref="ISurface" /> for a dynamically instantiated GameObject.
+        /// Sets an <see cref="ISurface"/> for a dynamically instantiated TeleportInteractable. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSurface(ISurface surface)
         {
@@ -285,7 +327,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets a target point for a dynamically instantiated GameObject.
+        /// Sets the target point (see <see cref="TargetPose(Pose)"/> for a dynamically instantiated TeleportInteractable. This method exists to
+        /// support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalTargetPoint(Transform targetPoint)
         {

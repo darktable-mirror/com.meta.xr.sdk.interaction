@@ -16,14 +16,24 @@ using System;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// When this attribute is attached to a MonoBehaviour field within a
-    /// Unity Object, this allows an interface to be specified in to to
-    /// entire only a specific type of MonoBehaviour can be attached.
+    /// When this attribute is attached to a <see cref="UnityEngine.Object"/> field within a
+    /// <see cref="MonoBehaviour"/>, this allows an interface to be specified in to to
+    /// entire only a specific type of object can be attached.
     /// </summary>
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     public class InterfaceAttribute : PropertyAttribute
     {
+        /// <summary>
+        /// The interface types that can be assigned to the target
+        /// <see cref="UnityEngine.Object"/> field in the inspector
+        /// </summary>
         public Type[] Types = null;
+
+        /// <summary>
+        /// Objects matching the type of this field will be allowed
+        /// to be assigned to the <see cref="UnityEngine.Object"/>
+        /// field in the inspector.
+        /// </summary>
         public string TypeFromFieldName;
 
         /// <summary>
@@ -40,10 +50,15 @@ namespace Oculus.Interaction
             for (int i = 0; i < types.Length; i++)
             {
                 Debug.Assert(types[i].IsInterface, $"{types[i].Name} needs to be an interface.");
-                Types[i+1] = types[i];
+                Types[i + 1] = types[i];
             }
         }
 
+        /// <summary>
+        /// Creates a new Interface attribute.
+        /// </summary>
+        /// <param name="typeFromFieldName">The name of the field that will
+        /// supply the type constraint used by the interface editor.</param>
         public InterfaceAttribute(string typeFromFieldName)
         {
             this.TypeFromFieldName = typeFromFieldName;

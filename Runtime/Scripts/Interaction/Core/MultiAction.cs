@@ -24,25 +24,37 @@ using System.Collections.Generic;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// MAction can be used in place of Action. This allows
-    /// for interfaces with Actions of generic covariant types
-    /// to be subscribed to by multiple types of delegates.
+    /// Interface wrapping single-argument events used by <see cref="Interactor{TInteractor, TInteractable}"/> and
+    /// <see cref="Interactable{TInteractor, TInteractable}"/>.
     /// </summary>
+    /// <remarks>
+    /// This is an internal API and should not be used in the creation of new or independent APIs.
+    /// </remarks>
     public interface MAction<out T>
     {
+        /// <summary>
+        /// The single-argument event wrapped by this MAction. For a canonical implementation, see
+        /// <see cref="MultiAction{T}"/>, and for an example of usage see <see cref="Interactor{TInteractor, TInteractable}"/>
+        /// or <see cref="Interactable{TInteractor, TInteractable}"/>.
+        /// </summary>
         event Action<T> Action;
     }
 
     /// <summary>
-    /// Classes that implement an interface that has MActions
-    /// can use MultiAction as their MAction implementation to
-    /// allow for multiple types of delegates to subscribe to the
-    /// generic type.
+    /// Canonical implementation of <see cref="MAction{T}"/>, providing single-argument event functionality used by
+    /// <see cref="Interactor{TInteractor, TInteractable}"/> and <see cref="Interactable{TInteractor, TInteractable}"/>.
     /// </summary>
+    /// <remarks>
+    /// This is an internal API and should not be used in the creation of new or independent APIs.
+    /// </remarks>
     public class MultiAction<T> : MAction<T>
     {
         protected HashSet<Action<T>> actions = new HashSet<Action<T>>();
 
+        /// <summary>
+        /// Implementation of <see cref="MAction{T}.Action"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<T> Action
         {
             add
@@ -55,6 +67,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Invokes the event underlying <see cref="Action"/>, signaling all listeners with the provided
+        /// <paramref name="t"/> value.
+        /// </summary>
+        /// <param name="t">The value to be sent to <see cref="Action"/> listeners</param>
         public void Invoke(T t)
         {
             foreach (Action<T> action in actions)

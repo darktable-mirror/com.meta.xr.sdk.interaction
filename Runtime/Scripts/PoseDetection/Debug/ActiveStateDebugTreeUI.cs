@@ -43,7 +43,7 @@ namespace Oculus.Interaction.PoseDetection.Debug
             get => _nodePrefab as INodeUI<IActiveState>;
         }
 
-        protected override DebugTree<IActiveState> InstantiateTree(IActiveState value)
+        protected override DebugTree<IActiveState> CreateTree(IActiveState value)
         {
             return new ActiveStateDebugTree(value);
         }

@@ -26,12 +26,34 @@ using System;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Arguments from events emitted by <see cref="PointableCanvasModule"/>
+    /// containing data about the state of the event system.
+    /// </summary>
     public class PointableCanvasEventArgs
     {
+        /// <summary>
+        /// The canvas that's being interacted with.
+        /// </summary>
         public readonly Canvas Canvas;
+
+        /// <summary>
+        /// The GameObject that's being hovered, if any.
+        /// </summary>
         public readonly GameObject Hovered;
+
+        /// <summary>
+        /// Whether the user is dragging at the time of this event.
+        /// Corresponds to <see cref="PointerEventData.dragging"/>
+        /// </summary>
         public readonly bool Dragging;
 
+        /// <summary>
+        /// Create a new <see cref="PointableCanvasEventArgs"/>
+        /// </summary>
+        /// <param name="canvas">The canvas that's being interacted with.</param>
+        /// <param name="hovered">The GameObject that's being hovered, if any.</param>
+        /// <param name="dragging">Whether the user is dragging at the time of this event.</param>
         public PointableCanvasEventArgs(Canvas canvas, GameObject hovered, bool dragging)
         {
             Canvas = canvas;

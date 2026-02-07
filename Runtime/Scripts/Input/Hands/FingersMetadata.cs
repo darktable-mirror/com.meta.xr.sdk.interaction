@@ -126,6 +126,13 @@ namespace Oculus.Interaction.Input
         public static readonly bool[] HAND_JOINT_CAN_SPREAD = InitializeCanSpread();
 
         /// <summary>
+        /// Array order following HAND_JOINT_IDS that indicates if the i joint
+        /// can move or it is fixed to the wrist. Should be true for the Metacarpals
+        /// but Pink and Thumb are special cases
+        /// </summary>
+        public static readonly bool[] HAND_JOINT_CAN_MOVE = InitializeCanMove();
+
+        /// <summary>
         /// Map any HandJointId to joint index of each finger, where the joint index
         /// starts at 0 (toward wrist) and increments for each joint toward the fingertip.
         /// </summary>
@@ -218,6 +225,24 @@ namespace Oculus.Interaction.Input
             }
             return canSpread;
         }
+
+        private static bool[] InitializeCanMove()
+        {
+            bool[] canMove = new bool[HAND_JOINT_IDS.Length];
+#if ISDK_OPENXR_HAND
+            for (int i = 0; i < HAND_JOINT_IDS.Length; i++)
+            {
+                HandJointId jointId = HAND_JOINT_IDS[i];
+                canMove[i] = jointId != HandJointId.HandIndex0
+                        && jointId != HandJointId.HandMiddle0
+                        && jointId != HandJointId.HandRing0;
+            }
+#else
+            Array.Fill(canMove, true);
+#endif
+            return canMove;
+        }
+
         #endregion
     }
 }

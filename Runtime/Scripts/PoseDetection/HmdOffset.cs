@@ -23,6 +23,10 @@ using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// Drives its <see cref="Transform"/> to match the pose provided by an <see cref="IHmd"/>,
+    /// with optional constraints and added position/rotation offset.
+    /// </summary>
     public class HmdOffset : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHmd))]
@@ -108,37 +112,79 @@ namespace Oculus.Interaction.PoseDetection
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHmdOffset(IHmd hmd)
         {
             InjectHmd(hmd);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHmd"/> for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHmd(IHmd hmd)
         {
             _hmd = hmd as UnityEngine.Object;
             Hmd = hmd;
         }
 
+        /// <summary>
+        /// Sets the underlying position offset for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalOffsetTranslation(Vector3 val)
         {
             _offsetTranslation = val;
         }
 
+        /// <summary>
+        /// Sets the underlying rotation offset for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalOffsetRotation(Vector3 val)
         {
             _offsetRotation = val;
         }
 
+        /// <summary>
+        /// Sets the underlying DisablePitchFromSource for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalDisablePitchFromSource(bool val)
         {
             _disablePitchFromSource = val;
         }
 
+        /// <summary>
+        /// Sets the underlying DisableYawFromSource for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalDisableYawFromSource(bool val)
         {
             _disableYawFromSource = val;
         }
 
+        /// <summary>
+        /// Sets the underlying DisableRollFromSource for a dynamically instantiated
+        /// <see cref="HmdOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalDisableRollFromSource(bool val)
         {
             _disableRollFromSource = val;

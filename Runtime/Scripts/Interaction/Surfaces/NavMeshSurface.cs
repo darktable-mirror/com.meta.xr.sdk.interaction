@@ -23,11 +23,22 @@ using UnityEngine.AI;
 
 namespace Oculus.Interaction.Surfaces
 {
-    public class NavMeshSurface : MonoBehaviour
-        , ISurface
+    /// <summary>
+    /// Encapsulating class that wraps a Unity navigation mesh as an <see cref="ISurface"/> for use in
+    /// Interaction SDK logic (comparable to how <see cref="ColliderSurface"/> wraps a Unity Collider).
+    /// </summary>
+    /// <remarks>
+    /// NavMeshSurface is primarily used in locomotion scenarios to allow an entire floorspace to be navigated
+    /// as a single large interactable.
+    /// </remarks>
+    public class NavMeshSurface : MonoBehaviour, ISurface
     {
         [SerializeField, Optional]
         private string _areaName = string.Empty;
+        /// <summary>
+        /// Allows the specification of an area name to be used in association with Unity's NavMesh Areas feature.
+        /// For more information, see Unity's documentation on NavMesh Areas.
+        /// </summary>
         public string AreaName
         {
             get
@@ -42,6 +53,11 @@ namespace Oculus.Interaction.Surfaces
 
         [SerializeField, Min(0)]
         private float _snapDistance = 0f;
+        /// <summary>
+        /// The default distance, in world space, across which targeting should "snap" to the navigation mesh.
+        /// Functionally, this value works as a constant addition to the maxDistance argument of
+        /// <see cref="ClosestSurfacePoint(in Vector3, out SurfaceHit, float)"/>.
+        /// </summary>
         public float SnapDistance
         {
             get
@@ -56,6 +72,10 @@ namespace Oculus.Interaction.Surfaces
 
         [SerializeField, Min(0)]
         private float _voxelSize = 0.01f;
+        /// <summary>
+        /// Used in internal traversal calculations; making this value larger may reduce compute costs when
+        /// dealing with large-scale locomotion, but at the cost of precision.
+        /// </summary>
         public float VoxelSize
         {
             get
@@ -70,6 +90,11 @@ namespace Oculus.Interaction.Surfaces
 
         [SerializeField]
         private bool _calculateNormals = false;
+        /// <summary>
+        /// Determines whether normals on hit calculations are calculated robustly or just
+        /// assumed to be the world-space up vector. Since most navigation meshes are flat,
+        /// typical usage should this setting as false (the default).
+        /// </summary>
         public bool CalculateHitNormals
         {
             get
@@ -85,6 +110,10 @@ namespace Oculus.Interaction.Surfaces
         [InspectorButton(nameof(OpenUnityNavigation)), SerializeField]
         private string _openUnityNavigation;
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Transform"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public Transform Transform => null;
         private int _areaMask;
 
@@ -101,6 +130,10 @@ namespace Oculus.Interaction.Surfaces
 
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.ClosestSurfacePoint(in Vector3, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit surfaceHit, float maxDistance = 0)
         {
             if (NavMesh.SamplePosition(point, out NavMeshHit navMeshHit, maxDistance + SnapDistance, _areaMask))
@@ -118,6 +151,10 @@ namespace Oculus.Interaction.Surfaces
             return false;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Raycast(in Ray, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool Raycast(in Ray ray, out SurfaceHit surfaceHit, float maxDistance = 0)
         {
             Vector3 dir = ray.direction;

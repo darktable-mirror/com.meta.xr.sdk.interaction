@@ -26,8 +26,16 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// The origin of the ray used by controller ray interactors.
+    /// The origin of the ray used by <see cref="RayInteractor"/>s associated with <see cref="IController"/>s.
+    /// This is used heavily in Interaction SDK prefabs, wizards, and example scenes, which are also the best
+    /// way to adopt this functionality.
     /// </summary>
+    /// <remarks>
+    /// This type implements <see cref="IActiveState"/> as an indication of whether the underlying controller
+    /// interaction is active and updating. This is an unusual pattern, however, and for most usages you should
+    /// prefer to monitor an <see cref="InteractorActiveState"/> associated with the downstream interactor rather
+    /// than monitoring the activity of a pointer pose.
+    /// </remarks>
     public class ControllerPointerPose : MonoBehaviour, IActiveState
     {
         /// <summary>
@@ -36,6 +44,9 @@ namespace Oculus.Interaction
         [Tooltip("A controller ray interactor.")]
         [SerializeField, Interface(typeof(IController))]
         private UnityEngine.Object _controller;
+        /// <summary>
+        /// The <see cref="IController"/> from which the downstream <see cref="RayInteractor"/> should be controlled.
+        /// </summary>
         public IController Controller { get; private set; }
 
         /// <summary>
@@ -47,6 +58,10 @@ namespace Oculus.Interaction
 
         protected bool _started = false;
 
+        /// <summary>
+        /// Implementation of <see cref="IActiveState.Active"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool Active { get; private set; }
 
         protected virtual void Awake()
@@ -94,19 +109,31 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets the <see cref="IController"/> for a dynamically instantiated ControllerPointerPose. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectController(IController controller)
         {
             _controller = controller as UnityEngine.Object;
             Controller = controller;
         }
 
+        /// <summary>
+        /// Sets the offset vector for a dynamically instantiated ControllerPointerPose. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOffset(Vector3 offset)
         {
             _offset = offset;
         }
 
-        public void InjectAllHandPointerPose(IController controller,
-            Vector3 offset)
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated ControllerPointerPose; effectively wraps
+        /// <see cref="InjectController(IController)"/> and <see cref="InjectOffset(Vector3)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
+        public void InjectAllControllerPointerPose(IController controller, Vector3 offset)
         {
             InjectController(controller);
             InjectOffset(offset);

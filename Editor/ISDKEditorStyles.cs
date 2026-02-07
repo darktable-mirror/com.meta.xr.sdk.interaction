@@ -75,7 +75,6 @@ namespace Oculus.Interaction.Editor
             padding = new RectOffset(8, 8, 8, 8)
         };
 
-        private const string META_DOCS_LINK = "https://developer.oculus.com/documentation/unity/unity-isdk-interaction-sdk-overview/";
         private const string META_ICON_NAME = "meta_icon_blue.png";
 
         private GUIStyle _dialogIconStyle;
@@ -109,24 +108,17 @@ namespace Oculus.Interaction.Editor
             }
         }
 
-        public void DrawSubtitle(string body, bool linkDocumentation)
+        public void DrawContent(string content, System.Action drawExtra = null)
         {
-            GUI.enabled = false;
+            GUI.enabled = false; // Prevent text area from highlighting on hover
             using (new EditorGUILayout.VerticalScope(ContentArea))
             {
                 GUI.enabled = true;
-                EditorGUILayout.LabelField(body, ContentText);
-
-                if (linkDocumentation)
+                if (!string.IsNullOrWhiteSpace(content))
                 {
-                    EditorGUILayout.Space();
-                    if (GUILayout.Button(
-                        "For more details please see the <color=#6060ee>Interaction SDK documentation.</color>",
-                        ContentButton))
-                    {
-                        Application.OpenURL(META_DOCS_LINK);
-                    }
+                    EditorGUILayout.LabelField(content, ContentText);
                 }
+                drawExtra?.Invoke();
             }
         }
     }

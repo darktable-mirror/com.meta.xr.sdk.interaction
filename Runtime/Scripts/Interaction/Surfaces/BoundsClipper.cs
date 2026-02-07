@@ -23,7 +23,9 @@ using UnityEngine;
 namespace Oculus.Interaction.Surfaces
 {
     /// <summary>
-    /// Clips a <cref"PlaneSurface" />. Each BoundsClipper represents a bounding box, similar to Unity’s BoxCollider.
+    /// Implementation of <see cref="IBoundsClipper"/> specifically for use in <see cref="ClippedPlaneSurface"/>.
+    /// Instances of this class encapsulate the "clipping" (comparable to a "crop" operation in image editing)
+    /// to be applied to an <see cref="ISurface"/> in order to constrain it.
     /// </summary>
     public class BoundsClipper : MonoBehaviour, IBoundsClipper
     {
@@ -42,18 +44,41 @@ namespace Oculus.Interaction.Surfaces
         [SerializeField]
         private Vector3 _size = Vector3.one;
 
+        /// <summary>
+        /// The offset of the bounding box center relative to the transform origin of the surface to be clipped, in the
+        /// local space of the surface.
+        /// </summary>
+        /// <remarks>
+        /// This is used with <see cref="Size"/> to "clip" large (often infinite) surfaces to specific positioned
+        /// regions; for the canonical example usage, see
+        /// <see cref="ClippedPlaneSurface"/>.
+        /// </remarks>
         public Vector3 Position
         {
             get => _position;
             set => _position = value;
         }
 
+        /// <summary>
+        /// The size of the bounding box, in the local space of the surface.
+        /// </summary>
+        /// <remarks>
+        /// This is used with <see cref="Position"/> to "clip" large (often infinite) surfaces to specific regions; for
+        /// the canonical example usage, see <see cref="ClippedPlaneSurface"/>.
+        /// </remarks>
         public Vector3 Size
         {
             get => _size;
             set => _size = value;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IBoundsClipper.GetLocalBounds(Transform, out Bounds)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
+        /// <param name="localTo"></param>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
         public bool GetLocalBounds(Transform localTo, out Bounds bounds)
         {
             Vector3 localPos = localTo.InverseTransformPoint(

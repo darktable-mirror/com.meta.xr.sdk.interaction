@@ -23,6 +23,10 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Locomotion
 {
+    /// <summary>
+    /// Drives the visual affordances of a <see cref="LocomotionTurnerInteractor"/>,
+    /// such as the activation, positioning and highlighting of turner arrows.
+    /// </summary>
     public class LocomotionTurnerInteractorVisual : MonoBehaviour
     {
         [SerializeField]
@@ -46,6 +50,11 @@ namespace Oculus.Interaction.Locomotion
 
         [SerializeField]
         private float _verticalOffset = 0.02f;
+
+        /// <summary>
+        /// The vertical offset above the <see cref="LocomotionTurnerInteractor.MidPoint"/>
+        /// where the arrow visuals will be positioned.
+        /// </summary>
         public float VerticalOffset
         {
             get => _verticalOffset;
@@ -139,6 +148,12 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllLocomotionTurnerInteractorArrowsVisual(
             LocomotionTurnerInteractor turner, TurnArrowVisuals visuals)
         {
@@ -146,26 +161,56 @@ namespace Oculus.Interaction.Locomotion
             InjectVisuals(visuals);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="LocomotionTurnerInteractor"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTurner(LocomotionTurnerInteractor turner)
         {
             _turner = turner;
         }
 
+        /// <summary>
+        /// Sets the underlying root <see cref="Transform"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRoot(Transform root)
         {
             _root = root;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="TurnArrowVisuals"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectVisuals(TurnArrowVisuals visuals)
         {
             _visuals = visuals;
         }
 
+        /// <summary>
+        /// Sets the underlying optional LookAt <see cref="Transform"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalLookAt(Transform lookAt)
         {
             _lookAt = lookAt;
         }
 
+        /// <summary>
+        /// Sets the underlying optional <see cref="IAxis1D"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalProgress(IAxis1D progress)
         {
             _progress = progress as UnityEngine.Object;

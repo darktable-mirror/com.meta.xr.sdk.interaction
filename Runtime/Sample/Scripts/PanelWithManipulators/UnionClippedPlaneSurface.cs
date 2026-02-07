@@ -21,6 +21,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using UnityEngine.Pool;
 
 namespace Oculus.Interaction.Surfaces
 {
@@ -68,10 +70,16 @@ namespace Oculus.Interaction.Surfaces
             this.AssertCollectionItems(Clippers, nameof(Clippers));
         }
 
+        [Obsolete("Use the non-alloc version instead")]
         public List<Bounds> GetLocalBounds()
         {
             var clipBounds = new List<Bounds>();
+            GetLocalBoundsNonAlloc(ref clipBounds);
+            return clipBounds;
+        }
 
+        public void GetLocalBoundsNonAlloc(ref List<Bounds> clipBounds)
+        {
             IReadOnlyList<IBoundsClipper> clippers = GetClippers();
             for (int i = 0; i < clippers.Count; i++)
             {
@@ -84,8 +92,6 @@ namespace Oculus.Interaction.Surfaces
 
                 clipBounds.Add(clipTo);
             }
-
-            return clipBounds;
         }
 
         private Vector3 ClampPoint(in Vector3 point, in Bounds bounds)
@@ -106,7 +112,9 @@ namespace Oculus.Interaction.Surfaces
         {
             if (!_planeSurface.ClosestSurfacePoint(point, out hit, maxDistance)) return false;
             //Vector3.kEpsilon
-            var boundsList = GetLocalBounds();
+
+            List<Bounds> boundsList = ListPool<Bounds>.Get();
+            GetLocalBoundsNonAlloc(ref boundsList);
             var points = new List<(Vector3, float)>();
             foreach (var bounds in boundsList)
             {
@@ -123,6 +131,9 @@ namespace Oculus.Interaction.Surfaces
                     points.Add((clampPoint, distance));
                 }
             }
+            ListPool<Bounds>.Release(boundsList);
+            boundsList = null;
+
             if (points.Count == 0) return false;
 
             var minPoint = points[0];
@@ -143,14 +154,17 @@ namespace Oculus.Interaction.Surfaces
         {
             if (BackingSurface.Raycast(ray, out hit, maxDistance))
             {
-                var bounds = GetLocalBounds();
+                List<Bounds> bounds = ListPool<Bounds>.Get();
+                GetLocalBoundsNonAlloc(ref bounds);
                 foreach (var bound in bounds)
                 {
                     if (bound.Contains(Transform.InverseTransformPoint(hit.Point)))
                     {
+                        ListPool<Bounds>.Release(bounds);
                         return true;
                     }
                 }
+                ListPool<Bounds>.Release(bounds);
                 return false;
             }
             return false;

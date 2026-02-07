@@ -21,6 +21,10 @@
 using Oculus.Interaction.DebugTree;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection.Debug
 {
@@ -36,30 +40,20 @@ namespace Oculus.Interaction.PoseDetection.Debug
         private static Dictionary<Type, IActiveStateModel> _models =
             new Dictionary<Type, IActiveStateModel>();
 
+        [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
         public static void RegisterModel<TType>(IActiveStateModel stateModel)
             where TType : class, IActiveState
         {
-            Type key = typeof(TType);
-            if (_models.ContainsKey(key))
-            {
-                _models[key] = stateModel;
-            }
-            else
-            {
-                _models.Add(key, stateModel);
-            }
+            _models[typeof(TType)] = stateModel;
         }
 
-        protected override bool TryGetChildren(IActiveState node, out IEnumerable<IActiveState> children)
+        protected override async Task<IEnumerable<IActiveState>> TryGetChildrenAsync(IActiveState node)
         {
-            if (_models.TryGetValue(node.GetType(), out IActiveStateModel model)
-                && model != null)
+            if (_models.TryGetValue(node.GetType(), out IActiveStateModel model))
             {
-                children = model.GetChildren(node);
-                return true;
+                return await model.GetChildrenAsync(node);
             }
-            children = null;
-            return false;
+            return Enumerable.Empty<IActiveState>();
         }
     }
 }

@@ -24,7 +24,7 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A Transformer that rotates the target about an axis.
+    /// An <see cref="ITransformer"/> that rotates the target about an axis.
     /// Updates apply relative rotational changes of a GrabPoint about an axis.
     /// The axis is defined by a pivot transform: a world position and up vector.
     /// </summary>
@@ -45,8 +45,14 @@ namespace Oculus.Interaction
         [SerializeField]
         private Axis _rotationAxis = Axis.Up;
 
+        /// <summary>
+        /// The axis that this transformer will rotate around.
+        /// </summary>
         public Axis RotationAxis => _rotationAxis;
 
+        /// <summary>
+        /// Constraints that determine the minimum and maximum rotation angle for this transormer.
+        /// </summary>
         [Serializable]
         public class OneGrabRotateConstraints
         {
@@ -62,6 +68,9 @@ namespace Oculus.Interaction
                 MaxAngle = new FloatConstraint()
             };
 
+        /// <summary>
+        /// The current <see cref="OneGrabRotateConstraints"/> that are being used by this instance.
+        /// </summary>
         public OneGrabRotateConstraints Constraints
         {
             get
@@ -88,11 +97,20 @@ namespace Oculus.Interaction
         private Quaternion _localRotation;
         private float _startAngle = 0;
 
+
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.Initialize"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
         }
 
+        /// <summary>
+        /// Computes the pose of the rotational pivot, in world space.
+        /// </summary>
+        /// <returns>The world space pose of the rotational pivot.</returns>
         public Pose ComputeWorldPivotPose()
         {
             if (_pivotTransform != null)
@@ -110,6 +128,10 @@ namespace Oculus.Interaction
             return new Pose(worldPosition, worldRotation);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.BeginTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void BeginTransform()
         {
             var grabPoint = _grabbable.GrabPoints[0];
@@ -157,6 +179,10 @@ namespace Oculus.Interaction
             _transformPoseInPivotSpace.position /= parentScale;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.UpdateTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void UpdateTransform()
         {
             var grabPoint = _grabbable.GrabPoints[0];
@@ -208,20 +234,42 @@ namespace Oculus.Interaction
             targetTransform.rotation = transformDeltaRotated.rotation;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.EndTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void EndTransform() { }
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="OneGrabRotateTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalPivotTransform(Transform pivotTransform)
         {
             _pivotTransform = pivotTransform;
         }
 
+        /// <summary>
+        /// Sets the underlying optional rotational <see cref="Axis"/> for a dynamically instantiated
+        /// <see cref="OneGrabRotateTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRotationAxis(Axis rotationAxis)
         {
             _rotationAxis = rotationAxis;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="OneGrabRotateConstraints"/> for a dynamically instantiated
+        /// <see cref="OneGrabRotateTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalConstraints(OneGrabRotateConstraints constraints)
         {
             _constraints = constraints;

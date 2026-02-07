@@ -13,34 +13,34 @@ MonoBehaviour:
   m_Name: UIThemeCustomBrandExample1
   m_EditorClassIdentifier: 
   _themeVersion: 2
-  backplateColor: {r: 1, g: 0.5273903, b: 0.040880322, a: 1}
-  backplateGradientMaterial: {fileID: 2100000, guid: 80ed8b4728ea41d4482d3c5528a2660f,
+  backplateColor: {r: 0.2784314, g: 0.17254902, b: 0.3529412, a: 1}
+  backplateGradientMaterial: {fileID: 2100000, guid: 6530d9980ee10234e89fb35dbedf2bd4,
     type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
-  sectionPlateColor: {r: 0.7490196, g: 0.35686275, b: 0.03137255, a: 1}
-  tooltipColor: {r: 0.4528302, g: 0.25047818, b: 0.079743646, a: 1}
+  sectionPlateColor: {r: 0.33013394, g: 0.21725798, b: 0.408805, a: 1}
+  tooltipColor: {r: 0.261697, g: 0.09718754, b: 0.33962262, a: 1}
   textPrimaryColor: {r: 0.94509804, g: 0.95686275, b: 0.96862745, a: 1}
   textSecondaryColor: {r: 0.6901961, g: 0.7019608, b: 0.72156864, a: 1}
   textPrimaryInvertedColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   textSecondaryInvertedColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.69803923}
   primaryButton:
-    normal: {r: 0.9433962, g: 0.7372137, b: 0.53103113, a: 1}
-    highlighted: {r: 0.5568628, g: 0.4784314, b: 0.42352945, a: 1}
-    pressed: {r: 0.74509805, g: 0.6666667, b: 0.60784316, a: 1}
-    selected: {r: 0.4039216, g: 0.32156864, b: 0.26666668, a: 1}
-    disabled: {r: 0.8000001, g: 0.7607844, b: 0.7294118, a: 1}
+    normal: {r: 0.7182461, g: 0.534156, b: 0.8050314, a: 1}
+    highlighted: {r: 0.6525609, g: 0.4343182, b: 0.754717, a: 1}
+    pressed: {r: 0.5733862, g: 0.30954066, b: 0.6981132, a: 1}
+    selected: {r: 0.6509804, g: 0.43529415, b: 0.75294125, a: 1}
+    disabled: {r: 0.5345911, g: 0.5345911, b: 0.5345911, a: 1}
   secondaryButton:
-    normal: {r: 0.7484276, g: 0.35713902, b: 0.030595962, a: 1}
-    highlighted: {r: 0.8000001, g: 0.48627454, b: 0.2392157, a: 1}
-    pressed: {r: 0.8588236, g: 0.6431373, b: 0.47450984, a: 1}
-    selected: {r: 0.7254902, g: 0.3803922, b: 0.1137255, a: 1}
-    disabled: {r: 0.9333334, g: 0.79215693, b: 0.6862745, a: 1}
+    normal: {r: 0.46722966, g: 0.25002956, b: 0.61635214, a: 1}
+    highlighted: {r: 0.6322902, g: 0.46908733, b: 0.74213827, a: 1}
+    pressed: {r: 0.8003639, g: 0.7014358, b: 0.8679245, a: 1}
+    selected: {r: 0.5058824, g: 0.3019608, b: 0.6431373, a: 1}
+    disabled: {r: 0.53333336, g: 0.53333336, b: 0.53333336, a: 1}
   borderlessButton:
-    normal: {r: 0.7254902, g: 0.3803922, b: 0.1137255, a: 0}
-    highlighted: {r: 0.8000001, g: 0.48627454, b: 0.2392157, a: 1}
-    pressed: {r: 0.8588236, g: 0.6431373, b: 0.47450984, a: 1}
-    selected: {r: 0.7254902, g: 0.3803922, b: 0.1137255, a: 1}
-    disabled: {r: 0.9333334, g: 0.79215693, b: 0.6862745, a: 0}
+    normal: {r: 0.5058824, g: 0.3019608, b: 0.6431373, a: 0}
+    highlighted: {r: 0.6313726, g: 0.47058827, b: 0.7411765, a: 1}
+    pressed: {r: 0.8000001, g: 0.7019608, b: 0.86666673, a: 1}
+    selected: {r: 0.5058824, g: 0.3019608, b: 0.6431373, a: 1}
+    disabled: {r: 0.53333336, g: 0.53333336, b: 0.53333336, a: 0}
   destructiveButton:
     normal: {r: 0.6666667, g: 0.039215688, b: 0.11764707, a: 1}
     highlighted: {r: 0.69803923, g: 0.13333334, b: 0.20392159, a: 1}

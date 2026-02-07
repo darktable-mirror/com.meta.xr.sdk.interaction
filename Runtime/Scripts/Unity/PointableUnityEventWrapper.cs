@@ -88,12 +88,46 @@ namespace Oculus.Interaction
         [SerializeField]
         private UnityEvent<PointerEvent> _whenCancel;
 
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Unselect"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenRelease => _whenRelease;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Hover"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenHover => _whenHover;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Unhover"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenUnhover => _whenUnhover;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Select"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenSelect => _whenSelect;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Unselect"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenUnselect => _whenUnselect;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Move"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenMove => _whenMove;
+
+        /// <summary>
+        /// Raised when the <see cref="IPointable"/> emits a <see cref="PointerEvent"/>
+        /// with the <see cref="PointerEventType.Cancel"/> state.
+        /// </summary>
         public UnityEvent<PointerEvent> WhenCancel => _whenCancel;
 
         protected bool _started = false;
@@ -161,11 +195,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="PointableUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllPointableUnityEventWrapper(IPointable pointable)
         {
             InjectPointable(pointable);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IPointable"/> for a dynamically instantiated
+        /// <see cref="PointableUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectPointable(IPointable pointable)
         {
             _pointable = pointable as UnityEngine.Object;

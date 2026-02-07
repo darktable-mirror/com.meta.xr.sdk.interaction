@@ -186,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _axis2D: {fileID: 6931310322613913978}
   _interactor: {fileID: 8105528931859149806}
-  _scrollSpeed: 5
+  _scrollSpeed: 20
   _deadZone: 0.1
   _scrollXAxis: 1
   _scrollYAxis: 1
@@ -307,7 +307,7 @@ MonoBehaviour:
   _hoverColor1: {r: 1, g: 1, b: 1, a: 0}
   _selectColor0: {r: 0, g: 0.3413641, b: 0.7924528, a: 0.5803922}
   _selectColor1: {r: 0, g: 0.34117648, b: 0.79215693, a: 0}
-  _hideWhenNoInteractable: 0
+  _hideWhenNoInteractable: 1
 --- !u!114 &1678756800000762683
 MonoBehaviour:
   m_ObjectHideFlags: 0

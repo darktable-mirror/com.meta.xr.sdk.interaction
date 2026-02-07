@@ -24,6 +24,11 @@ using Oculus.Interaction.Input;
 
 namespace Oculus.Interaction.Body.Input
 {
+    /// <summary>
+    /// The primary concrete type through which Body data is accessed. Components consuming body data (such as
+    /// <see cref="PoseDetection.PoseFromBody"/>) should prefer to do so through the interface <see cref="IBody"/>
+    /// rather than depending directly on this concrete type or alternative implementations.
+    /// </summary>
     public class Body : DataModifier<BodyDataAsset>, IBody
     {
         [Tooltip("If assigned, joint pose translations into world " +
@@ -32,20 +37,48 @@ namespace Oculus.Interaction.Body.Input
         [SerializeField, Optional]
         private Transform _trackingSpace;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.IsConnected"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool IsConnected => GetData().IsDataValid;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.IsHighConfidence"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool IsHighConfidence => GetData().IsDataHighConfidence;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.Scale"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public float Scale => GetData().RootScale;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.SkeletonMapping"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public ISkeletonMapping SkeletonMapping => GetData().SkeletonMapping;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.IsTrackedDataValid"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool IsTrackedDataValid => GetData().IsDataValid;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.WhenBodyUpdated"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public event Action WhenBodyUpdated = delegate { };
 
         private BodyJointsCache _jointPosesCache;
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.GetJointPose(BodyJointId, out Pose)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool GetJointPose(BodyJointId bodyJointId, out Pose pose)
         {
             pose = Pose.identity;
@@ -59,6 +92,10 @@ namespace Oculus.Interaction.Body.Input
             return true;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.GetJointPoseLocal(BodyJointId, out Pose)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool GetJointPoseLocal(BodyJointId bodyJointId, out Pose pose)
         {
             pose = Pose.identity;
@@ -72,6 +109,10 @@ namespace Oculus.Interaction.Body.Input
             return true;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.GetJointPoseFromRoot(BodyJointId, out Pose)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public bool GetJointPoseFromRoot(BodyJointId bodyJointId, out Pose pose)
         {
             pose = Pose.identity;
@@ -85,6 +126,14 @@ namespace Oculus.Interaction.Body.Input
             return true;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IBody.GetRootPose(out Pose)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
+        /// <remarks>
+        /// This is functionally equivalent to calling <see cref="GetJointPose(BodyJointId, out Pose)"/> on joint
+        /// <see cref="BodyJointId.Body_Root"/>.
+        /// </remarks>
         public bool GetRootPose(out Pose pose)
         {
             pose = Pose.identity;
@@ -120,6 +169,10 @@ namespace Oculus.Interaction.Body.Input
             // Default implementation does nothing, to allow instantiation of this modifier directly
         }
 
+        /// <summary>
+        /// Implementation of <see cref="DataSource{TData}.MarkInputDataRequiresUpdate"/>; for details, please refer to
+        /// the related documentation provided for that method.
+        /// </summary>
         public override void MarkInputDataRequiresUpdate()
         {
             base.MarkInputDataRequiresUpdate();

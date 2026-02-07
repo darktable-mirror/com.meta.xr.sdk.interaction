@@ -26,8 +26,8 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This class implements higher level logic to forward the highest IInteractableView
-    /// state of any of the interactables in its list
+    /// This class implements higher level logic to forward the highest <see cref="IInteractableView"/>
+    /// state of any of the <see cref="IInteractableView"/> in its list
     /// </summary>
     public class InteractableGroupView : MonoBehaviour, IInteractableView
     {
@@ -38,8 +38,18 @@ namespace Oculus.Interaction
 
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.Data"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public object Data { get; protected set; } = null;
 
+        /// <summary>
+        /// The sum of <see cref="IInteractableView.InteractorViews"/>
+        /// counts for each interactable in <see cref="Interactables"/>.
+        /// </summary>
         public int InteractorsCount
         {
             get
@@ -54,6 +64,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The sum of <see cref="IInteractableView.SelectingInteractorViews"/>
+        /// counts for each interactable in <see cref="Interactables"/>.
+        /// </summary>
         public int SelectingInteractorsCount
         {
             get
@@ -68,17 +82,55 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.InteractorViews"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IEnumerable<IInteractorView> InteractorViews =>
             Interactables.SelectMany(interactable => interactable.InteractorViews).ToList();
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.SelectingInteractorViews"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IEnumerable<IInteractorView> SelectingInteractorViews =>
             Interactables.SelectMany(interactable => interactable.SelectingInteractorViews).ToList();
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenInteractorViewAdded"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenInteractorViewAdded = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenInteractorViewRemoved"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenInteractorViewRemoved = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenSelectingInteractorViewAdded"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenSelectingInteractorViewAdded = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenSelectingInteractorViewRemoved"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenSelectingInteractorViewRemoved = delegate { };
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.MaxInteractors"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public int MaxInteractors
         {
             get
@@ -93,6 +145,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.MaxSelectingInteractors"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public int MaxSelectingInteractors
         {
             get
@@ -107,9 +164,20 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenStateChanged"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<InteractableStateChangeArgs> WhenStateChanged = delegate { };
 
         private InteractableState _state = InteractableState.Normal;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.State"/>;
+        /// for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public InteractableState State
         {
             get
@@ -223,11 +291,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractableGroupView"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractableGroupView(List<IInteractableView> interactables)
         {
             InjectInteractables(interactables);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractableView"/> set for a dynamically instantiated
+        /// <see cref="InteractableGroupView"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractables(List<IInteractableView> interactables)
         {
             Interactables = interactables;
@@ -235,6 +315,12 @@ namespace Oculus.Interaction
                 Interactables.ConvertAll(interactable => interactable as UnityEngine.Object);
         }
 
+        /// <summary>
+        /// Sets the underlying optional data object for a dynamically instantiated
+        /// <see cref="InteractableGroupView"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalData(object data)
         {
             _data = data as UnityEngine.Object;

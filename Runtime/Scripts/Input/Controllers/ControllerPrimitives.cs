@@ -58,7 +58,7 @@ namespace Oculus.Interaction.Input
 
     public struct ControllerInput
     {
-        public ControllerButtonUsage ButtonUsageMask { get; private set; }
+        public ControllerButtonUsage ButtonUsageMask { get; set; }
 
         public bool PrimaryButton => (ButtonUsageMask & ControllerButtonUsage.PrimaryButton) != 0;
         public bool PrimaryTouch => (ButtonUsageMask & ControllerButtonUsage.PrimaryTouch) != 0;

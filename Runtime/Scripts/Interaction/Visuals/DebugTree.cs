@@ -18,8 +18,12 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Oculus.Interaction.DebugTree
 {
@@ -76,25 +80,28 @@ namespace Oculus.Interaction.DebugTree
 
         public ITreeNode<TLeaf> GetRootNode()
         {
-            if (_rootNode == null)
-            {
-                _rootNode = BuildTree(Root);
-            }
             return _rootNode;
         }
 
+        [Obsolete("Use async method instead.", true)]
         public void Rebuild()
         {
-            _rootNode = BuildTree(Root);
+            throw new System.NotImplementedException();
         }
 
-        private Node BuildTree(TLeaf root)
+        public async Task RebuildAsync()
+        {
+            var rootNode = await BuildTreeAsync(Root);
+            _rootNode = rootNode;
+        }
+
+        private async Task<Node> BuildTreeAsync(TLeaf root)
         {
             _existingNodes.Clear();
-            return BuildTreeRecursive(root);
+            return await BuildTreeRecursiveAsync(root);
         }
 
-        private Node BuildTreeRecursive(TLeaf value)
+        private async Task<Node> BuildTreeRecursiveAsync(TLeaf value)
         {
             if (value == null)
             {
@@ -108,11 +115,14 @@ namespace Oculus.Interaction.DebugTree
 
             List<Node> children = new List<Node>();
 
-            if (TryGetChildren(value, out IEnumerable<TLeaf> c))
+            var asyncChildren = await TryGetChildrenAsync(value);
+            foreach (var child in asyncChildren)
             {
-                children.AddRange(c
-                    .Select((child) => BuildTreeRecursive(child))
-                    .Where((child) => child != null));
+                var result = await BuildTreeRecursiveAsync(child);
+                if (result != null)
+                {
+                    children.Add(result);
+                }
             }
 
             Node self = new Node()
@@ -125,6 +135,10 @@ namespace Oculus.Interaction.DebugTree
             return self;
         }
 
-        protected abstract bool TryGetChildren(TLeaf node, out IEnumerable<TLeaf> children);
+        [Obsolete("Use async method instead.", true)]
+        protected virtual bool TryGetChildren(TLeaf node, out IEnumerable<TLeaf> children) =>
+            throw new System.NotImplementedException();
+
+        protected abstract Task<IEnumerable<TLeaf>> TryGetChildrenAsync(TLeaf node);
     }
 }

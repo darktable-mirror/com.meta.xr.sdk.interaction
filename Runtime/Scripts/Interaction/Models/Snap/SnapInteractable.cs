@@ -26,13 +26,20 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// SnapInteractables provide Pose targets for SnapInteractors to translate and rotate towards.
+    /// Provide Pose targets for <see cref="SnapInteractor"/>s to translate and rotate towards.
+    /// In a Snap interaction, the Interactable can be thought of as the target, with the
+    /// interactor as the source. The <see cref="SnapInteractor"/> finds interactables in much the
+    /// same way as other interactions, and uses this association to determine which target to snap to.
     /// </summary>
     public class SnapInteractable : Interactable<SnapInteractor, SnapInteractable>,
         IRigidbodyRef
     {
         [SerializeField]
         private Rigidbody _rigidbody;
+
+        /// <summary>
+        /// The rigidbody of the snap target.
+        /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
@@ -123,7 +130,7 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Moves the tracked element using the <cref="ISnapPoseDelegate" />.
+        /// Moves the tracked element using the <see cref="ISnapPoseDelegate" />.
         /// </summary>
         public void InteractorHoverUpdated(SnapInteractor interactor)
         {
@@ -172,7 +179,10 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Sets all required values for a snap interactable to a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="SnapInteractable"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllSnapInteractable(Rigidbody rigidbody)
         {
@@ -180,7 +190,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a Rigidbody on a dynamically instantiated GameObject.
+        /// Sets the underlying <see cref="Rigidbody"/> for a dynamically instantiated
+        /// <see cref="SnapInteractable"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
@@ -188,7 +201,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a movement provider on a dynamically instantiated GameObject.
+        /// Sets the underlying optional <see cref="IMovementProvider"/> for a dynamically instantiated
+        /// <see cref="SnapInteractable"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalMovementProvider(IMovementProvider provider)
         {
@@ -197,7 +213,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a snap pose delegate on a dynamically instantiated GameObject.
+        /// Sets the underlying optional <see cref="ISnapPoseDelegate"/> for a dynamically instantiated
+        /// <see cref="SnapInteractable"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalSnapPoseDelegate(ISnapPoseDelegate snapPoseDelegate)
         {

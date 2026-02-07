@@ -100,15 +100,58 @@ namespace Oculus.Interaction
         [SerializeField]
         private UnityEvent _whenPostprocessed;
 
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// into the <see cref="InteractorState.Disabled"/> state.
+        /// </summary>
         public UnityEvent WhenDisabled => _whenDisabled;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// out of the <see cref="InteractorState.Disabled"/> state.
+        /// </summary>
         public UnityEvent WhenEnabled => _whenEnabled;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// into the <see cref="InteractorState.Hover"/> state.
+        /// </summary>
         public UnityEvent WhenHover => _whenHover;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// out of the <see cref="InteractorState.Hover"/> state.
+        /// </summary>
         public UnityEvent WhenUnhover => _whenUnhover;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// into the <see cref="InteractorState.Select"/> state.
+        /// </summary>
         public UnityEvent WhenSelect => _whenSelect;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> transitions
+        /// out of the <see cref="InteractorState.Select"/> state.
+        /// </summary>
         public UnityEvent WhenUnselect => _whenUnselect;
 
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> fires its
+        /// <see cref="IInteractorView.WhenPreprocessed"/> event
+        /// </summary>
         public UnityEvent WhenPreprocessed => _whenPreprocessed;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> fires its
+        /// <see cref="IInteractorView.WhenProcessed"/> event
+        /// </summary>
         public UnityEvent WhenProcessed => _whenProcessed;
+
+        /// <summary>
+        /// Raised when the <see cref="IInteractorView"/> fires its
+        /// <see cref="IInteractorView.WhenPostprocessed"/> event
+        /// </summary>
         public UnityEvent WhenPostprocessed => _whenPostprocessed;
 
         protected bool _started = false;
@@ -200,15 +243,25 @@ namespace Oculus.Interaction
             _whenPostprocessed.Invoke();
         }
 
-
-
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractorUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractorUnityEventWrapper(IInteractorView interactorView)
         {
             InjectInteractorView(interactorView);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractorView"/> for a dynamically instantiated
+        /// <see cref="InteractorUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractorView(IInteractorView interactorView)
         {
             _interactorView = interactorView as UnityEngine.Object;

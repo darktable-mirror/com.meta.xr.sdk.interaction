@@ -142,7 +142,6 @@ namespace Oculus.Interaction.Input
                     Vector3 localPos = PoseUtils.Delta(
                         _lastStates.JointPoses[parent],
                         _lastStates.JointPoses[i]).position;
-
 #pragma warning disable 0618
                     PoseUtils.Multiply(data.JointPoses[parent],
                         new Pose(localPos, data.Joints[i]),
@@ -200,7 +199,11 @@ namespace Oculus.Interaction.Input
             for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; ++i)
             {
                 JointFreedom freedomLevel = _jointsFreedomLevels[i];
+#if ISDK_OPENXR_HAND
+                Quaternion desiredRotation = AmendMetacarpalRotation(i, jointRotations);
+#else
                 Quaternion desiredRotation = _desiredJointsRotation[i];
+#endif
                 float overrideFactor = _jointsOverrideFactor[i];
                 int rawJointIndex = (int)FingersMetadata.HAND_JOINT_IDS[i];
 
@@ -266,6 +269,43 @@ namespace Oculus.Interaction.Input
                 _lastSyntheticRotation[i] = jointRotations[rawJointIndex];
             }
         }
+
+#if ISDK_OPENXR_HAND
+        /// <summary>
+        /// In OpenXR Hand, the metacarpals orientations might differ in different representations.
+        /// This method locks the metacarpals (they should not move anyway) and reorients the
+        /// desired proximals orientation (local to the metacarpal) to be correctly rotated
+        /// in wrist space
+        /// </summary>
+        /// <param name="jointIndex">The index of the HAND_JOINT_IDS collection to extract the rotation</param>
+        /// <param name="sourceRotations">The original source rotations for the joints</param>
+        /// <returns>The desired rotation for the joint, with metacarpals and proximals corrected</returns>
+        private Quaternion AmendMetacarpalRotation(int jointIndex, in Quaternion[] sourceRotations)
+        {
+            HandJointId jointId = FingersMetadata.HAND_JOINT_IDS[jointIndex];
+            int fullIndex = (int)jointId;
+
+            //central finger metacarpals cannot move, so they maintain their source rotation
+            if (jointId == HandJointId.HandIndex0
+                || jointId == HandJointId.HandMiddle0
+                || jointId == HandJointId.HandRing0)
+            {
+                return sourceRotations[fullIndex];
+            }
+            //proximals need to have their rotation adjusted in wrist space
+            //so we undo the rotation of the source metacarpal. Then when generating
+            //the final Joints it will be pre-multiplied again
+            else if (jointId == HandJointId.HandIndex1
+                || jointId == HandJointId.HandMiddle1
+                || jointId == HandJointId.HandRing1)
+            {
+                return Quaternion.Inverse(sourceRotations[fullIndex - 1])
+                    * _desiredJointsRotation[jointIndex];
+            }
+
+            return _desiredJointsRotation[jointIndex];
+        }
+#endif
 
         /// <summary>
         /// Stores the rotation data for all joints in the hand, to be applied during <see cref="Apply(HandDataAsset)"/>.

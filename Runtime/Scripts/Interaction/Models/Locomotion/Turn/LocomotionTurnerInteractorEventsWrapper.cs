@@ -23,6 +23,11 @@ using UnityEngine.Events;
 
 namespace Oculus.Interaction.Locomotion
 {
+    /// <summary>
+    /// Exposes <see cref="UnityEvent"/>s wrapping a <see cref="LocomotionTurnerInteractor"/>
+    /// component. See the <see cref="LocomotionTurnerInteractor"/> documentation for more details
+    /// on when these events are raised and what they represent.
+    /// </summary>
     public class LocomotionTurnerInteractorEventsWrapper : MonoBehaviour
     {
         [SerializeField]
@@ -34,7 +39,14 @@ namespace Oculus.Interaction.Locomotion
         [SerializeField]
         private UnityEvent _whenTurnDirectionRight;
 
+        /// <summary>
+        /// Raised when the Turner signals a turn to the left.
+        /// </summary>
         public UnityEvent WhenTurnDirectionLeft => _whenTurnDirectionLeft;
+
+        /// <summary>
+        /// Raised when the Turner signals a turn to the right.
+        /// </summary>
         public UnityEvent WhenTurnDirectionRight => _whenTurnDirectionRight;
 
         protected bool _started;
@@ -76,11 +88,23 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorEventsWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllLocomotionTurnerInteractorEventsWrapper(LocomotionTurnerInteractor turner)
         {
             InjectTurner(turner);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="LocomotionTurnerInteractor"/> for a dynamically instantiated
+        /// <see cref="LocomotionTurnerInteractorEventsWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTurner(LocomotionTurnerInteractor turner)
         {
             _turner = turner;

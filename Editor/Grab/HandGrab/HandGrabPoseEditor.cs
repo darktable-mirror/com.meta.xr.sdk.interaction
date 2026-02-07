@@ -39,7 +39,9 @@ namespace Oculus.Interaction.HandGrab.Editor
         private Handedness _lastHandedness;
         private Transform _relativeTo;
 
+#if !ISDK_OPENXR_HAND
         private bool _openXRCompatFoldout = false;
+#endif
         private int _editMode = 0;
         private SerializedProperty _handPoseProperty;
         private SerializedProperty _relativeToProperty;
@@ -301,6 +303,11 @@ namespace Oculus.Interaction.HandGrab.Editor
                 if (i >= _handGrabPose.HandPose.JointRotations.Length)
                 {
                     return;
+                }
+
+                if (!FingersMetadata.HAND_JOINT_CAN_MOVE[i])
+                {
+                    continue;
                 }
 
                 Transform transform = jointMap.transform;

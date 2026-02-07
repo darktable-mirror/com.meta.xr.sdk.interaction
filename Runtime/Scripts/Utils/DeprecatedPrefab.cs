@@ -28,7 +28,7 @@ namespace Oculus.Interaction
     /// </summary>
     public class DeprecatedPrefab : MonoBehaviour
     {
-        public static readonly string label = "This prefab has been depecated. " +
+        public static readonly string label = "This prefab has been deprecated. " +
             "Consider using using the replacement provided or unpack " +
             "the prefab before upgrading to a new version " +
             "in order to avoid losing information.";

@@ -22,6 +22,14 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Surfaces
 {
+    /// <summary>
+    /// The primary solid surface used by the Interaction SDK, this is an <see cref="ISurface"/> constructed using
+    /// a Unity Collider to characterize the topology of the surface.
+    /// </summary>
+    /// <remarks>
+    /// This type is particularly useful for making existing in-scene objects interactable by simply connecting
+    /// providing a ColliderSurface to represent their existing colliders in Interaction SDK logic.
+    /// </remarks>
     public class ColliderSurface : MonoBehaviour, ISurface, IBounds
     {
         /// <summary>
@@ -36,10 +44,22 @@ namespace Oculus.Interaction.Surfaces
             this.AssertField(_collider, nameof(_collider));
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Transform"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public Transform Transform => transform;
 
+        /// <summary>
+        /// Implementation of <see cref="IBounds.Bounds"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public Bounds Bounds => _collider.bounds;
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Raycast(in Ray, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool Raycast(in Ray ray, out SurfaceHit hit, float maxDistance = 0)
         {
             hit = new SurfaceHit();
@@ -58,6 +78,10 @@ namespace Oculus.Interaction.Surfaces
             return false;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.ClosestSurfacePoint(in Vector3, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit hit, float maxDistance = 0)
         {
             Vector3 closest = _collider.ClosestPoint(point);
@@ -75,11 +99,19 @@ namespace Oculus.Interaction.Surfaces
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated ColliderSurface; effectively wraps <see cref="InjectCollider(Collider)"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllColliderSurface(Collider collider)
         {
             InjectCollider(collider);
         }
 
+        /// <summary>
+        /// Sets Unity Collider for a dynamically instantiated ColliderSurface. This method exists
+        /// to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectCollider(Collider collider)
         {
             _collider = collider;

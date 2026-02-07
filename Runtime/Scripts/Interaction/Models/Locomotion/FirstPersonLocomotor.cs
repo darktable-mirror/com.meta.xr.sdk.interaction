@@ -418,15 +418,12 @@ namespace Oculus.Interaction.Locomotion
         protected virtual void Update()
         {
             TryExitHotspot();
-
             UpdateCharacterHeight();
+            CatchUpCharacterToPlayer();
 
             if (!IgnoringVelocity)
             {
-                CatchUpCharacterToPlayer();
-
                 UpdateVelocity();
-
                 Pose startPose = _characterController.Pose;
                 Vector3 delta = _velocity * _deltaTimeProvider.Invoke();
                 _characterController.Move(delta);
@@ -712,7 +709,10 @@ namespace Oculus.Interaction.Locomotion
             if (_isHeadInHotspot && _headHotspotCenter.HasValue
                 && (force || IsHeadFarFromPoint(_headHotspotCenter.Value, _exitHotspotDistance)))
             {
-                EnableMovement();
+                _isHeadInHotspot = false;
+                _headHotspotCenter = null;
+                _velocity = Vector3.zero;
+                _characterController.TryGround();
                 return true;
             }
             return false;

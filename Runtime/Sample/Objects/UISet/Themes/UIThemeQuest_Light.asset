@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _themeVersion: 2
   backplateColor: {r: 1, g: 1, b: 1, a: 1}
-  backplateGradientMaterial: {fileID: 2100000, guid: 3f1a8ea57450bd749a74467129ec5145,
+  backplateGradientMaterial: {fileID: 2100000, guid: 474374ac034110f43a206174b2565717,
     type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
   sectionPlateColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.07058824}

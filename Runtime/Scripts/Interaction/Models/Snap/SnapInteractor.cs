@@ -25,10 +25,10 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// SnapInteractors can snap to poses provided by SnapInteractables.
-    /// SnapInteractors select and unselect in response to a PointableElement.
-    /// SnapInteractors hover when the PointableElement has selecting pointers and snap to the best
-    /// SnapInteractable pose when the PointableElement has no more selecting pointers.
+    /// SnapInteractors can snap to poses provided by <see cref="SnapInteractable"/>s.
+    /// SnapInteractors select and unselect in response to a <see cref="IPointableElement"/>.
+    /// SnapInteractors hover when the <see cref="IPointableElement"/> has selecting pointers and snap to the best
+    /// SnapInteractable pose when the <see cref="IPointableElement"/> has no more selecting pointers.
     /// </summary>
     public class SnapInteractor : Interactor<SnapInteractor, SnapInteractable>,
         IRigidbodyRef
@@ -39,6 +39,12 @@ namespace Oculus.Interaction
         [Tooltip("The object's Grabbable component.")]
         [SerializeField]
         private PointableElement _pointableElement;
+
+        /// <summary>
+        /// This <see cref="IPointableElement"/> will trigger the snap interaction. This interactor
+        /// will listen to select and unselect events from this element, and begin the snap interaction
+        /// in response to these events.
+        /// </summary>
         public IPointableElement PointableElement => _pointableElement;
 
         /// <summary>
@@ -47,6 +53,10 @@ namespace Oculus.Interaction
         [Tooltip("The object's RigidBody component.")]
         [SerializeField]
         private Rigidbody _rigidbody;
+
+        /// <summary>
+        /// The Rigidbody of the interactor object.
+        /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
@@ -60,6 +70,14 @@ namespace Oculus.Interaction
         [FormerlySerializedAs("_snapPoint")]
         [FormerlySerializedAs("_dropPoint")]
         private Transform _snapPoseTransform;
+
+        /// <summary>
+        /// This is the source pose that will be snapped to the <see cref="SnapInteractable"/> target.
+        /// By default this will be the <see cref="Pose"/> of this GameObject's transform, but can be
+        /// another transform's pose if a <see cref="_snapPoseTransform"/> is provided. An example usage of
+        /// this is a vase which should be snapped to a table using a point on its base, rather than the
+        /// center of the vase object.
+        /// </summary>
         public Pose SnapPose => _snapPoseTransform.GetPose();
 
         /// <summary>
@@ -100,6 +118,10 @@ namespace Oculus.Interaction
 
         #region Properties
 
+        /// <summary>
+        /// Used to determine which object should snap to your hand when there are multiple to choose from.
+        /// Objects with a lower threshold have a higher priority.
+        /// </summary>
         public float DistanceThreshold
         {
             get

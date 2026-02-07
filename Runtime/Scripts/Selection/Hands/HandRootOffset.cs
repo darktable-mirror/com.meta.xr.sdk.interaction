@@ -27,12 +27,18 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Specifies a position and rotation offset from the root of the given hand
+    /// This component positions its transform relative to the root (wrist) joint
+    /// of an <see cref="IHand"/>. Offset and mirroring capabilities are provided,
+    /// otherwise the transform pose will match that of the hand wrist root.
     /// </summary>
     public class HandRootOffset : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// The <see cref="IHand"/> that provides the wrist joint used by this component.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         #region OVR Fields
@@ -64,6 +70,12 @@ namespace Oculus.Interaction
         [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
             "This allows for offset values to be set in Right hand coordinates for both Left and Right hands.")]
         private bool _mirrorOffsetsForLeftHand = true;
+
+        /// <summary>
+        /// When the attached hand's <see cref="IHand.Handedness"/> is set to <see cref="Handedness.Left"/>,
+        /// this property will mirror the offsets. This allows for offset values to be set in Right hand
+        /// coordinates for both Left and Right hands.
+        /// </summary>
         public bool MirrorOffsetsForLeftHand
         {
             get => _mirrorOffsetsForLeftHand;
@@ -73,6 +85,10 @@ namespace Oculus.Interaction
         [Header("Freeze rotations")]
         [SerializeField]
         private bool _freezeRotationX = false;
+
+        /// <summary>
+        /// When set, rotation about the X axis will be ignored.
+        /// </summary>
         public bool FreezeRotationX
         {
             get => _freezeRotationX;
@@ -80,6 +96,10 @@ namespace Oculus.Interaction
         }
         [SerializeField]
         private bool _freezeRotationY = false;
+
+        /// <summary>
+        /// When set, rotation about the Y axis will be ignored.
+        /// </summary>
         public bool FreezeRotationY
         {
             get => _freezeRotationY;
@@ -88,12 +108,20 @@ namespace Oculus.Interaction
 
         [SerializeField]
         private bool _freezeRotationZ = false;
+
+        /// <summary>
+        /// When set, rotation about the Z axis will be ignored.
+        /// </summary>
         public bool FreezeRotationZ
         {
             get => _freezeRotationZ;
             set => _freezeRotationZ = value;
         }
 
+        /// <summary>
+        /// The driven transform will be offset by this positional value
+        /// relative to the <see cref="Hand"/>'s wrist
+        /// </summary>
         public Vector3 Offset
         {
 #if ISDK_OPENXR_HAND
@@ -105,6 +133,10 @@ namespace Oculus.Interaction
 #endif
         }
 
+        /// <summary>
+        /// The driven transform will be offset by this rotational value
+        /// relative to the <see cref="Hand"/>'s wrist
+        /// </summary>
         public Quaternion Rotation
         {
 #if ISDK_OPENXR_HAND
@@ -116,6 +148,7 @@ namespace Oculus.Interaction
 #endif
         }
 
+        [Obsolete("Use " + nameof(MirrorOffsetsForLeftHand) + " instead.")]
         public bool MirrorLeftRotation
         {
             get => _mirrorOffsetsForLeftHand;
@@ -165,6 +198,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Applies the position offset <see cref="Offset"/> and the rotation offset 
+        /// <see cref="Rotation"/> to the provided <see cref="Pose"/>
+        /// </summary>
         public void GetOffset(ref Pose pose)
         {
             if (!_started)
@@ -175,6 +212,11 @@ namespace Oculus.Interaction
             GetOffset(ref pose, Hand.Handedness, Hand.Scale);
         }
 
+        /// <summary>
+        /// Applies the position offset <see cref="Offset"/> and the rotation offset 
+        /// <see cref="Rotation"/> to the provided <see cref="Pose"/> for a given
+        /// <see cref="Handedness"/> and hand scale factor.
+        /// </summary>
         public void GetOffset(ref Pose pose, Handedness handedness, float scale)
         {
             if (_mirrorOffsetsForLeftHand && handedness == Handedness.Left)
@@ -192,6 +234,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Retrieve the world space <see cref="Pose"/> of this transform.
+        /// </summary>
         public void GetWorldPose(ref Pose pose)
         {
             pose.position = this.transform.position;
@@ -229,11 +274,22 @@ namespace Oculus.Interaction
             return rotation;
         }
         #region Inject
+
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated <see cref="HandRootOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHandRootOffset(IHand hand)
         {
             InjectHand(hand);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHand"/> for a dynamically instantiated <see cref="HandRootOffset"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;

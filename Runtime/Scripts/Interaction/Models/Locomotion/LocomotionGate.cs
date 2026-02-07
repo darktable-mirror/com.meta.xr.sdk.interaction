@@ -25,10 +25,11 @@ using UnityEngine;
 namespace Oculus.Interaction.Locomotion
 {
     /// <summary>
-    /// This Gate reads the Hand orientation towards the shoulder and decides
-    /// if it should be in Teleport mode  or Turning mode.
-    /// It enables/disables said modes based on some Input ActiveStates (EnableShape and DisableShape).
-    /// It outputs it result into two ActiveStates (for Teleport and Turn)
+    /// This Gate reads the <see cref="IHand"/> orientation towards the shoulder and decides
+    /// if it should be in Teleport mode or Turning mode.
+    /// It enables/disables said modes based on some Input <see cref="IActiveState"/>s
+    /// (EnableShape and DisableShape).
+    /// It outputs it result into two <see cref="IActiveState"/>s (for Teleport and Turn)
     /// </summary>
     public class LocomotionGate : MonoBehaviour
     {
@@ -37,6 +38,10 @@ namespace Oculus.Interaction.Locomotion
         /// </summary>
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// The <see cref="IHand"/> that provides orientation data to this component.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -84,6 +89,11 @@ namespace Oculus.Interaction.Locomotion
         private int _currentGateIndex = -1;
 
         private LocomotionMode _activeMode = LocomotionMode.None;
+
+        /// <summary>
+        /// The current active <see cref="LocomotionMode"/> determined by the shape
+        /// and orientation of the assigned <see cref="IHand"/>.
+        /// </summary>
         public LocomotionMode ActiveMode
         {
             get
@@ -103,6 +113,9 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// Set of locomotion modes supported by this component - see <see cref="ActiveMode"/>.
+        /// </summary>
         public enum LocomotionMode
         {
             None,
@@ -110,14 +123,39 @@ namespace Oculus.Interaction.Locomotion
             Turn
         }
 
+        /// <summary>
+        /// Contains threshold data used to map hand orientation to <see cref="LocomotionMode"/>.
+        /// </summary>
         [System.Serializable]
         public class GateSection
         {
+            /// <summary>
+            /// The minimum detection angle.
+            /// </summary>
             public float minAngle = _wristLimit;
+
+            /// <summary>
+            /// The maximum detection angle.
+            /// </summary>
             public float maxAngle = 360f + _wristLimit;
+
+            /// <summary>
+            /// Determines if this gate can be entered from <see cref="LocomotionMode.None"/>,
+            /// or if it must be entered from another gate.
+            /// </summary>
             public bool canEnterDirectly = true;
+
+            /// <summary>
+            /// The locomotion mode that this gate represents.
+            /// </summary>
             public LocomotionMode locomotionMode = LocomotionMode.None;
 
+            /// <summary>
+            /// Translates the provided angle to a scoring factor, which is
+            /// used to determine which gate should be entered.
+            /// </summary>
+            /// <param name="angle">The input angle to score.</param>
+            /// <returns>The score of this gate determined by the input angle.</returns>
             public float ScoreToAngle(float angle)
             {
                 float dif = Mathf.Repeat(angle - minAngle, 360f);
@@ -133,6 +171,10 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// Data sent in the <see cref="WhenActiveModeChanged"/> event, which
+        /// provides some details about the current and previous locomotion mode(s).
+        /// </summary>
         public struct LocomotionModeEventArgs
         {
             public LocomotionMode PreviousMode { get; }
@@ -147,11 +189,29 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// The current hand angle computed by this component, using the
+        /// orientation of the <see cref="Hand"/>.
+        /// </summary>
         public float CurrentAngle { get; private set; }
+
+        /// <summary>
+        /// The wrist direction of the <see cref="Hand"/>.
+        /// </summary>
         public Vector3 WristDirection { get; private set; }
+
+        /// <summary>
+        /// A pose used for hand stabilization, derived from the
+        /// shoulder-to-hand orientation.
+        /// </summary>
         public Pose StabilizationPose { get; private set; } = Pose.identity;
 
         private Action<LocomotionModeEventArgs> _whenActiveModeChanged = delegate { };
+
+        /// <summary>
+        /// This event is raised whenever the active locomotion mode is changed
+        /// (see <see cref="ActiveMode"/>).
+        /// </summary>
         public event Action<LocomotionModeEventArgs> WhenActiveModeChanged
         {
             add => _whenActiveModeChanged += value;
@@ -326,6 +386,12 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllLocomotionGate(IHand hand, Transform shoulder,
             IActiveState enableShape, IActiveState disableShape,
             VirtualActiveState turningState, VirtualActiveState teleportState,
@@ -340,39 +406,81 @@ namespace Oculus.Interaction.Locomotion
             InjectGateSections(gateSections);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHand"/> for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Sets the underlying shoulder transform for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectShoulder(Transform shoulder)
         {
             _shoulder = shoulder;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IActiveState"/> enable shape for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectEnableShape(IActiveState enableShape)
         {
             _enableShape = enableShape as UnityEngine.Object;
             EnableShape = enableShape;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IActiveState"/> disable shape for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectDisableShape(IActiveState disableShape)
         {
             _disableShape = disableShape as UnityEngine.Object;
             DisableShape = disableShape;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="VirtualActiveState"/> for a dynamically instantiated
+        /// <see cref="LocomotionGate"/> representing the turning state.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTurningState(VirtualActiveState turningState)
         {
             _turningState = turningState;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="VirtualActiveState"/> for a dynamically instantiated
+        /// <see cref="LocomotionGate"/> representing the teleport state.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTeleportState(VirtualActiveState teleportState)
         {
             _teleportState = teleportState;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="GateSection"/> set for a dynamically instantiated
+        /// <see cref="LocomotionGate"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectGateSections(GateSection[] gateSections)
         {
             _gateSections = gateSections;

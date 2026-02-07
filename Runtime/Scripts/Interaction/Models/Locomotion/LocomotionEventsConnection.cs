@@ -44,8 +44,16 @@ namespace Oculus.Interaction.Locomotion
 
         private bool _started;
 
+        /// <summary>
+        /// Implementation of <see cref="ILocomotionEventBroadcaster.WhenLocomotionPerformed"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public event Action<LocomotionEvent> WhenLocomotionPerformed = delegate { };
 
+        /// <summary>
+        /// Implementation of <see cref="ILocomotionEventHandler.WhenLocomotionEventHandled"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public event Action<LocomotionEvent, Pose> WhenLocomotionEventHandled
         {
             add
@@ -94,6 +102,10 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ILocomotionEventHandler.HandleLocomotionEvent"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public void HandleLocomotionEvent(LocomotionEvent locomotionEvent)
         {
             if (_started && this.isActiveAndEnabled)
@@ -113,17 +125,35 @@ namespace Oculus.Interaction.Locomotion
             InjectHandler(handler);
         }
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="LocomotionEventsConnection"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllLocomotionBroadcastersHandlerConnection(
             ILocomotionEventHandler handler)
         {
             InjectHandler(handler);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="ILocomotionEventBroadcaster"/> set for a dynamically instantiated
+        /// <see cref="LocomotionEventsConnection"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalBroadcasters(IEnumerable<ILocomotionEventBroadcaster> broadcasters)
         {
             Broadcasters = broadcasters;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="ILocomotionEventHandler"/> for a dynamically instantiated
+        /// <see cref="LocomotionEventsConnection"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHandler(ILocomotionEventHandler handler)
         {
             _handler = handler as UnityEngine.Object;

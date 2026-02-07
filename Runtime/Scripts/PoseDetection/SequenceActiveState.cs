@@ -19,11 +19,16 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Oculus.Interaction.PoseDetection.Debug;
 using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// Wraps a <see cref="Sequence"/> component and adds several additional conditions to
+    /// its <see cref="IActiveState"/> logic.
+    /// </summary>
     public class SequenceActiveState : MonoBehaviour, IActiveState
     {
         [Tooltip("The Sequence that will drive this component.")]
@@ -45,6 +50,10 @@ namespace Oculus.Interaction.PoseDetection
             this.AssertField(_sequence, nameof(_sequence));
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IActiveState.Active"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public bool Active
         {
             get
@@ -61,14 +70,20 @@ namespace Oculus.Interaction.PoseDetection
 
         private class DebugModel : ActiveStateModel<SequenceActiveState>
         {
-            protected override IEnumerable<IActiveState> GetChildren(SequenceActiveState activeState)
+            protected override Task<IEnumerable<IActiveState>> GetChildrenAsync(SequenceActiveState activeState)
             {
-                return new[] { activeState._sequence };
+                return Task.FromResult<IEnumerable<IActiveState>>(new[] { activeState._sequence });
             }
         }
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="SequenceActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllSequenceActiveState(Sequence sequence,
             bool activateIfStepsStarted, bool activateIfStepsComplete)
         {
@@ -77,16 +92,34 @@ namespace Oculus.Interaction.PoseDetection
             InjectActivateIfStepsComplete(activateIfStepsComplete);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="Sequence"/> for a dynamically instantiated
+        /// <see cref="SequenceActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectSequence(Sequence sequence)
         {
             _sequence = sequence;
         }
 
+        /// <summary>
+        /// Sets ActivateIfStepsStarted for a dynamically instantiated
+        /// <see cref="SequenceActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectActivateIfStepsStarted(bool activateIfStepsStarted)
         {
             _activateIfStepsStarted = activateIfStepsStarted;
         }
 
+        /// <summary>
+        /// Sets ActivateIfStepsComplete for a dynamically instantiated
+        /// <see cref="SequenceActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectActivateIfStepsComplete(bool activateIfStepsComplete)
         {
             _activateIfStepsComplete = activateIfStepsComplete;

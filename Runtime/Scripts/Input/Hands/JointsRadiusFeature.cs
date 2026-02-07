@@ -22,11 +22,20 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Enables the retrieval of the joint radius for
+    /// joints within an <see cref="IHand"/>.
+    /// </summary>
     public class JointsRadiusFeature : MonoBehaviour
     {
         [SerializeField]
         private Hand _hand;
 
+        /// <summary>
+        /// Gets the radius of the provided <see cref="HandJointId"/>
+        /// </summary>
+        /// <param name="id">The joint to retrieve the radius for.</param>
+        /// <returns>The joint radius in world units.</returns>
         public float GetJointRadius(HandJointId id)
         {
 #if ISDK_OPENXR_HAND

@@ -24,6 +24,10 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Sets the color of a <see cref="Renderer"/> to reflect the
+    /// <see cref="InteractorState"/> of an <see cref="IInteractorView"/>.
+    /// </summary>
     public class InteractorDebugVisual : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IInteractorView))]
@@ -44,6 +48,10 @@ namespace Oculus.Interaction
         [SerializeField]
         private Color _disabledColor = Color.black;
 
+        /// <summary>
+        /// The color assigned to <see cref="_renderer"/> when the
+        /// interactor is in the <see cref="InteractorState.Normal"/> state.
+        /// </summary>
         public Color NormalColor
         {
             get
@@ -56,6 +64,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The color assigned to <see cref="_renderer"/> when the
+        /// interactor is in the <see cref="InteractorState.Hover"/> state.
+        /// </summary>
         public Color HoverColor
         {
             get
@@ -68,6 +80,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The color assigned to <see cref="_renderer"/> when the
+        /// interactor is in the <see cref="InteractorState.Select"/> state.
+        /// </summary>
         public Color SelectColor
         {
             get
@@ -80,6 +96,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The color assigned to <see cref="_renderer"/> when the
+        /// interactor is in the <see cref="InteractorState.Disabled"/> state.
+        /// </summary>
         public Color DisabledColor
         {
             get
@@ -158,18 +178,36 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractorDebugVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractorDebugVisual(IInteractorView interactorView, Renderer renderer)
         {
             InjectInteractorView(interactorView);
             InjectRenderer(renderer);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractorView"/> for a dynamically instantiated
+        /// <see cref="InteractorDebugVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractorView(IInteractorView interactorView)
         {
             _interactorView = interactorView as UnityEngine.Object;
             InteractorView = interactorView;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="Renderer"/> for a dynamically instantiated
+        /// <see cref="InteractorDebugVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectRenderer(Renderer renderer)
         {
             _renderer = renderer;

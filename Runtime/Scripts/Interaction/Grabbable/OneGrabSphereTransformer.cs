@@ -22,6 +22,12 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// An <see cref="ITransformer"/> that rotates the target on a spherical surface.
+    /// The center of the sphere is a provided transform, and the radius
+    /// is not fixed, but rather is determined by the distance from the object
+    /// to the sphere center. Movement can be constrained by min/max angle properties.
+    /// </summary>
     public class OneGrabSphereTransformer : MonoBehaviour, ITransformer
     {
         [SerializeField]
@@ -39,6 +45,10 @@ namespace Oculus.Interaction
         [SerializeField]
         private Vector3 _radiusToScaleRatio = new Vector3(1f, 1f, 1f);
 
+        /// <summary>
+        /// The minimum angle constraint, or how far the target can be transformer
+        /// in a negative direction from grab starting point.
+        /// </summary>
         public float MinAngle
         {
             get => _minAngle;
@@ -49,6 +59,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The maximum angle constraint, or how far the target can be transformer
+        /// in a positive direction from grab starting point.
+        /// </summary>
         public float MaxAngle
         {
             get => _maxAngle;
@@ -65,12 +79,20 @@ namespace Oculus.Interaction
             _maxAngle = Mathf.Clamp(_maxAngle, _minAngle, 90);
         }
 
+        /// <summary>
+        /// If true, the target will scale with the radius, which is derived
+        /// from the distance from the target to the sphere center.
+        /// </summary>
         public bool ScaleWithRadius
         {
             get => _scaleWithRadius;
             set { _scaleWithRadius = value; }
         }
 
+        /// <summary>
+        /// If <see cref="ScaleWithRadius"/> is true, this property determines
+        /// the ratio of scaling that will occur on each axis.
+        /// </summary>
         public Vector3 RadiusToScaleRatio
         {
             get => _radiusToScaleRatio;
@@ -83,12 +105,20 @@ namespace Oculus.Interaction
         private IGrabbable _grabbable;
         private Pose _localToTransform;
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.Initialize"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
             ClampMinMax();
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.BeginTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void BeginTransform()
         {
             var grabPose = _grabbable.GrabPoints[0];
@@ -98,6 +128,10 @@ namespace Oculus.Interaction
                                          Quaternion.Inverse(target.rotation) * grabPose.rotation);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.UpdateTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void UpdateTransform()
         {
             var grabPose = _grabbable.GrabPoints[0];
@@ -189,6 +223,10 @@ namespace Oculus.Interaction
             target.rotation = rotation;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.EndTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void EndTransform() { }
     }
 }

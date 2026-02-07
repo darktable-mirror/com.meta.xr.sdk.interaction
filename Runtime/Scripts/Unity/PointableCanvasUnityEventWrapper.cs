@@ -19,18 +19,19 @@
  */
 
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Events;
 
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Hooks into events raised from <cref="PointableCanvasModule" /> that correspond to a referenced <cref="IPointableCanvas" />, and tracks Unity Selectable (button, toggle, etc) events on that canvas rather than hooking into each Selectable on the Canvas individually.
+    /// Hooks into events raised from <see cref="PointableCanvasModule"/> that correspond to a referenced
+    /// <see cref="IPointableCanvas" />, and tracks Unity Selectable (button, toggle, etc) events on that
+    /// canvas rather than hooking into each Selectable on the Canvas individually.
     /// </summary>
     public class PointableCanvasUnityEventWrapper : MonoBehaviour
     {
         /// <summary>
-        /// The <cref="IPointableCanvas" /> component to wrap.
+        /// The <see cref="IPointableCanvas" /> component to wrap.
         /// </summary>
         [SerializeField, Interface(typeof(IPointableCanvas))]
         private UnityEngine.Object _pointableCanvas;

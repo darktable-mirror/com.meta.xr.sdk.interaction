@@ -375,6 +375,15 @@ namespace Oculus.Interaction
             }
         }
 
+        private struct CachedInteractable
+        {
+            public PokeInteractable interactable;
+            public SurfaceHit backingHit;
+            public SurfaceHit patchHit;
+
+        }
+        private List<CachedInteractable> _cachedInteractablesInRange = new();
+
         protected override PokeInteractable ComputeCandidate()
         {
             if (_recoilInteractable != null)
@@ -387,8 +396,10 @@ namespace Oculus.Interaction
                 return _hitInteractable;
             }
 
+            UpdateInteractablesInRange(ref _cachedInteractablesInRange);
+
             // First, see if we trigger a press on any interactable
-            PokeInteractable closestInteractable = ComputeSelectCandidate();
+            PokeInteractable closestInteractable = ComputeSelectCandidate(_cachedInteractablesInRange);
             if (closestInteractable != null)
             {
                 // We have found an active hit target, so we return it
@@ -399,7 +410,7 @@ namespace Oculus.Interaction
 
             // Otherwise we have no active interactable, so we do a proximity-only check for
             // closest hovered interactable (above the surface)
-            closestInteractable = ComputeHoverCandidate();
+            closestInteractable = ComputeHoverCandidate(_cachedInteractablesInRange);
             _previousCandidate = closestInteractable;
 
             return closestInteractable;
@@ -416,26 +427,40 @@ namespace Oculus.Interaction
             return a.TiebreakerScore.CompareTo(b.TiebreakerScore);
         }
 
-        private PokeInteractable ComputeSelectCandidate()
+        private void UpdateInteractablesInRange(ref List<CachedInteractable> cachedInteractables)
+        {
+            cachedInteractables.Clear();
+            var interactables = PokeInteractable.Registry.List(this);
+            foreach (PokeInteractable interactable in interactables)
+            {
+                if (!InteractableInRange(interactable)
+                    || !GetBackingHit(interactable, out SurfaceHit backingHit)
+                    || !GetPatchHit(interactable, out SurfaceHit patchHit))
+                {
+                    continue;
+                }
+
+                cachedInteractables.Add(new CachedInteractable()
+                {
+                    interactable = interactable,
+                    backingHit = backingHit,
+                    patchHit = patchHit
+                });
+            }
+        }
+
+        private PokeInteractable ComputeSelectCandidate(List<CachedInteractable> interactables)
         {
             PokeInteractable closestInteractable = null;
             float closestNormalDistance = float.MaxValue;
             float closestTangentDistance = float.MaxValue;
 
-            var interactables = PokeInteractable.Registry.List(this);
-
             // Check the surface first as a movement through this will
             // automatically put us in a "active" state. We expect the raycast
             // to happen only in one direction
-            foreach (PokeInteractable interactable in interactables)
+            foreach (CachedInteractable cachedInteractable in interactables)
             {
-                if (!InteractableInRange(interactable) ||
-                    !GetBackingHit(interactable, out SurfaceHit backingHit) ||
-                    !GetPatchHit(interactable, out SurfaceHit patchHit))
-                {
-                    continue;
-                }
-
+                PokeInteractable interactable = cachedInteractable.interactable;
                 Matrix4x4 previousSurfaceMatrix =
                     _previousSurfaceTransformMap.ContainsKey(interactable)
                         ? _previousSurfaceTransformMap[interactable]
@@ -460,6 +485,7 @@ namespace Oculus.Interaction
                 moveDirection /= magnitude;
                 Ray ray = new Ray(adjustedPokeOrigin, moveDirection);
 
+                SurfaceHit backingHit = cachedInteractable.backingHit;
                 Vector3 closestSurfaceNormal = backingHit.Normal;
 
                 // First check that we are moving towards the surface by checking
@@ -568,16 +594,10 @@ namespace Oculus.Interaction
                 // If they exist, then this select interactable should be ignored.
 
                 // We again run through all the other interactables
-                foreach (PokeInteractable interactable in interactables)
+                foreach (CachedInteractable cachedInteractable in _cachedInteractablesInRange)
                 {
+                    PokeInteractable interactable = cachedInteractable.interactable;
                     if (interactable == closestInteractable)
-                    {
-                        continue;
-                    }
-
-                    if (!InteractableInRange(interactable) ||
-                        !GetBackingHit(interactable, out SurfaceHit backingHit) ||
-                        !GetPatchHit(interactable, out SurfaceHit patchHit))
                     {
                         continue;
                     }
@@ -597,6 +617,8 @@ namespace Oculus.Interaction
                     {
                         continue;
                     }
+
+                    SurfaceHit backingHit = cachedInteractable.backingHit;
 
                     // Check the distance from the backingHit point to the touchpoint
                     // projected onto the interactable normal to see if its not within
@@ -684,24 +706,17 @@ namespace Oculus.Interaction
             return minDepth;
         }
 
-        private PokeInteractable ComputeHoverCandidate()
+        private PokeInteractable ComputeHoverCandidate(List<CachedInteractable> interactables)
         {
             PokeInteractable closestInteractable = null;
             float closestNormalDistance = float.MaxValue;
             float closestTangentDistance = float.MaxValue;
 
-            var interactables = PokeInteractable.Registry.List(this);
-
             // We check that we're above the surface first as we don't
             // care about hovers that originate below the surface
-            foreach (PokeInteractable interactable in interactables)
+            foreach (CachedInteractable cachedInteractable in interactables)
             {
-                if (!InteractableInRange(interactable) ||
-                    !GetBackingHit(interactable, out SurfaceHit backingHit) ||
-                    !GetPatchHit(interactable, out SurfaceHit patchHit))
-                {
-                    continue;
-                }
+                PokeInteractable interactable = cachedInteractable.interactable;
 
                 // First check that above EnterHover and within HoverZThreshold
                 // Or if above EnterHover last frame and within HoverZThreshold this frame:
@@ -712,6 +727,7 @@ namespace Oculus.Interaction
                     continue;
                 }
 
+                SurfaceHit backingHit = cachedInteractable.backingHit;
                 Vector3 closestSurfacePoint = backingHit.Point;
                 Vector3 closestSurfaceNormal = backingHit.Normal;
 

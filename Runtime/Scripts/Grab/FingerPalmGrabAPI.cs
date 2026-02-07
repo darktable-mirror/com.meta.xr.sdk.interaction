@@ -28,8 +28,13 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction.GrabAPI
 {
     /// <summary>
-    /// This Finger API uses the curl value of the fingers to detect if they are grabbing
+    /// This <see cref="IFingerAPI"/> uses the curl value of the fingers to detect if they are grabbing.
     /// </summary>
+    /// <remarks>
+    /// The implementation details of this grab calculation are more low-level than Unity and are thus encapsulated
+    /// below the managed-native boundary. This type merely provides an API surface through which to invoke the
+    /// native functionality.
+    /// </remarks>
     public class FingerPalmGrabAPI : IFingerAPI
     {
         // Temporary structure used to pass data to and from native components
@@ -135,6 +140,10 @@ namespace Oculus.Interaction.GrabAPI
             return apiHandle_;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerIsGrabbing(HandFinger)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool GetFingerIsGrabbing(HandFinger finger)
         {
             ReturnValue rv = isdk_FingerPalmGrabAPI_GetFingerIsGrabbing(GetHandle(), finger, out bool grabbing);
@@ -142,6 +151,10 @@ namespace Oculus.Interaction.GrabAPI
             return grabbing;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerIsGrabbingChanged(HandFinger, bool)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool GetFingerIsGrabbingChanged(HandFinger finger, bool targetGrabState)
         {
             ReturnValue rv = isdk_FingerPalmGrabAPI_GetFingerIsGrabbingChanged(GetHandle(), finger, targetGrabState, out bool grabbing);
@@ -149,6 +162,10 @@ namespace Oculus.Interaction.GrabAPI
             return grabbing;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerGrabScore(HandFinger)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public float GetFingerGrabScore(HandFinger finger)
         {
             ReturnValue rv = isdk_FingerPalmGrabAPI_GetFingerGrabScore(GetHandle(), finger, out float score);
@@ -156,6 +173,10 @@ namespace Oculus.Interaction.GrabAPI
             return score;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.Update(IHand)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public void Update(IHand hand)
         {
             if (!hand.GetRootPose(out Pose rootPose))
@@ -173,6 +194,10 @@ namespace Oculus.Interaction.GrabAPI
             Debug.Assert(rv != ReturnValue.Failure, "FingerPalmGrabAPI: isdk_FingerPalmGrabAPI_UpdateHandData failed");
         }
 
+        /// <summary>
+        /// Gets the offset between the wrist and the pinch point.
+        /// </summary>
+        /// <returns>The offset between the wrist and the pinch point</returns>
         public Vector3 GetWristOffsetLocal()
         {
             ReturnValue rv = isdk_FingerPalmGrabAPI_GetCenterOffset(GetHandle(), out Vector3 center);
@@ -180,12 +205,22 @@ namespace Oculus.Interaction.GrabAPI
             return center;
         }
 
+        /// <summary>
+        /// Sets the value of a floating point configuration.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PalmGrabParamID"/> of the configuration value to set</param>
+        /// <param name="paramVal">The new value <paramref name="paramId"/> should be set to</param>
         public void SetConfigParamFloat(PalmGrabParamID paramId, float paramVal)
         {
             ReturnValue rc = isdk_FingerPalmGrabAPI_SetConfigParamFloat(GetHandle(), paramId, paramVal);
             Debug.Assert(rc != ReturnValue.Failure, "FingerPalmGrabAPI: isdk_FingerPalmGrabAPI_SetConfigParamFloat failed");
         }
 
+        /// <summary>
+        /// Gets the current value of <paramref name="paramId"/>.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PalmGrabParamID"/> to get the value of</param>
+        /// <returns>The current value of <paramref name="paramId"/></returns>
         public float GetConfigParamFloat(PalmGrabParamID paramId)
         {
             ReturnValue rc = isdk_FingerPalmGrabAPI_GetConfigParamFloat(GetHandle(), paramId, out float paramVal);
@@ -193,12 +228,22 @@ namespace Oculus.Interaction.GrabAPI
             return paramVal;
         }
 
+        /// <summary>
+        /// Sets the value of a Vector3 configuration.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PalmGrabParamID"/> of the configuration value to set</param>
+        /// <param name="paramVal">The new value <paramref name="paramId"/> should be set to</param>
         public void SetConfigParamVec3(PalmGrabParamID paramId, Vector3 paramVal)
         {
             ReturnValue rc = isdk_FingerPalmGrabAPI_SetConfigParamVec3(GetHandle(), paramId, paramVal);
             Debug.Assert(rc != ReturnValue.Failure, "FingerPalmGrabAPI: isdk_FingerPalmGrabAPI_SetConfigParamVec3 failed");
         }
 
+        /// <summary>
+        /// Gets the current value of <paramref name="paramId"/>.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PalmGrabParamID"/> to get the value of</param>
+        /// <returns>The current value of <paramref name="paramId"/></returns>
         public Vector3 GetConfigParamVec3(PalmGrabParamID paramId)
         {
             ReturnValue rc = isdk_FingerPalmGrabAPI_GetConfigParamVec3(GetHandle(), paramId, out Vector3 paramVal);

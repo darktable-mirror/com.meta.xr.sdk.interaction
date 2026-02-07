@@ -25,8 +25,17 @@ using System.Linq;
 namespace Oculus.Interaction.Surfaces
 {
     /// <summary>
-    /// Clips a plane to create an interactable surface. If there are no clippers assigned, the surface area remains infinite.
+    /// The primary flat surface used by the Interaction SDK, this is an <see cref="ISurface"/> constructed by
+    /// "clipping" a <see cref="PlaneSurface"/> down to a subsection of itself using one or more
+    /// <see cref="IBoundsClipper"/>s.
     /// </summary>
+    /// <remarks>
+    /// ClippedPlaneSurfaces apply the logical AND of all their contained <see cref="IBoundsClipper"/>s to the
+    /// underlying <see cref="PlaneSurface"/>. Because <see cref="IBoundsClipper"/>s are axis-aligned in the
+    /// space of the plane being clipped, this means all ClippedPlaneSurfaces will be rectangular subsections
+    /// of the XY plane of the transform of the <see cref="PlaneSurface"/> they clip. They are not necessarily
+    /// centered on this transform, however.
+    /// </remarks>
     public class ClippedPlaneSurface : MonoBehaviour, IClippedSurface<IBoundsClipper>
     {
         private static readonly Bounds InfiniteBounds = new Bounds(Vector3.zero,
@@ -44,10 +53,22 @@ namespace Oculus.Interaction.Surfaces
         private List<UnityEngine.Object> _clippers = new List<UnityEngine.Object>();
         private List<IBoundsClipper> Clippers { get; set; }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurfacePatch.BackingSurface"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public ISurface BackingSurface => _planeSurface;
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Transform"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public Transform Transform => _planeSurface.Transform;
 
+        /// <summary>
+        /// Implementation of <see cref="IClippedSurface{TClipper}.GetClippers"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public IReadOnlyList<IBoundsClipper> GetClippers()
         {
             if (Clippers != null)
@@ -72,13 +93,13 @@ namespace Oculus.Interaction.Surfaces
         }
 
         /// <summary>
-        /// Clip a provided Bounds using
-        /// <see cref="IBoundsClipper"/>s
+        /// Clip a provided Bounds using the ClippedPlaneSurface's <see cref="IBoundsClipper"/>s.
+        /// Comparable to applying the logical AND of the input <paramref name="bounds"/> with all
+        /// the clippers returned by <see cref="GetClippers"/>.
         /// </summary>
-        /// <param name="bounds">The bounding box to clip</param>
+        /// <param name="bounds">The Bounds to clip</param>
         /// <param name="clipped">The clipped result</param>
-        /// <returns>True if resulting bounds are valid,
-        /// false if resulting bounds are fully clipped.</returns>
+        /// <returns>True if resulting bounds are contain any space, false if the clipped bounds have no volume</returns>
         public bool ClipBounds(in Bounds bounds, out Bounds clipped)
         {
             clipped = bounds;
@@ -116,6 +137,10 @@ namespace Oculus.Interaction.Surfaces
             return Transform.TransformPoint(clamped);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.ClosestSurfacePoint(in Vector3, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit hit, float maxDistance = 0)
         {
             if (_planeSurface.ClosestSurfacePoint(point, out hit, maxDistance) &&
@@ -128,6 +153,10 @@ namespace Oculus.Interaction.Surfaces
             return false;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ISurface.Raycast(in Ray, out SurfaceHit, float)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool Raycast(in Ray ray, out SurfaceHit hit, float maxDistance = 0)
         {
             return BackingSurface.Raycast(ray, out hit, maxDistance) &&
@@ -138,6 +167,12 @@ namespace Oculus.Interaction.Surfaces
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated ClippedPlaneSurface; effectively wraps
+        /// <see cref="InjectPlaneSurface(PlaneSurface)"/> and <see cref="InjectClippers(IEnumerable{IBoundsClipper})"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical
+        /// Unity Editor-based usage.
+        /// </summary>
         public void InjectAllClippedPlaneSurface(
             PlaneSurface planeSurface,
             IEnumerable<IBoundsClipper> clippers)
@@ -146,11 +181,20 @@ namespace Oculus.Interaction.Surfaces
             InjectClippers(clippers);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="PlaneSurface"/> for a dynamically instantiated ClippedPlaneSurface. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
         public void InjectPlaneSurface(PlaneSurface planeSurface)
         {
             _planeSurface = planeSurface;
         }
 
+        /// <summary>
+        /// Sets the <see cref="IBoundsClipper"/>s for a dynamically instantiated ClippedPlaneSurface. This method exists
+        /// to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectClippers(IEnumerable<IBoundsClipper> clippers)
         {
             _clippers = new List<UnityEngine.Object>(

@@ -23,6 +23,13 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// A visual affordance designed to accompany <see cref="RayInteractor"/>s. This is used in most ray interaction prefabs,
+    /// wizards, and example scenes provided by the Interaction SDK. Though this class includes a number of customization
+    /// options and can be set up independently, you should usually start from an example (scene or prefab) rather than trying
+    /// to add this visual from scratch as this type makes assumptions about certain of its dependencies, such as those added
+    /// by <see cref="InjectRenderer(Renderer)"/> and <see cref="InjectMaterialPropertyBlockEditor(MaterialPropertyBlockEditor)"/>.
+    /// </summary>
     public class ControllerRayVisual : MonoBehaviour
     {
         [SerializeField]
@@ -54,6 +61,11 @@ namespace Oculus.Interaction
 
         #region Properties
 
+        /// <summary>
+        /// The maximum distance the visual ray is allowed to extend. Note that this has nothing to do with
+        /// <see cref="RayInteractor.MaxRayLength"/>, which is usually much longer as the visual typically
+        /// attenuates only part of the way to the ray's actual terminus.
+        /// </summary>
         public float MaxRayVisualLength
         {
             get
@@ -67,6 +79,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The inner color to show when hovering.
+        /// </summary>
         public Color HoverColor0
         {
             get
@@ -80,6 +95,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The outer color to show when hovering.
+        /// </summary>
         public Color HoverColor1
         {
             get
@@ -93,6 +111,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The inner color to show when selecting. This color will supersede <see cref="HoverColor0"/>
+        /// when the associated <see cref="RayInteractor"/> moves from <see cref="InteractorState.Hover"/>
+        /// to <see cref="InteractorState.Select"/>.
+        /// </summary>
         public Color SelectColor0
         {
             get
@@ -106,6 +129,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The outer color to show when selecting. This color will supersede <see cref="HoverColor1"/>
+        /// when the associated <see cref="RayInteractor"/> moves from <see cref="InteractorState.Hover"/>
+        /// to <see cref="InteractorState.Select"/>.
+        /// </summary>
         public Color SelectColor1
         {
             get
@@ -181,6 +209,12 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated ControllerRayVisual; effectively wraps
+        /// <see cref="InjectRayInteractor(RayInteractor)"/>, <see cref="InjectRenderer(Renderer)"/>, and
+        /// <see cref="InjectMaterialPropertyBlockEditor(MaterialPropertyBlockEditor)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllControllerRayVisual(RayInteractor rayInteractor,
             Renderer renderer,
             MaterialPropertyBlockEditor materialPropertyBlockEditor)
@@ -190,16 +224,28 @@ namespace Oculus.Interaction
             InjectMaterialPropertyBlockEditor(materialPropertyBlockEditor);
         }
 
+        /// <summary>
+        /// Sets the <see cref="RayInteractor"/> for a dynamically instantiated ControllerRayVisual. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectRayInteractor(RayInteractor rayInteractor)
         {
             _rayInteractor = rayInteractor;
         }
 
+        /// <summary>
+        /// Sets the <see cref="Renderer"/> for a dynamically instantiated ControllerRayVisual. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectRenderer(Renderer renderer)
         {
             _renderer = renderer;
         }
 
+        /// <summary>
+        /// Sets the <see cref="MaterialPropertyBlockEditor"/> for a dynamically instantiated ControllerRayVisual. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectMaterialPropertyBlockEditor(
             MaterialPropertyBlockEditor materialPropertyBlockEditor)
         {

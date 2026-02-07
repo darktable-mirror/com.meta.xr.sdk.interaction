@@ -176,7 +176,7 @@ namespace Oculus.Interaction.Input
 
             if (Started)
             {
-                WhenUpdated();
+                WhenUpdated.Invoke();
             }
         }
 

@@ -24,6 +24,8 @@ using Oculus.Interaction.PoseDetection.Debug;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
+using System.Threading.Tasks;
+using System.Collections;
 
 namespace Oculus.Interaction.PoseDetection
 {
@@ -339,12 +341,32 @@ namespace Oculus.Interaction.PoseDetection
 
         private class DebugModel : ActiveStateModel<Sequence>
         {
-            protected override IEnumerable<IActiveState> GetChildren(Sequence activeState)
+            private IEnumerator GetChildrenCoroutine(Sequence sequence,
+                TaskCompletionSource<IEnumerable<IActiveState>> tcs)
             {
+                while (sequence._stepsToActivate.Any(s => s.ActiveState == null))
+                {
+                    // Wait for all child ActiveStates to be initialized.
+                    yield return null;
+                }
                 List<IActiveState> children = new List<IActiveState>();
-                children.AddRange(activeState._stepsToActivate.Select(step => step.ActiveState));
-                children.Add(activeState.RemainActiveWhile);
-                return children.Where(c => c != null);
+                children.AddRange(sequence._stepsToActivate.Select(step => step.ActiveState));
+                children.Add(sequence.RemainActiveWhile);
+                tcs.SetResult(children.Where(c => c != null));
+            }
+
+            protected override Task<IEnumerable<IActiveState>> GetChildrenAsync(Sequence activeState)
+            {
+                TaskCompletionSource<IEnumerable<IActiveState>> tcs = new();
+                if (activeState.isActiveAndEnabled)
+                {
+                    activeState.StartCoroutine(GetChildrenCoroutine(activeState, tcs));
+                }
+                else
+                {
+                    tcs.SetResult(Enumerable.Empty<IActiveState>());
+                }
+                return tcs.Task;
             }
         }
 

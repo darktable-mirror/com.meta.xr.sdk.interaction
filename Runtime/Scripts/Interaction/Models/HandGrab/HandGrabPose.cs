@@ -28,10 +28,9 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// The HandGrabPose defines the local point in an object to which the grip point
-    /// of the hand should align. It can also contain information about the final pose
-    /// of the hand for perfect alignment as well as a surface that indicates the valid
-    /// positions for the point.
+    /// The HandGrabPose defines the local point in an object to which the grip point of a <see cref="HandGrabInteractor"/>
+    /// should align. It can also contain information about the final pose of the hand for perfect alignment as well as a
+    /// surface that indicates the valid positions for the point.
     /// </summary>
     public class HandGrabPose : MonoBehaviour
     {
@@ -60,6 +59,13 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Optional, Interface(typeof(IGrabSurface))]
         private UnityEngine.Object _surface = null;
         private IGrabSurface _snapSurface;
+        /// <summary>
+        /// The <see cref="IGrabSurface"/> containing information to help hand visuals pose themselves when grabbing.
+        /// </summary>
+        /// <remarks>
+        /// This property is primarily used by internal HandGrabPose calculations and by Editor-based pose authoring
+        /// tools.
+        /// </remarks>
         public IGrabSurface SnapSurface
         {
             get => _snapSurface ?? _surface as IGrabSurface;
@@ -95,7 +101,9 @@ namespace Oculus.Interaction.HandGrab
 
         [SerializeField]
         [HideInInspector]
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private OVROffsetMode _ovrOffsetMode = OVROffsetMode.None;
+#pragma warning restore CS0414
 
 #if !ISDK_OPENXR_HAND
         private bool _ovrOffsetAppliedToTransform = false;
@@ -104,6 +112,10 @@ namespace Oculus.Interaction.HandGrab
             !_ovrOffsetAppliedToTransform;
 #endif
 
+        /// <summary>
+        /// The <see cref="HandGrab.HandPose"/> a hand visual should adopt when grabbing an interactable
+        /// equipped with this HandGrabPose.
+        /// </summary>
         public HandPose HandPose
         {
 #if ISDK_OPENXR_HAND
@@ -119,8 +131,13 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Scale of the HandGrabPoint relative to its reference transform.
+        /// Returns the current scale of the HandGrabPose relative to its reference transform.
         /// </summary>
+        /// <remarks>
+        /// This value is estimated based the <see cref="RelativeTo"/> transform's scale in its local X dimension;
+        /// this estimate is not guaranteed to be accurate, particularly under arbitrary rotations and skewing
+        /// scales.
+        /// </remarks>
         public float RelativeScale
         {
             get
@@ -148,7 +165,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Reference transform of the HandGrabPose
+        /// Reference transform of the HandGrabPose. This is the transform relative to which many fundamental
+        /// calculations are performed.
         /// </summary>
         public Transform RelativeTo => _relativeTo;
 
@@ -211,11 +229,26 @@ namespace Oculus.Interaction.HandGrab
         }
         #endregion
 
+        /// <summary>
+        /// Checks whether this instance uses hand poses.
+        /// </summary>
+        /// <returns>True if <see cref="HandPose"/> should return a valid <see cref="HandGrab.HandPose"/>, false otherwise</returns>
         public bool UsesHandPose()
         {
             return _usesHandPose;
         }
 
+        /// <summary>
+        /// Obsolete implementation; use
+        /// <see cref="CalculateBestPose(in Pose, in Pose, Transform, Handedness, PoseMeasureParameters, ref HandGrabResult)"/>
+        /// instead.
+        /// </summary>
+        /// <param name="userPose">The current pose of the user</param>
+        /// <param name="handedness">The handedness of the grab</param>
+        /// <param name="scoringModifier"><see cref="PoseMeasureParameters"/> for score modification</param>
+        /// <param name="relativeTo">The relative transform</param>
+        /// <param name="result">Out parameter for the calculated pose</param>
+        /// <returns>True always (this obsolete method always returns a valid result)</returns>
         [Obsolete("Use " + nameof(CalculateBestPose) + " with offset instead")]
         public virtual bool CalculateBestPose(Pose userPose,
             Handedness handedness, PoseMeasureParameters scoringModifier,
@@ -225,6 +258,16 @@ namespace Oculus.Interaction.HandGrab
             return true;
         }
 
+        /// <summary>
+        /// Finds the most similar pose to the provided pose.
+        /// If the HandGrabPose contains a surface it will defer the calculation to it.
+        /// </summary>
+        /// <param name="userPose">The current pose of the user</param>
+        /// <param name="offset">The offset from the root, for accurate scoring</param>
+        /// <param name="relativeTo">The relative transform</param>
+        /// <param name="handedness">The handedness of the grab</param>
+        /// <param name="scoringModifier"><see cref="PoseMeasureParameters"/> for score modification</param>
+        /// <param name="result">Out parameter for the calculated pose</param>
         public virtual void CalculateBestPose(in Pose userPose, in Pose offset, Transform relativeTo,
             Handedness handedness, PoseMeasureParameters scoringModifier,
             ref HandGrabResult result)
@@ -268,22 +311,39 @@ namespace Oculus.Interaction.HandGrab
         }
 
         #region Inject
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated HandGrabPose; effectively wraps
+        /// <see cref="InjectRelativeTo(Transform)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHandGrabPose(Transform relativeTo)
         {
             InjectRelativeTo(relativeTo);
         }
 
+        /// <summary>
+        /// Sets the <see cref="RelativeTo"/> transform for a dynamically instantiated HandGrabPose. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectRelativeTo(Transform relativeTo)
         {
             _relativeTo = relativeTo;
         }
 
+        /// <summary>
+        /// Sets the <see cref="IGrabSurface"/> for a dynamically instantiated HandGrabPose. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalSurface(IGrabSurface surface)
         {
             _surface = surface as UnityEngine.Object;
             SnapSurface = surface;
         }
 
+        /// <summary>
+        /// Sets the <see cref="HandPose"/> for a dynamically instantiated HandGrabPose. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalHandPose(HandPose handPose)
         {
 #if ISDK_OPENXR_HAND

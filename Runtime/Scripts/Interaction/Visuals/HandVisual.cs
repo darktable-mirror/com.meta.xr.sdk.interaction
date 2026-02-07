@@ -26,15 +26,18 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Renders the hand.
+    /// Renders an <see cref="IHand"/>. This component drives a transform hierarchy corresponding
+    /// to the bone positions of a Hand skeleton, and toggles the Mesh Renderer of the hand model.
     /// </summary>
     public class HandVisual : MonoBehaviour, IHandVisual
     {
-        /// <summary>
-        /// The hand to render.
-        /// </summary>
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandVisual.Hand"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         [SerializeField]
@@ -46,9 +49,6 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _updateVisibility = true;
 
-        /// <summary>
-        /// Determines the appearance of the hand.
-        /// </summary>
 #if ISDK_OPENXR_HAND
         [HideInInspector]
 #endif
@@ -93,12 +93,25 @@ namespace Oculus.Interaction
         [SerializeField]
         private List<Transform> _openXRJointTransforms = new List<Transform>();
 
+        /// <summary>
+        /// Implementation of <see cref="IHandVisual.WhenHandVisualUpdated"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public event Action WhenHandVisualUpdated = delegate { };
 
+        /// <summary>
+        /// Implementation of <see cref="IHandVisual.IsVisible"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool IsVisible => SkinnedMeshRenderer != null && SkinnedMeshRenderer.enabled;
 
         private int _wristScalePropertyId;
 
+        /// <summary>
+        /// List of transforms corresponding to the hand joint poses from <see cref="Hand"/>.
+        /// Specific joints in this list can be accessed by using the integer value of 
+        /// <see cref="HandJointId"/> as the index.
+        /// </summary>
         public IList<Transform> Joints
         {
 #if ISDK_OPENXR_HAND
@@ -108,6 +121,10 @@ namespace Oculus.Interaction
 #endif
         }
 
+        /// <summary>
+        /// The root of the transform hierarchy corresponding to
+        /// the joint poses from <see cref="Hand"/>.
+        /// </summary>
         public Transform Root
         {
 #if ISDK_OPENXR_HAND
@@ -142,6 +159,11 @@ namespace Oculus.Interaction
         }
 
         private bool _forceOffVisibility;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandVisual.ForceOffVisibility"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public bool ForceOffVisibility
         {
             get
@@ -245,6 +267,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// This method updates the skeleton transform hierarchy and renderer visibility.
+        /// This method is specific to the <see cref="HandVisual"/> component and
+        /// should not be called directly.
+        /// </summary>
         public void UpdateSkeleton()
         {
             UpdateVisibility();
@@ -293,11 +320,19 @@ namespace Oculus.Interaction
             WhenHandVisualUpdated.Invoke();
         }
 
+        /// <summary>
+        /// Returns the transform that this component is driving,
+        /// corresponding to a provided <see cref="HandJointId"/>.
+        /// </summary>
         public Transform GetTransformByHandJointId(HandJointId handJointId)
         {
             return Joints[(int)handJointId];
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IHandVisual.GetJointPose(HandJointId, Space)"/>. For detailed
+        /// information, refer to the related documentation provided for that interface.
+        /// </summary>
         public Pose GetJointPose(HandJointId jointId, Space space)
         {
             return GetTransformByHandJointId(jointId).GetPose(space);
@@ -305,38 +340,75 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHandSkeletonVisual(IHand hand, SkinnedMeshRenderer skinnedMeshRenderer)
         {
             InjectHand(hand);
             InjectSkinnedMeshRenderer(skinnedMeshRenderer);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHand"/> for a dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="UnityEngine.SkinnedMeshRenderer"/> for a
+        /// dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectSkinnedMeshRenderer(SkinnedMeshRenderer skinnedMeshRenderer)
         {
             SkinnedMeshRenderer = skinnedMeshRenderer;
         }
 
+        /// <summary>
+        /// Sets the <see cref="_updateRootPose"/> field for a dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalUpdateRootPose(bool updateRootPose)
         {
             _updateRootPose = updateRootPose;
         }
 
+        /// <summary>
+        /// Sets the <see cref="_updateRootScale"/> field for a dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalUpdateRootScale(bool updateRootScale)
         {
             _updateRootScale = updateRootScale;
         }
 
+        /// <summary>
+        /// Sets the <see cref="Root"/> property for a dynamically instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRoot(Transform root)
         {
             Root = root;
         }
 
+        /// <summary>
+        /// Sets the <see cref="HandMaterialPropertyBlockEditor"/> property for a dynamically
+        /// instantiated <see cref="HandVisual"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalMaterialPropertyBlockEditor(MaterialPropertyBlockEditor editor)
         {
             HandMaterialPropertyBlockEditor = editor;

@@ -26,19 +26,52 @@ using static Oculus.Interaction.TransformerUtils;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A Transformer that translates the target, with optional parent-space constraints
+    /// An <see cref="ITransformer"/> that translates the target
+    /// with optional parent-space constraints.
     /// </summary>
     public class OneGrabTranslateTransformer : MonoBehaviour, ITransformer
     {
+        /// <summary>
+        /// The set of parent-space constraints used
+        /// by <see cref="OneGrabTranslateTransformer"/>.
+        /// </summary>
         [Serializable]
         public class OneGrabTranslateConstraints
         {
+            /// <summary>
+            /// If constraints are relative, they will be recomputed relative
+            /// to the starting position of the target, rather than absolutely.
+            /// </summary>
             public bool ConstraintsAreRelative;
+
+            /// <summary>
+            /// The minimum x-axis translation allowed.
+            /// </summary>
             public FloatConstraint MinX;
+
+            /// <summary>
+            /// The maximum x-axis translation allowed.
+            /// </summary>
             public FloatConstraint MaxX;
+
+            /// <summary>
+            /// The minimum y-axis translation allowed.
+            /// </summary>
             public FloatConstraint MinY;
+
+            /// <summary>
+            /// The maximum y-axis translation allowed.
+            /// </summary>
             public FloatConstraint MaxY;
+
+            /// <summary>
+            /// The minimum z-axis translation allowed.
+            /// </summary>
             public FloatConstraint MinZ;
+
+            /// <summary>
+            /// The maximum z-axis translation allowed.
+            /// </summary>
             public FloatConstraint MaxZ;
         }
 
@@ -54,6 +87,11 @@ namespace Oculus.Interaction
                 MaxZ = new FloatConstraint()
             };
 
+        /// <summary>
+        /// The <see cref="OneGrabTranslateConstraints"/> that
+        /// will be used by this instance. Determines how the
+        /// target can be moved relative to the parent.
+        /// </summary>
         public OneGrabTranslateConstraints Constraints
         {
             get
@@ -74,6 +112,10 @@ namespace Oculus.Interaction
 
         private IGrabbable _grabbable;
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.Initialize"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
@@ -133,6 +175,10 @@ namespace Oculus.Interaction
 
         private Pose _localToTarget;
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.BeginTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void BeginTransform()
         {
             var grabPose = _grabbable.GrabPoints[0];
@@ -140,6 +186,10 @@ namespace Oculus.Interaction
             _localToTarget = WorldToLocalPose(grabPose, target.worldToLocalMatrix);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.UpdateTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void UpdateTransform()
         {
             Transform target = _grabbable.Transform;
@@ -189,10 +239,20 @@ namespace Oculus.Interaction
             target.localPosition = constrainedPosition;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.EndTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void EndTransform() { }
 
         #region Inject
 
+        /// <summary>
+        /// Sets the underlying optional <see cref="OneGrabTranslateConstraints"/> for a dynamically instantiated
+        /// <see cref="OneGrabTranslateTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalConstraints(OneGrabTranslateConstraints constraints)
         {
             _constraints = constraints;

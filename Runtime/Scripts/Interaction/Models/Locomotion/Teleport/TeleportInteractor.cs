@@ -21,19 +21,17 @@
 using Oculus.Interaction.Input;
 using Oculus.Interaction.PoseDetection;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using InteractableSet = Oculus.Interaction.InteractableRegistry<Oculus.Interaction.Locomotion.TeleportInteractor, Oculus.Interaction.Locomotion.TeleportInteractable>.InteractableSet;
 
 namespace Oculus.Interaction.Locomotion
 {
     /// <summary>
-    /// TeleportInteractor uses a provided ITeleportArc and an external Selector to find
-    /// the best interactable and emit the event requesting a teleport to it. By itself
-    /// it does not define the shape of the arc or even moves the player, instead it is the
-    /// core class that brings these pieces together.
+    /// TeleportInteractor uses a provided <see cref="IPolyline"/> teleport arc and an external <see cref="ISelector"/> to
+    /// find the best <see cref="TeleportInteractable"/> and emit the event requesting a teleport to it. By itself it does
+    /// not define the shape of the arc or even moves the player, instead it is the core class that brings these pieces together.
     /// </summary>
-    public class TeleportInteractor : Interactor<TeleportInteractor, TeleportInteractable>,
-        ILocomotionEventBroadcaster
+    public class TeleportInteractor : Interactor<TeleportInteractor, TeleportInteractable>, ILocomotionEventBroadcaster
     {
         /// <summary>
         /// A selector indicating when the Interactor should select or unselect the best available interactable.
@@ -52,7 +50,7 @@ namespace Oculus.Interaction.Locomotion
         private UnityEngine.Object _teleportArc;
         /// <summary>
         ///  Specifies the shape of the arc used for detecting available interactables.
-        ///  If none is provided TeleportArcGravity will be used.
+        ///  If none is provided, <see cref="TeleportArcGravity"/> will be used as a default.
         /// </summary>
         public IPolyline TeleportArc { get; private set; }
 
@@ -61,7 +59,7 @@ namespace Oculus.Interaction.Locomotion
                  "are treated as equal for the purposes of ranking.")]
         private float _equalDistanceThreshold = 0.1f;
         /// <summary>
-        /// (Meters, World) The threshold below which distances to a interactable are treated as equal for the purposes of ranking.
+        /// (Meters, World) The threshold below which distances to an interactable are treated as equal for the purposes of ranking.
         /// </summary>
         [Obsolete("This property is obsolete, create a " +
             nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
@@ -82,9 +80,9 @@ namespace Oculus.Interaction.Locomotion
             "nothing is blocking the line between the Hmd and the teleport origin")]
         private UnityEngine.Object _hmd;
         /// <summary>
-        /// When provided, the Interactor will perform an extra check to ensure nothing
-        /// is blocking the line between the Hmd (head of the player) and the teleport
-        /// origin (hand). Making it impossible to teleport if the user is placing their
+        /// When provided, the interactor will perform an extra check to ensure nothing
+        /// is blocking the line between the <see cref="IHmd"/> (head of the player) and the teleport
+        /// origin (hand), making it impossible to teleport if the user is placing their
         /// hands behind a virtual wall.
         /// </summary>
         [Obsolete("This property is obsolete, create a " +
@@ -94,6 +92,9 @@ namespace Oculus.Interaction.Locomotion
         /// <summary>
         /// The starting point of the teleport arc.
         /// </summary>
+        /// <remarks>
+        /// This pose is calculated from the <see cref="IPolyline"/> provided as the <see cref="TeleportArc"/>.
+        /// </remarks>
         public Pose ArcOrigin
         {
             get
@@ -105,6 +106,11 @@ namespace Oculus.Interaction.Locomotion
         }
 
         private TeleportHit _arcEnd;
+        /// <summary>
+        /// The most recent calculated endpoint of the teleport arc. This property can change and/or linger on old
+        /// values with unspecified timing depending on the internal state of the TeleportInteractor, so it should
+        /// not be relied on for anything other than rendering visualizations.
+        /// </summary>
         public TeleportHit ArcEnd => _arcEnd;
 
         /// <summary>
@@ -127,6 +133,10 @@ namespace Oculus.Interaction.Locomotion
         }
 
         private Action<LocomotionEvent> _whenLocomotionPerformed = delegate { };
+        /// <summary>
+        /// Implementation of <see cref="ILocomotionEventBroadcaster.WhenLocomotionPerformed"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public event Action<LocomotionEvent> WhenLocomotionPerformed
         {
             add
@@ -140,7 +150,7 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Delegate to accept or reject the selection of teleport destination
+        /// Delegate to accept or reject the selection of teleport destination.
         /// </summary>
         /// <param name="interactable">The interactable the interactor wants to teleport to.</param>
         /// <param name="destination">The final Pose the interactor wants to move to.</param>
@@ -173,7 +183,7 @@ namespace Oculus.Interaction.Locomotion
         /// <summary>
         /// Delegate method used for calculating the best available interactable
         /// to teleport to. Implement this delegate to create custom behaviors
-        /// for the Interactor ComputeCandidate.
+        /// for <see cref="Interactor{TInteractor, TInteractable}.ComputeCandidate"/>.
         /// </summary>
         /// <param name="TeleportArc">The serie of segments used to query the interactables.</param>
         /// <param name="interactables">The list of available interactors whitin range of the arc</param>
@@ -183,11 +193,12 @@ namespace Oculus.Interaction.Locomotion
         /// <returns>The best candidate found</returns>
         public delegate TeleportInteractable ComputeCandidateDelegate(
             IPolyline TeleportArc,
-            IEnumerable<TeleportInteractable> interactables,
+            in InteractableSet interactables,
             ComputeCandidateTiebreakerDelegate tiebreaker,
             out TeleportHit hitPose);
 
         private ComputeCandidateDelegate _computeCandidate;
+        private ComputeCandidateTiebreakerDelegate _computeCandidateTiebreaker;
 
         protected override void Awake()
         {
@@ -198,6 +209,7 @@ namespace Oculus.Interaction.Locomotion
             Hmd = _hmd as IHmd;
 #pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4c6f636f6d6f7469;
+            _computeCandidateTiebreaker = ComputeCandidateTiebreaker;
         }
 
         protected override void Start()
@@ -231,6 +243,10 @@ namespace Oculus.Interaction.Locomotion
             this.EndStart(ref _started);
         }
 
+        /// <summary>
+        /// Override of <see cref="Interactor{TInteractor, TInteractable}.CanSelect(TInteractable)"/>; for details, please refer to the related
+        /// documentation provided for that method.
+        /// </summary>
         public override bool CanSelect(TeleportInteractable interactable)
         {
             Pose origin = ArcOrigin;
@@ -244,6 +260,10 @@ namespace Oculus.Interaction.Locomotion
             return base.CanSelect(interactable);
         }
 
+        /// <summary>
+        /// Checks whether the interactor current has a target <see cref="TeleportInteractable"/> to which it can legitimiately travel.
+        /// </summary>
+        /// <returns>True if there is a current target and that target can be teleported to, false otherwise</returns>
         public bool HasValidDestination()
         {
             Pose target = TeleportTarget;
@@ -280,7 +300,7 @@ namespace Oculus.Interaction.Locomotion
         {
             var interactables = TeleportInteractable.Registry.List(this);
             return _computeCandidate.Invoke(TeleportArc, interactables,
-                ComputeCandidateTiebreaker, out _arcEnd);
+                _computeCandidateTiebreaker, out _arcEnd);
         }
 
         protected override int ComputeCandidateTiebreaker(TeleportInteractable a, TeleportInteractable b)
@@ -290,14 +310,15 @@ namespace Oculus.Interaction.Locomotion
             {
                 return result;
             }
-
             return a.TieBreakerScore.CompareTo(b.TieBreakerScore);
         }
 
         #region Inject
 
         /// <summary>
-        /// Sets all required values for a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated TeleportInteractor; effectively wraps
+        /// <see cref="InjectSelector(ISelector)"/>, since all other dependencies are optional. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllTeleportInteractor(ISelector selector)
         {
@@ -305,7 +326,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets the selection mechanism for a dynamically instantiated GameObject.
+        /// Sets an <see cref="ISelector"/> for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSelector(ISelector selector)
         {
@@ -314,7 +336,10 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets the HMD (Head Mounted Display) for a dynamically instantiated GameObject.
+        /// Obsolete method: provide a <see cref="ComputeCandidateDelegate"/> instead.
+        ///
+        /// Sets an <see cref="IHmd"/> for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         [Obsolete("This property is no longer in use, create a " +
             nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
@@ -325,7 +350,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets the teleport arc for a dynamically instantiated GameObject.
+        /// Sets the <see cref="IPolyline"/> teleport arc for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalTeleportArc(IPolyline teleportArc)
         {
@@ -334,7 +360,8 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sets a custom strategy for computing the best teleport candidate
+        /// Sets a custom strategy for computing the best teleport candidate for a dynamically instantiated TeleportInteractor. This method exists to
+        /// support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalCandidateComputer(ComputeCandidateDelegate candidateComputer)
         {

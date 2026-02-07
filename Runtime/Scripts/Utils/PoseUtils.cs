@@ -24,7 +24,7 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Tools for working with Unity Poses
+    /// Tools and extension methods for working with Unity <see cref="Pose"/>s
     /// </summary>
     public static class PoseUtils
     {
@@ -77,6 +77,12 @@ namespace Oculus.Interaction
             result.rotation = a.rotation * b.rotation;
         }
 
+        /// <summary>
+        /// Compose two poses, applying the provided one on top of the caller.
+        /// </summary>
+        /// <param name="a">Pose to compose upon.</param>
+        /// <param name="b">Pose to compose over the first one.</param>
+        /// <returns>The multiplied pose</returns>
         public static Pose Multiply(in Pose a, in Pose b)
         {
             Pose result = new Pose();
@@ -128,17 +134,31 @@ namespace Oculus.Interaction
             result.rotation = Quaternion.SlerpUnclamped(from.rotation, to.rotation, t);
         }
 
+        /// <summary>
+        /// Inverts a pose
+        /// </summary>
+        /// <param name="a">The pose to invert</param>
+        /// <param name="result">The resulting inverse pose</param>
         public static void Inverse(in Pose a, ref Pose result)
         {
             result.rotation = Quaternion.Inverse(a.rotation);
             result.position = result.rotation * -a.position;
         }
 
+        /// <summary>
+        /// Inverts a pose.
+        /// </summary>
+        /// <param name="a">The pose to invert</param>
         public static void Invert(this ref Pose a)
         {
             Inverse(a, ref a);
         }
 
+        /// <summary>
+        /// Copies a pose.
+        /// </summary>
+        /// <param name="to">The pose to be copied into</param>
+        /// <param name="from">The source pose to copy from</param>
         public static void CopyFrom(this ref Pose to, in Pose from)
         {
             to.position = from.position;

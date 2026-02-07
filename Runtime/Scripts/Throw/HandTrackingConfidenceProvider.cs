@@ -24,6 +24,11 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Exposes a hand tracking confidence value for an interactor. An <see cref="IInteractor"/>
+    /// can be associated with a <see cref="IHand"/> with this component, this confidence
+    /// status can be fetched using an <see cref="IInteractorView.Identifier"/> as a key.
+    /// </summary>
     public class HandTrackingConfidenceProvider : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IInteractor))]
@@ -98,6 +103,14 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Retrieves the <see cref="IHand.IsHighConfidence"/> value for the <see cref="IHand"/>
+        /// associated with the provided <see cref="IInteractorView.Identifier"/>, if present.
+        /// </summary>
+        /// <param name="key">The <see cref="IInteractorView.Identifier"/> of the interactor.</param>
+        /// <param name="isTrackingHighConfidence">True if the <see cref="IHand"/> is tracked with high confidence.</param>
+        /// <returns>True if the provided interactor is associated with an <see cref="IHand"/>, and confidence
+        /// value can be retrieved.</returns>
         public static bool TryGetTrackingConfidence(int key, out bool isTrackingHighConfidence)
         {
             if (_interactorTrackingConfidence != null && _interactorTrackingConfidence.ContainsKey(key))
@@ -111,17 +124,36 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="HandTrackingConfidenceProvider"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHandTrackingConfidenceProvider(IInteractor interactor, IHand hand)
         {
             InjectInteractor(interactor);
             InjectHand(hand);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractor"/> for a dynamically instantiated
+        /// <see cref="HandTrackingConfidenceProvider"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractor(IInteractor interactor)
         {
             _interactor = interactor as UnityEngine.Object;
             Interactor = interactor;
         }
+
+        /// <summary>
+        /// Sets the underlying <see cref="IHand"/> for a dynamically instantiated
+        /// <see cref="HandTrackingConfidenceProvider"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;

@@ -188,15 +188,11 @@ public class RoundedBoxVideoController : MonoBehaviour
 
     private string FormatTime(float seconds)
     {
-        var mins = seconds / 60.0f;
-        var secs = (mins - Mathf.Floor(mins)) * 60.0f;
-        mins = Mathf.Floor(mins);
-
-        var iMins = (int)mins;
-        var iSecs = (int)secs;
-
-        var secsFormat = iSecs < 10 ? $"0{iSecs}" : $"{iSecs}";
-        return $"{iMins}:{secsFormat}";
+        int iMins = Mathf.FloorToInt(seconds / 60.0f);
+        int iSecs = (int)seconds % 60;
+        string sMins = iMins.ToString();
+        string sSecs = iSecs.ToString("D2");
+        return $"{sMins}:{sSecs}";
     }
 
     private void LateUpdate()

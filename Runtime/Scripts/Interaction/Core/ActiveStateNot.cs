@@ -19,6 +19,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Oculus.Interaction.PoseDetection;
 using Oculus.Interaction.PoseDetection.Debug;
 using UnityEngine;
@@ -66,9 +67,9 @@ namespace Oculus.Interaction
 
         private class DebugModel : ActiveStateModel<ActiveStateNot>
         {
-            protected override IEnumerable<IActiveState> GetChildren(ActiveStateNot activeState)
+            protected override Task<IEnumerable<IActiveState>> GetChildrenAsync(ActiveStateNot activeState)
             {
-                return new[] { activeState.ActiveState };
+                return Task.FromResult<IEnumerable<IActiveState>>(new[] { activeState.ActiveState });
             }
         }
 

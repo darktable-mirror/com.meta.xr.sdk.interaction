@@ -44,6 +44,8 @@ namespace Oculus.Interaction.Editor
             typeof(JointDistanceActiveState),
         };
 
+        private const string OPENXR_DOCS_LINK = "https://developers.meta.com/horizon/documentation/unity/unity-isdk-openxr-hand";
+
         private static ISDKEditorStyles _styles = new ISDKEditorStyles();
 
         private static Dictionary<AssetListWindow, Dictionary<int, UnityEditor.Editor>> _cachedEditors
@@ -106,7 +108,7 @@ namespace Oculus.Interaction.Editor
             foreach (Type migrableType in _migrableTypes)
             {
                 UnityEngine.Object[] objects =
-                    UnityEngine.Object.FindObjectsOfType(migrableType, includeInactive: true);
+                    UnityEngine.Object.FindObjectsByType(migrableType, FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
                 if (objects != null)
                 {
                     foundComponents.AddRange(objects);
@@ -261,9 +263,9 @@ namespace Oculus.Interaction.Editor
 
         private static void DrawHeader(AssetListWindow window)
         {
-            string headerText = "Use this tool to instantly <b>locate and convert</b> the components " +
+            string content = "Use this tool to instantly <b>locate and convert</b> the components " +
                 "in the scene from having <b>OVR</b>-centric parameters to <b>OpenXR</b>-centric parameters. " +
-                "This includes hand-space offsets, hand joint identifiers and others. Note that you can also convert" +
+                "This includes hand-space offsets, hand joint identifiers and others. Note that you can also convert " +
                 "the components one by one by using the <b>Convert</b> button in the inspector.\n" +
 
                 "\n- Click in any row to highlight the component in the inspector.\n" +
@@ -276,7 +278,16 @@ namespace Oculus.Interaction.Editor
             using (new EditorGUILayout.VerticalScope(_styles.WindowContents))
             {
                 _styles.DrawTitle("Interaction SDK OpenXR Migration tool");
-                _styles.DrawSubtitle(headerText, true);
+                _styles.DrawContent(content, () =>
+                {
+                    EditorGUILayout.Space();
+                    if (GUILayout.Button(
+                        "For more details please see the <color=#6060ee>Interaction SDK documentation.</color>",
+                        _styles.ContentButton))
+                    {
+                        Application.OpenURL(OPENXR_DOCS_LINK);
+                    }
+                });
             }
         }
 

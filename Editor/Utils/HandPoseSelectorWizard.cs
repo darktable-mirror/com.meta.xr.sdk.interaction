@@ -149,7 +149,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             }
             else
             {
-                if (_prefabPathToAdd != null)
+                if (_prefabPathToAdd != null && _prefabPathToAdd.Length > 0)
                 {
                     var prefab = AssetDatabase.LoadAssetAtPath(_prefabPathToAdd, typeof(GameObject));
                     var instantiation = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
@@ -215,10 +215,6 @@ namespace Oculus.Interaction.HandGrab.Editor
             _rotationOffset = EditorGUILayout.Vector3Field("Rotation offset:", _rotationOffset);
             _upVectorType = (UpVectorType)EditorGUILayout.EnumPopup("Up vector type:", _upVectorType);
             _featureThresholds = EditorGUILayout.ObjectField(_featureThresholds, typeof(TransformFeatureStateThresholds), true) as TransformFeatureStateThresholds;
-
-            GUILayout.Label("GameObject to record the hand grab poses for:");
-            //GenerateObjectField(ref _item);
-            GUILayout.Label("Prefabs provider for the hands (ghosts) to visualize the recorded poses:");
 
             GUILayout.Label($"\n<size=20>2.</size>\t" +
                 "Go to <b>Play Mode</b> to record your hand pose. Press the big <b>Record</b> button with your free hand or the " +

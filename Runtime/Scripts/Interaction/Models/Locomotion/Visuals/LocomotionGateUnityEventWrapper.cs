@@ -23,14 +23,34 @@ using UnityEngine.Events;
 
 namespace Oculus.Interaction.Locomotion
 {
+    /// <summary>
+    /// Exposes <see cref="UnityEvent"/>s wrapping a <see cref="LocomotionGate"/>
+    /// component. See the <see cref="LocomotionGate"/> documentation for more details
+    /// on when these events are raised and what they represent.
+    /// </summary>
     public class LocomotionGateUnityEventWrapper : MonoBehaviour
     {
         [SerializeField]
         private LocomotionGate _locomotionGate;
 
+        /// <summary>
+        /// Raised when the <see cref="LocomotionGate"/> enters its locomotion state.
+        /// </summary>
         public UnityEvent WhenEnterLocomotion;
+
+        /// <summary>
+        /// Raised when the <see cref="LocomotionGate"/> exits its locomotion state.
+        /// </summary>
         public UnityEvent WhenExitLocomotion;
+
+        /// <summary>
+        /// Raised when the <see cref="LocomotionGate"/> enters its Turn state.
+        /// </summary>
         public UnityEvent WhenChangedToTurn;
+
+        /// <summary>
+        /// Raised when the <see cref="LocomotionGate"/> enters its Teleport state.
+        /// </summary>
         public UnityEvent WhenChangedToTeleport;
 
         protected bool _started;
@@ -79,11 +99,24 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Inject
+
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="LocomotionGateUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllLocomotionGateUnityEventWrapper(LocomotionGate locomotionGate)
         {
             InjectLocomotionGate(locomotionGate);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="LocomotionGate"/> for a dynamically instantiated
+        /// <see cref="LocomotionGateUnityEventWrapper"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectLocomotionGate(LocomotionGate locomotionGate)
         {
             _locomotionGate = locomotionGate;

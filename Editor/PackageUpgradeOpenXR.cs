@@ -85,6 +85,8 @@ namespace Oculus.Interaction.Editor
             Upgrade,
         }
 
+        private const string OPENXR_DOCS_LINK = "https://developers.meta.com/horizon/documentation/unity/unity-isdk-openxr-hand";
+
         public event Action<Response> WhenResponded = delegate { };
 
         private static ISDKEditorStyles _styles;
@@ -135,7 +137,7 @@ namespace Oculus.Interaction.Editor
 
         private void DrawContent()
         {
-            string subtitle =
+            string content =
                     "As of version 71, Interaction SDK begins deprecating the OVR hand skeleton in favor of the OpenXR skeleton. " +
                     "Support for the OVR skeleton will be discontinued in early 2025." +
                     "\n\n" +
@@ -149,7 +151,16 @@ namespace Oculus.Interaction.Editor
                     "While upgrading existing projects is not officially supported, a number of upgrade tools do exist for built-in components. " +
                     "If you do upgrade an existing project, ensure you have a backup of your project in case you encounter unexpected behavior.";
 
-            _styles.DrawSubtitle(subtitle, true);
+            _styles.DrawContent(content, () =>
+            {
+                EditorGUILayout.Space();
+                if (GUILayout.Button(
+                    "For more details please see the <color=#6060ee>Interaction SDK documentation.</color>",
+                    _styles.ContentButton))
+                {
+                    Application.OpenURL(OPENXR_DOCS_LINK);
+                }
+            });
         }
 
         private void DrawFooter()

@@ -68,9 +68,14 @@ namespace Oculus.Interaction.GrabAPI
     }
 
     /// <summary>
-    /// This Finger API uses an advanced calculation for the pinch value of the fingers
-    /// to detect if they are grabbing
+    /// This <see cref="IFingerAPI"/> uses an advanced calculation for the pinch value of the fingers
+    /// to detect if they are grabbing.
     /// </summary>
+    /// <remarks>
+    /// The implementation details of this pinch calculation are more low-level than Unity and are thus encapsulated
+    /// below the managed-native boundary. This type merely provides an API surface through which to invoke the
+    /// native functionality.
+    /// </remarks>
     public class FingerPinchGrabAPI : IFingerAPI
     {
         enum ReturnValue { Success = 0, Failure = -1 };
@@ -141,12 +146,22 @@ namespace Oculus.Interaction.GrabAPI
             return _fingerPinchGrabApiHandle;
         }
 
+        /// <summary>
+        /// Sets the current value of <paramref name="paramId"/>.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PinchGrabParam"/> for which to set the value</param>
+        /// <param name="paramVal">The new value <paramref name="paramId"/> should be set to</param>
         public void SetPinchGrabParam(PinchGrabParam paramId, float paramVal)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_SetPinchGrabParam(GetHandle(), paramId, paramVal);
             Debug.Assert(rc != ReturnValue.Failure, "FingerPinchGrabAPI: isdk_FingerPinchGrabAPI_SetPinchGrabParam failed");
         }
 
+        /// <summary>
+        /// Retrieves the current value of <paramref name="paramId"/>.
+        /// </summary>
+        /// <param name="paramId">The <see cref="PinchGrabParam"/> for which to retrieve the value</param>
+        /// <returns>The current value of <paramref name="paramId"/></returns>
         public float GetPinchGrabParam(PinchGrabParam paramId)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetPinchGrabParam(GetHandle(), paramId, out float paramVal);
@@ -154,6 +169,10 @@ namespace Oculus.Interaction.GrabAPI
             return paramVal;
         }
 
+        /// <summary>
+        /// Checks whether hand tracking has good visibility on a pinch.
+        /// </summary>
+        /// <returns>True if the hand tracking system believes it can see pinching well, false otherwise</returns>
         public bool GetIsPinchVisibilityGood()
         {
             bool b;
@@ -162,6 +181,10 @@ namespace Oculus.Interaction.GrabAPI
             return b;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerIsGrabbing(HandFinger)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool GetFingerIsGrabbing(HandFinger finger)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetFingerIsGrabbing(GetHandle(), (int)finger, out bool grabbing);
@@ -169,6 +192,11 @@ namespace Oculus.Interaction.GrabAPI
             return grabbing;
         }
 
+        /// <summary>
+        /// Determines the degree to which a particular finger is pinching.
+        /// </summary>
+        /// <param name="finger">The <see cref="HandFinger"/> to check</param>
+        /// <returns>A percentage representation of how pinched <paramref name="finger"/> is</returns>
         public float GetFingerPinchPercent(HandFinger finger)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetFingerPinchPercent(GetHandle(), (int)finger, out float pinchPercent);
@@ -176,6 +204,11 @@ namespace Oculus.Interaction.GrabAPI
             return pinchPercent;
         }
 
+        /// <summary>
+        /// Gets the finger pinch distance for the requested finger.
+        /// </summary>
+        /// <param name="finger">The <see cref="HandFinger"/> for which to check the pinch distance</param>
+        /// <returns></returns>
         public float GetFingerPinchDistance(HandFinger finger)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetFingerPinchDistance(GetHandle(), (int)finger, out float pinchDistance);
@@ -183,6 +216,10 @@ namespace Oculus.Interaction.GrabAPI
             return pinchDistance;
         }
 
+        /// <summary>
+        /// Gets the offset between the wrist and the pinch point.
+        /// </summary>
+        /// <returns>The offset between the wrist and the pinch point</returns>
         public Vector3 GetWristOffsetLocal()
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetCenterOffset(GetHandle(), out Vector3 center);
@@ -190,6 +227,10 @@ namespace Oculus.Interaction.GrabAPI
             return center;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerIsGrabbingChanged(HandFinger, bool)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public bool GetFingerIsGrabbingChanged(HandFinger finger, bool targetPinchState)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetFingerIsGrabbingChanged(GetHandle(), (int)finger, targetPinchState, out bool changed);
@@ -197,6 +238,10 @@ namespace Oculus.Interaction.GrabAPI
             return changed;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.GetFingerGrabScore(HandFinger)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public float GetFingerGrabScore(HandFinger finger)
         {
             ReturnValue rc = isdk_FingerPinchGrabAPI_GetFingerGrabScore(GetHandle(), finger, out float score);
@@ -204,6 +249,10 @@ namespace Oculus.Interaction.GrabAPI
             return score;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IFingerAPI.Update(IHand)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public void Update(IHand hand)
         {
             hand.GetJointPosesFromWrist(out var poses);

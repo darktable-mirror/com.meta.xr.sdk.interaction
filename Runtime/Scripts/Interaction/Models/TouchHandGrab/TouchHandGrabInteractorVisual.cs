@@ -19,7 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
-using System.Linq;
+using System.Buffers;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -81,10 +81,15 @@ namespace Oculus.Interaction
                 HandFinger finger = (HandFinger)i;
                 if (_interactor.IsFingerLocked(finger))
                 {
-                    Quaternion[] rotations =
-                        _interactor.GetFingerJoints(finger).Select(pose => pose.rotation).ToArray();
+                    Pose[] fingerJoints = _interactor.GetFingerJoints(finger);
+                    Quaternion[] rotations = ArrayPool<Quaternion>.Shared.Rent(fingerJoints.Length);
+                    for (int j = 0; j < fingerJoints.Length; j++)
+                    {
+                        rotations[j] = fingerJoints[j].rotation;
+                    }
                     _syntheticHand.OverrideFingerRotations(finger, rotations, 1.0f);
                     _syntheticHand.SetFingerFreedom(finger, JointFreedom.Locked, true);
+                    ArrayPool<Quaternion>.Shared.Return(rotations);
                     forceUpdate = true;
                 }
                 else

@@ -29,7 +29,7 @@ namespace Oculus.Interaction
 {
     /// <summary>
     /// This class implements higher level logic to share the number of max
-    /// max interactors acting on this group of interactors at a time.
+    /// interactors acting on this group of <see cref="IInteractable"/>s;
     /// </summary>
     public class InteractableGroup : MonoBehaviour
     {
@@ -55,6 +55,10 @@ namespace Oculus.Interaction
 
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
+
+        /// <summary>
+        /// An optional object that exposes the underlying serialized data field.
+        /// </summary>
         public object Data { get; protected set; } = null;
 
         protected bool _started = false;
@@ -182,11 +186,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractableGroup"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractableGroup(List<IInteractable> interactables)
         {
             InjectInteractables(interactables);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractable"/> set for a dynamically instantiated
+        /// <see cref="InteractableGroup"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractables(List<IInteractable> interactables)
         {
             Interactables = interactables;
@@ -194,6 +210,12 @@ namespace Oculus.Interaction
                 interactables.ConvertAll(interactable => interactable as UnityEngine.Object);
         }
 
+        /// <summary>
+        /// Sets the optional underlying data object for a dynamically instantiated
+        /// <see cref="InteractableGroup"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalData(object data)
         {
             _data = data as UnityEngine.Object;

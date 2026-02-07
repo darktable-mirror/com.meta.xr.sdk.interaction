@@ -21,6 +21,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Oculus.Interaction.PoseDetection.Debug;
+using System.Threading.Tasks;
 
 namespace Oculus.Interaction
 {
@@ -110,9 +111,9 @@ namespace Oculus.Interaction
 
         private class DebugModel : ActiveStateModel<ActiveStateToggle>
         {
-            protected override IEnumerable<IActiveState> GetChildren(ActiveStateToggle activeState)
+            protected override Task<IEnumerable<IActiveState>> GetChildrenAsync(ActiveStateToggle activeState)
             {
-                return new[] { activeState.On, activeState.Off };
+                return Task.FromResult<IEnumerable<IActiveState>>(new[] { activeState.On, activeState.Off });
             }
         }
 

@@ -41,7 +41,7 @@ namespace Oculus.Interaction.Input
         [Tooltip("If this is false, then this modifier will simply pass through " +
                  "data without performing any modification. This saves on memory " +
                  "and computation")]
-        private bool _applyModifier = true;
+        protected bool _applyModifier = true;
 
         private static TData InvalidAsset { get; } = new TData();
         private TData _thisDataAsset;

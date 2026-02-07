@@ -20,7 +20,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
+using UnityEngine.Pool;
 
 namespace Oculus.Interaction
 {
@@ -41,7 +41,7 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _selectRequired = false;
 
-        private Dictionary<IInteractorView, List<IInteractorView>> _primaryToSecondaryMap;
+        private Dictionary<int, List<int>> _primaryToSecondaryMap = null;
 
         protected bool _started = false;
 
@@ -49,13 +49,13 @@ namespace Oculus.Interaction
         {
             PrimaryInteractable = _primaryInteractable as IInteractable;
             SecondaryInteractable = _secondaryInteractable as IInteractable;
-            _primaryToSecondaryMap = new Dictionary<IInteractorView, List<IInteractorView>>();
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertField(PrimaryInteractable, nameof(PrimaryInteractable));
+            this.AssertField(PrimaryInteractable, nameof(_primaryInteractable));
+            this.AssertField(SecondaryInteractable, nameof(_secondaryInteractable));
             this.EndStart(ref _started);
         }
 
@@ -65,13 +65,13 @@ namespace Oculus.Interaction
             {
                 if (_selectRequired)
                 {
-                    PrimaryInteractable.WhenSelectingInteractorViewRemoved +=
-                        HandleWhenSelectingInteractorViewRemoved;
+                    PrimaryInteractable.WhenSelectingInteractorViewAdded += HandleInteractorAdded;
+                    PrimaryInteractable.WhenSelectingInteractorViewRemoved += HandleInteractorRemoved;
                 }
                 else
                 {
-                    PrimaryInteractable.WhenInteractorViewRemoved +=
-                        HandleWhenInteractorViewRemoved;
+                    PrimaryInteractable.WhenInteractorViewAdded += HandleInteractorAdded;
+                    PrimaryInteractable.WhenInteractorViewRemoved += HandleInteractorRemoved;
                 }
             }
         }
@@ -82,76 +82,69 @@ namespace Oculus.Interaction
             {
                 if (_selectRequired)
                 {
-                    PrimaryInteractable.WhenSelectingInteractorViewRemoved -=
-                        HandleWhenSelectingInteractorViewRemoved;
+                    PrimaryInteractable.WhenSelectingInteractorViewAdded -= HandleInteractorAdded;
+                    PrimaryInteractable.WhenSelectingInteractorViewRemoved -= HandleInteractorRemoved;
                 }
                 else
                 {
-                    PrimaryInteractable.WhenInteractorViewRemoved -=
-                        HandleWhenInteractorViewRemoved;
+                    PrimaryInteractable.WhenInteractorViewAdded -= HandleInteractorAdded;
+                    PrimaryInteractable.WhenInteractorViewRemoved -= HandleInteractorRemoved;
                 }
             }
         }
 
         public bool Filter(GameObject gameObject)
         {
-            SecondaryInteractorConnection connection =
-                gameObject.GetComponent<SecondaryInteractorConnection>();
-            if (connection == null)
+            if (_primaryToSecondaryMap == null)
             {
                 return false;
             }
 
-            IEnumerable<IInteractorView> primaryViews = _selectRequired
-                ? PrimaryInteractable.SelectingInteractorViews
-                : PrimaryInteractable.InteractorViews;
-
-            foreach (IInteractorView primaryView in primaryViews)
+            if (!gameObject.TryGetComponent(out SecondaryInteractorConnection connection))
             {
-                if (primaryView == connection.PrimaryInteractor)
-                {
-                    if (!_primaryToSecondaryMap.ContainsKey(primaryView))
-                    {
-                        _primaryToSecondaryMap.Add(primaryView, new List<IInteractorView>());
-                    }
-
-                    List<IInteractorView> secondaryViews = _primaryToSecondaryMap[primaryView];
-                    if (!secondaryViews.Contains(connection.SecondaryInteractor))
-                    {
-                        secondaryViews.Add(connection.SecondaryInteractor);
-                    }
-
-                    return true;
-                }
+                return false;
             }
 
-            return false;
-        }
+            int primaryInteractorID = connection.PrimaryInteractor.Identifier;
 
-        private void ClearInteractorsForPrimary(IInteractorView primary)
-        {
-            if (!_primaryToSecondaryMap.ContainsKey(primary))
+            if (!_primaryToSecondaryMap.ContainsKey(primaryInteractorID))
             {
-                return;
+                return false;
             }
 
-            List<IInteractorView> secondaryViews = _primaryToSecondaryMap[primary];
-            foreach (IInteractorView secondaryView in secondaryViews)
+            List<int> secondaryViews = _primaryToSecondaryMap[primaryInteractorID];
+            if (!secondaryViews.Contains(connection.SecondaryInteractor.Identifier))
             {
-                SecondaryInteractable.RemoveInteractorByIdentifier(secondaryView.Identifier);
+                secondaryViews.Add(connection.SecondaryInteractor.Identifier);
             }
 
-            _primaryToSecondaryMap.Remove(primary);
+            return true;
         }
 
-        private void HandleWhenInteractorViewRemoved(IInteractorView primaryView)
+        private void HandleInteractorAdded(IInteractorView interactor)
         {
-            ClearInteractorsForPrimary(primaryView);
+            if (_primaryToSecondaryMap == null)
+            {
+                _primaryToSecondaryMap = DictionaryPool<int, List<int>>.Get();
+            }
+            _primaryToSecondaryMap.Add(interactor.Identifier, ListPool<int>.Get());
         }
 
-        private void HandleWhenSelectingInteractorViewRemoved(IInteractorView primaryView)
+        private void HandleInteractorRemoved(IInteractorView primaryInteractor)
         {
-            ClearInteractorsForPrimary(primaryView);
+            foreach (int secondartyInteractorID in _primaryToSecondaryMap[primaryInteractor.Identifier])
+            {
+                SecondaryInteractable.RemoveInteractorByIdentifier(secondartyInteractorID);
+            }
+
+            //Clear the map entry returning to the pool first the List and then the Dictionary if empty
+            ListPool<int>.Release(_primaryToSecondaryMap[primaryInteractor.Identifier]);
+            _primaryToSecondaryMap.Remove(primaryInteractor.Identifier);
+            if (_primaryToSecondaryMap.Count == 0)
+            {
+                DictionaryPool<int, List<int>>.Release(_primaryToSecondaryMap);
+                _primaryToSecondaryMap = null;
+            }
         }
 
         #region Inject
@@ -166,19 +159,19 @@ namespace Oculus.Interaction
             InjectSelectRequired(selectRequired);
         }
 
-        private void InjectPrimaryInteractable(IInteractable interactableView)
+        public void InjectPrimaryInteractable(IInteractable interactableView)
         {
             PrimaryInteractable = interactableView;
             _primaryInteractable = interactableView as UnityEngine.Object;
         }
 
-        private void InjectSecondaryInteractable(IInteractable interactable)
+        public void InjectSecondaryInteractable(IInteractable interactable)
         {
             SecondaryInteractable = interactable;
             _secondaryInteractable = interactable as UnityEngine.Object;
         }
 
-        private void InjectSelectRequired(bool selectRequired)
+        public void InjectSelectRequired(bool selectRequired)
         {
             _selectRequired = selectRequired;
         }

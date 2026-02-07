@@ -25,8 +25,9 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Remaps Pointable events on the surface of a CanvasRenderMesh to Pointable events on the underlying Canvas.
-    /// This should be used to forward Pointable events to a Pointable Canvas when using Curved Canvases.
+    /// Remaps Pointable events on the surface of a <see cref="CanvasMesh"/> to Pointable events
+    /// on the underlying <see cref="Canvas"/>. This should be used to forward Pointable events
+    /// to a <see cref="PointableCanvas"/> when using Curved Canvases.
     /// </summary>
     public class PointableCanvasMesh : PointableElement
     {
@@ -44,6 +45,10 @@ namespace Oculus.Interaction
             this.AssertField(_canvasMesh, nameof(_canvasMesh));
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IPointableElement.ProcessPointerEvent(PointerEvent)"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public override void ProcessPointerEvent(PointerEvent evt)
         {
             Vector3 transformPosition =
@@ -54,11 +59,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="PointableCanvasMesh"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllCanvasMeshPointable(CanvasMesh canvasMesh)
         {
             InjectCanvasMesh(canvasMesh);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="CanvasMesh"/> for a dynamically instantiated
+        /// <see cref="PointableCanvasMesh"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectCanvasMesh(CanvasMesh canvasMesh)
         {
             _canvasMesh = canvasMesh;

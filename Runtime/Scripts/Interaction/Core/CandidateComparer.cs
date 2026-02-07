@@ -22,8 +22,21 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Type-specific descendent of <see cref="ICandidateComparer"/>, allowing typed-aware comparisons.
+    /// </summary>
+    /// <typeparam name="T">The type to be compared</typeparam>
+    /// <remarks>
+    /// Comparisons between objects of <typeparamref name="T"/> will result in the arguments being compared by
+    /// <see cref="Compare(T, T)"/>. Comparisons of any type other than <typeparamref name="T"/> will evaluate
+    /// the arguments as being equivalent.
+    /// </remarks>
     public abstract class CandidateComparer<T> : MonoBehaviour, ICandidateComparer where T : class
     {
+        /// <summary>
+        /// Implementation of <see cref="ICandidateComparer.Compare(object, object)"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public int Compare(object a, object b)
         {
             T typedA = a as T;
@@ -37,6 +50,12 @@ namespace Oculus.Interaction
             return 0;
         }
 
+        /// <summary>
+        /// Adapter API which <see cref="Compare(object, object)"/> uses to perform typed comparisons between its arguments.
+        /// </summary>
+        /// <param name="a">Left-hand side of the comparison</param>
+        /// <param name="b">Right-hand side of the comparison</param>
+        /// <returns>The result of the comparison</returns>
         public abstract int Compare(T a, T b);
     }
 }

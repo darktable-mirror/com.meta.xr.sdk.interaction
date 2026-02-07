@@ -22,17 +22,53 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Presents an interactor's state as an <see cref="IActiveState"/>,
+    /// which will become active when selected propert(ies) of an
+    /// <see cref="IInteractor"/> are recognized.
+    /// </summary>
     public class InteractorActiveState : MonoBehaviour, IActiveState
     {
+        /// <summary>
+        /// The property of the <see cref="IInteractor"/> to
+        /// track with the <see cref="InteractorActiveState"/>
+        /// </summary>
         [System.Flags]
         public enum InteractorProperty
         {
+            /// <summary>
+            /// Does the interactor have a candidate
+            /// </summary>
             HasCandidate = 1 << 0,
+
+            /// <summary>
+            /// Does the interactor have an interactable
+            /// </summary>
             HasInteractable = 1 << 1,
+
+            /// <summary>
+            /// Is the interactor selecting
+            /// </summary>
             IsSelecting = 1 << 2,
+
+            /// <summary>
+            /// Does the interactor have a selected interactable
+            /// </summary>
             HasSelectedInteractable = 1 << 3,
+
+            /// <summary>
+            /// Is the interactor in the <see cref="InteractorState.Normal"/> state
+            /// </summary>
             IsNormal = 1 << 4,
+
+            /// <summary>
+            /// Is the interactor in the <see cref="InteractorState.Hover"/> state
+            /// </summary>
             IsHovering = 1 << 5,
+
+            /// <summary>
+            /// Is the interactor in the <see cref="InteractorState.Select"/> state
+            /// </summary>
             IsDisabled = 1 << 6,
         }
 
@@ -43,6 +79,9 @@ namespace Oculus.Interaction
         [SerializeField]
         private InteractorProperty _property;
 
+        /// <summary>
+        /// The <see cref="InteractorProperty"/> that will be tested against.
+        /// </summary>
         public InteractorProperty Property
         {
             get
@@ -55,6 +94,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// When any of these conditions in <see cref="Property"/> are met,
+        /// this <see cref="IActiveState"/> will become Active.
+        /// </summary>
         public bool Active
         {
             get
@@ -115,11 +158,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractorActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractorActiveState(IInteractor interactor)
         {
             InjectInteractor(interactor);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractor"/> for a dynamically instantiated
+        /// <see cref="InteractorActiveState"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractor(IInteractor interactor)
         {
             _interactor = interactor as UnityEngine.Object;

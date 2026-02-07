@@ -18,8 +18,10 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Oculus.Interaction.PoseDetection.Debug
 {
@@ -43,21 +45,42 @@ namespace Oculus.Interaction.PoseDetection.Debug
         /// </summary>
         /// <param name="activeState">The parent <see cref="IActiveState"/> to get children for.</param>
         /// <returns>An enumerable collection of child active states. Returns empty if no children exist or if the activeState is not of the expected type.</returns>
-        IEnumerable<IActiveState> GetChildren(IActiveState activeState);
+        [Obsolete("Use async version of this method", true)]
+        IEnumerable<IActiveState> GetChildren(IActiveState activeState) => throw new System.NotImplementedException();
+
+        /// <summary>
+        /// Retrieves all child active states associated with the given parent active state.
+        /// </summary>
+        /// <param name="activeState">The parent <see cref="IActiveState"/> to get children for.</param>
+        /// <returns>An enumerable collection of child active states. Returns empty if no children exist or if the activeState is not of the expected type.</returns>
+        Task<IEnumerable<IActiveState>> GetChildrenAsync(IActiveState activeState);
     }
 
     public abstract class ActiveStateModel<TActiveState> : IActiveStateModel
         where TActiveState : class, IActiveState
     {
-        public IEnumerable<IActiveState> GetChildren(IActiveState activeState)
+        public async Task<IEnumerable<IActiveState>> GetChildrenAsync(IActiveState activeState)
         {
             if (activeState is TActiveState type)
             {
-                return GetChildren(type);
+                var result = await GetChildrenAsync(type);
+                return result;
             }
             return Enumerable.Empty<IActiveState>();
         }
 
-        protected abstract IEnumerable<IActiveState> GetChildren(TActiveState activeState);
+        protected abstract Task<IEnumerable<IActiveState>> GetChildrenAsync(TActiveState instance);
+
+        [Obsolete("Use async version of this method", true)]
+        public IEnumerable<IActiveState> GetChildren(IActiveState activeState)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        [Obsolete("Use async version of this method", true)]
+        protected virtual IEnumerable<IActiveState> GetChildren(TActiveState activeState)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

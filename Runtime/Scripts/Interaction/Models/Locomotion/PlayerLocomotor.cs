@@ -25,12 +25,16 @@ using UnityEngine;
 namespace Oculus.Interaction.Locomotion
 {
     /// <summary>
-    /// Moves a player when receiving events from ILocomotionEventBroadcasters.
-    /// The movement can be a combination of translations and rotations
-    /// and it happens at the very end of the frame (after rendering).
+    /// Moves a player when receiving events from <see cref="ILocomotionEventBroadcaster"/>s. The movement can be a combination
+    /// of translations and rotations and it happens at the very end of the frame (after rendering).
     /// </summary>
-    public class PlayerLocomotor : MonoBehaviour,
-        ILocomotionEventHandler
+    /// <remarks>
+    /// This is a simplistic implementation of <see cref="ILocomotionEventHandler"/> which moves player by actuating the transforms
+    /// directly, which is useful for reference but may interfere with more sophisticated player control mechanisms. For
+    /// alternatives specialized to specific player controls, see <see cref="CapsuleLocomotionHandler"/>,
+    /// <see cref="FirstPersonLocomotor"/>, and <see cref="FlyingLocomotor"/>.
+    /// </remarks>
+    public class PlayerLocomotor : MonoBehaviour, ILocomotionEventHandler
     {
         [SerializeField]
         private Transform _playerOrigin;
@@ -38,6 +42,13 @@ namespace Oculus.Interaction.Locomotion
         private Transform _playerHead;
 
         private Action<LocomotionEvent, Pose> _whenLocomotionEventHandled = delegate { };
+        /// <summary>
+        /// Signal indicating a <see cref="LocomotionEvent"/> has been handled, including the event itself and the new player
+        /// pose resultant from the handling of that event.
+        /// </summary>
+        /// <remarks>
+        /// Because this signal is on a per-event basis, this can be invoked multiple times in the same frame.
+        /// </remarks>
         public event Action<LocomotionEvent, Pose> WhenLocomotionEventHandled
         {
             add
@@ -80,6 +91,12 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// Consumes a <see cref="LocomotionEvent"/>, canonically directly from an <see cref="ILocomotionEventBroadcaster"/>.
+        /// This event is not acted upon immediately, but is cached for consumption at the end of the frame when PlayerLocomotor
+        /// processes all incoming events at once.
+        /// </summary>
+        /// <param name="locomotionEvent">The event to be handled</param>
         public void HandleLocomotionEvent(LocomotionEvent locomotionEvent)
         {
             _deferredEvent.Enqueue(locomotionEvent);
@@ -154,17 +171,30 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Inject
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated PlayerLocomotor; effectively wraps
+        /// <see cref="InjectPlayerOrigin(Transform)"/> and <see cref="InjectPlayerHead(Transform)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllPlayerLocomotor(Transform playerOrigin, Transform playerHead)
         {
             InjectPlayerOrigin(playerOrigin);
             InjectPlayerHead(playerHead);
         }
 
+        /// <summary>
+        /// Sets the player's origin transform for a dynamically instantiated PlayerLocomotor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectPlayerOrigin(Transform playerOrigin)
         {
             _playerOrigin = playerOrigin;
         }
 
+        /// <summary>
+        /// Sets the player's head transform for a dynamically instantiated PlayerLocomotor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectPlayerHead(Transform playerHead)
         {
             _playerHead = playerHead;

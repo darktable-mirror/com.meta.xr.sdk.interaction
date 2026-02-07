@@ -138,7 +138,8 @@ namespace Oculus.Interaction
             return _stableCandidate;
         }
 
-        private TInteractable ComputeBestInteractable(IEnumerable<TInteractable> candidates,
+        private TInteractable ComputeBestInteractable(
+            in InteractableRegistry<TInteractor, TInteractable>.InteractableSet candidates,
             bool narrowSearch, out Vector3 bestHitPoint)
         {
             TInteractable bestInteractable = null;

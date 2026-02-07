@@ -25,8 +25,8 @@ namespace Oculus.Interaction
 {
     /// <summary>
     /// Updates its transform to the estimated shoulder position and rotation.
-    /// Estimated pose is based on an offset from the head, taking in count
-    /// just the rotation Yaw. Hand is required to know not just the handedness
+    /// Estimated pose is based on an offset from an <see cref="IHmd"/>, taking in count
+    /// just the rotation Yaw. An <see cref="IHand"/> is required to know not just the handedness
     /// but also alter the scale of the offset.
     /// </summary>
     public class ShoulderEstimatePosition : MonoBehaviour
@@ -89,6 +89,12 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="ShoulderEstimatePosition"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllShoulderPosition(IHmd hmd,
             IHand hand)
         {
@@ -96,12 +102,24 @@ namespace Oculus.Interaction
             InjectHand(hand);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHmd"/> for a dynamically instantiated
+        /// <see cref="ShoulderEstimatePosition"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHmd(IHmd hmd)
         {
             _hmd = hmd as UnityEngine.Object;
             Hmd = hmd;
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IHand"/> for a dynamically instantiated
+        /// <see cref="ShoulderEstimatePosition"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;

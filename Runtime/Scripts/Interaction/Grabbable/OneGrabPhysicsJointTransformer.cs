@@ -24,7 +24,7 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A Transformer that moves the target using Physics joints
+    /// An <see cref="ITransformer"/> that moves the target using Physics joints
     /// Updates an internal kinematic rigidbody attached with a joint
     /// to the grabbable. It also supports adding custom joints for grabbing
     /// to improve stability on some constrained grabs.
@@ -51,6 +51,11 @@ namespace Oculus.Interaction
         [Tooltip("Indicates if the grabbing rigidbody should be kinematic or not.")]
         private bool _isKinematicGrab = true;
 
+        /// <summary>
+        /// Indicates if the grabbing rigidbody should be kinematic or not.
+        /// Non-kinematic grabs can be interesting for simulating weight or
+        /// more robust interactions.
+        /// </summary>
         public bool IsKinematicGrab
         {
             get
@@ -100,11 +105,19 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.Initialize"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.BeginTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void BeginTransform()
         {
             Vector3 grabPointPosition = _grabbable.GrabPoints[0].position;
@@ -115,6 +128,10 @@ namespace Oculus.Interaction
             _joint = AddJoint(_grabbingRigidbody);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.UpdateTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void UpdateTransform()
         {
             Pose grabPoint = _grabbable.GrabPoints[0];
@@ -136,6 +153,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.EndTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void EndTransform()
         {
             RemoveCurrentJoint();
@@ -319,11 +340,23 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="OneGrabPhysicsJointTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalCustomJoint(ConfigurableJoint customJoint)
         {
             _customJoint = customJoint;
         }
 
+        /// <summary>
+        /// Sets the underlying root <see cref="Transform"/> for a dynamically instantiated
+        /// <see cref="OneGrabPhysicsJointTransformer"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRigidbodiesRoot(Transform rigidbodiesRoot)
         {
             _rigidbodiesRoot = rigidbodiesRoot;

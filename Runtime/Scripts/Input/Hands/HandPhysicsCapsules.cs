@@ -187,7 +187,7 @@ namespace Oculus.Interaction.Input
 
                 string boneName = $"{parentJoint}-{currentJoint} CapsuleCollider";
                 float boneRadius = _jointsRadiusFeature.GetJointRadius(parentJoint);
-                float offset = currentJoint >= HandJointId.HandMaxSkinnable ? -boneRadius
+                float offset = HandJointUtils.IsFingerTip(currentJoint) ? -boneRadius
                     : parentJoint == HandJointId.HandStart ? boneRadius
                     : 0f;
 

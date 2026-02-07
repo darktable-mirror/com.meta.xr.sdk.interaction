@@ -26,8 +26,7 @@ namespace Oculus.Interaction.Input.Visuals
     {
         [SerializeField, Interface(typeof(IController))]
         private UnityEngine.Object _controller;
-
-        public IController Controller;
+        public IController Controller { get; private set; }
 
         [SerializeField]
         private GameObject _root;
@@ -38,7 +37,10 @@ namespace Oculus.Interaction.Input.Visuals
 
         protected virtual void Awake()
         {
-            Controller = _controller as IController;
+            if (Controller == null)
+            {
+                Controller = _controller as IController;
+            }
         }
 
         protected virtual void Start()

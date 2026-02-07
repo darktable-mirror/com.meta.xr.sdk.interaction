@@ -27,14 +27,21 @@ namespace Oculus.Interaction
 {
     /// <summary>
     /// Acts as a forwarder of Trigger events for Rigidbody overlaps. Used in conjunction with
-    /// CollisionInteractionRegistry.
+    /// <see cref="CollisionInteractionRegistry{TInteractor, TInteractable}"/>.
     ///
-    /// Note: If Physics.autoSimulation is false, ForceGlobalUpdateTrigger should be called
-    /// after every call to Physics.Simulate
+    /// Note: If <see cref="Physics.simulationMode"/> is <see cref="SimulationMode.Script"/>,
+    /// <see cref="ForceGlobalUpdateTriggers"/> should be called after every call to <see cref="Physics.Simulate(float)"/>
     /// </summary>
     public class InteractableTriggerBroadcaster : MonoBehaviour
     {
+        /// <summary>
+        /// Raised when a rigidbody collision is detected with the associated <see cref="IInteractable"/>.
+        /// </summary>
         public Action<IInteractable, Rigidbody> WhenTriggerEntered = delegate { };
+
+        /// <summary>
+        /// Raised when a rigidbody collision with the associated <see cref="IInteractable"/> ends.
+        /// </summary>
         public Action<IInteractable, Rigidbody> WhenTriggerExited = delegate { };
 
         private IInteractable _interactable;
@@ -148,6 +155,11 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Forces trigger broadcasters to update their trigger states.
+        /// If <see cref="Physics.simulationMode"/> is <see cref="SimulationMode.Script"/>,
+        /// <see cref="ForceGlobalUpdateTriggers"/> should be called after every call to <see cref="Physics.Simulate(float)"/>
+        /// </summary>
         public static void ForceGlobalUpdateTriggers()
         {
             foreach (InteractableTriggerBroadcaster broadcaster in _broadcasters)
@@ -158,11 +170,24 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated
+        /// <see cref="InteractableTriggerBroadcaster"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllInteractableTriggerBroadcaster(IInteractable interactable)
         {
             InjectInteractable(interactable);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IInteractable"/> for a dynamically instantiated
+        /// <see cref="InteractableTriggerBroadcaster"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractable(IInteractable interactable)
         {
             _interactable = interactable;

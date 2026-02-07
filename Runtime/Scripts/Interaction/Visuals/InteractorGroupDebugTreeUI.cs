@@ -20,6 +20,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Oculus.Interaction.DebugTree
@@ -43,7 +44,7 @@ namespace Oculus.Interaction.DebugTree
             get => _nodePrefab as INodeUI<IInteractor>;
         }
 
-        protected override DebugTree<IInteractor> InstantiateTree(IInteractor value)
+        protected override DebugTree<IInteractor> CreateTree(IInteractor value)
         {
             return new InteractorGroupDebugTree(value);
         }
@@ -60,16 +61,15 @@ namespace Oculus.Interaction.DebugTree
             {
             }
 
-            protected override bool TryGetChildren(IInteractor node, out IEnumerable<IInteractor> children)
+            protected override Task<IEnumerable<IInteractor>> TryGetChildrenAsync(IInteractor node)
             {
                 if (node is InteractorGroup)
                 {
-                    children = (node as InteractorGroup).Interactors;
-                    return true;
+                    var children = (node as InteractorGroup).Interactors;
+                    return Task.FromResult<IEnumerable<IInteractor>>(children);
                 }
 
-                children = Enumerable.Empty<IInteractor>();
-                return false;
+                return Task.FromResult(Enumerable.Empty<IInteractor>());
             }
         }
     }

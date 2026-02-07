@@ -22,23 +22,39 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// This Synthetic Controller will stay attached to a Synthetic Hand when this one
+    /// is limited by an interaction such as Poke.
+    /// </summary>
     public class SyntheticControllerInHand : Controller
     {
+        /// <summary>
+        /// The actual tracking hand, used to measure the offset to the real controller
+        /// </summary>
         [SerializeField, Interface(typeof(IHand)), Optional]
         private UnityEngine.Object _rawHand;
-        private IHand RawHand;
+        private IHand RawHand { get; set; }
 
+        /// <summary>
+        /// The synthetic hand, used to attach the synthetic controller to it
+        /// </summary>
         [SerializeField, Interface(typeof(IHand)), Optional]
         private UnityEngine.Object _syntheticHand;
-        private IHand SyntheticHand;
+        private IHand SyntheticHand { get; set; }
 
-        private Pose _handToControllerDelta = Pose.identity;
-        private Pose _rootToPointerDelta = Pose.identity;
+        private Pose _handToController = Pose.identity;
+        private Pose _rootToPointer = Pose.identity;
 
         protected virtual void Awake()
         {
-            RawHand = _rawHand as IHand;
-            SyntheticHand = _syntheticHand as IHand;
+            if (RawHand == null)
+            {
+                RawHand = _rawHand as IHand;
+            }
+            if (SyntheticHand == null)
+            {
+                SyntheticHand = _syntheticHand as IHand;
+            }
         }
 
         protected override void Start()
@@ -55,42 +71,52 @@ namespace Oculus.Interaction.Input
             this.EndStart(ref _started);
         }
 
-        protected override void UpdateData()
+        protected override void LateUpdate()
         {
-            if (Started)
+            if (_applyModifier)
             {
-                RecalculateOffset();
+                UpdateOffsets(ModifyDataFromSource.GetData());
             }
-            base.UpdateData();
+            base.LateUpdate();
         }
 
         protected override void Apply(ControllerDataAsset data)
         {
-            if (SyntheticHand != null
-                && SyntheticHand.GetRootPose(out Pose syntheticHandPose))
-            {
-                Pose pose = Pose.identity;
-                PoseUtils.Multiply(syntheticHandPose, _handToControllerDelta, ref pose);
-                data.RootPose = pose;
+            ApplyOffsets(data);
+        }
 
-                PoseUtils.Multiply(syntheticHandPose, _handToControllerDelta, ref pose);
-                PoseUtils.Multiply(pose, _rootToPointerDelta, ref pose);
-                data.PointerPose = pose;
+        private void UpdateOffsets(ControllerDataAsset data)
+        {
+            if (TryGetTrackingRoot(RawHand, data, out Pose root))
+            {
+                _handToController = PoseUtils.Delta(root, data.RootPose);
+                _rootToPointer = PoseUtils.Delta(data.RootPose, data.PointerPose);
             }
         }
 
-        protected void RecalculateOffset()
+        private void ApplyOffsets(ControllerDataAsset data)
         {
-            if (RawHand != null
-                && RawHand.GetRootPose(out Pose rawHandPose))
+            if (TryGetTrackingRoot(SyntheticHand, data, out Pose root))
             {
-                ControllerDataAsset baseData = ModifyDataFromSource.GetData();
-                Pose rawRoot = baseData.RootPose;
-                Pose rawPointer = baseData.PointerPose;
-
-                _rootToPointerDelta = PoseUtils.Delta(rawRoot, rawPointer);
-                _handToControllerDelta = PoseUtils.Delta(rawHandPose, rawRoot);
+                PoseUtils.Multiply(root, _handToController, ref data.RootPose);
+                PoseUtils.Multiply(data.RootPose, _rootToPointer, ref data.PointerPose);
             }
+        }
+
+        private bool TryGetTrackingRoot(IHand hand, ControllerDataAsset controller, out Pose root)
+        {
+            if (hand != null
+               && hand.GetRootPose(out root))
+            {
+                ITrackingToWorldTransformer transformer = controller.Config.TrackingToWorldTransformer;
+                if (transformer != null)
+                {
+                    root = transformer.ToTrackingPose(root);
+                }
+                return true;
+            }
+            root = Pose.identity;
+            return false;
         }
 
         #region Inject
