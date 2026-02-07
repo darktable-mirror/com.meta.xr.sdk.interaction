@@ -26,10 +26,10 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// TouchHandGrabInteractor provides a hand-specific grab interaction model
-    /// where selection begins when finger tips overlap with an associated interactable.
-    /// Upon selection, the distance between the fingers and thumb is cached and is used for
-    /// determining the point of release: when fingers are outside of the cached distance.
+    /// Provides a hand-specific, collisions-based, grab interaction model (distinct from <see cref="HandGrab.HandGrabInteractor"/>'s
+    /// spatial hueristic approach) where selection begins when finger tips overlap with an associated interactable. Upon selection,
+    /// the distance between the fingers and thumb is cached and is used for determining the point of release - when fingers are outside
+    /// of the cached distance. This interaction mode simulates the physicality of grabbing a real-world object with the fingertips.
     /// </summary>
     public class
         TouchHandGrabInteractor : PointerInteractor<TouchHandGrabInteractor, TouchHandGrabInteractable>,
@@ -68,9 +68,25 @@ namespace Oculus.Interaction
         [SerializeField, Interface(typeof(IActiveState)), Optional]
         private UnityEngine.Object _grabPrerequisite;
 
+        /// <summary>
+        /// Event invoked to indicate changes in which fingers are locked by the TouchHandGrabInteractor. For information
+        /// about which specific finger's locking state has changed, check <see cref="IsFingerLocked(HandFinger)"/>.
+        /// </summary>
+        /// <remarks>
+        /// During touch interaction, fingers are locked when the tracked finger penetrates the
+        /// <see cref="TouchHandGrabInteractable"/>; this locking prevents the visualized finger from clipping overmuch
+        /// into the interactable's visualization.
+        /// </remarks>
         public event Action WhenFingerLocked = delegate () { };
 
         private Func<float> _timeProvider = () => Time.time;
+
+        /// <summary>
+        /// Implements <see cref="ITimeConsumer.SetTimeProvider(Func{float})"/>.
+        /// Sets the time provider for this sequence, allowing for the default time provider (Unity's built-in Time.time)
+        /// to be overridden with custom behavior to enable pausing, time dilation, etc.
+        /// </summary>
+        /// <param name="timeProvider">The new time provider to be used by this instance.</param>
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
@@ -147,6 +163,12 @@ namespace Oculus.Interaction
             _deltaTime = 0;
         }
 
+        /// <summary>
+        /// Checks whether a <paramref name="finger"/> has been locked by the interaction in order to prevent it from
+        /// penetrating the <see cref="TouchHandGrabInteractable"/>.
+        /// </summary>
+        /// <param name="finger">The finger to check for locking.</param>
+        /// <returns>True if <paramref name="finger"/> is locked, false otherwise.</returns>
         public bool IsFingerLocked(HandFinger finger)
         {
             if (State == InteractorState.Select && _selectedInteractable == null)
@@ -156,6 +178,12 @@ namespace Oculus.Interaction
             return _fingerStatuses[(int)finger].Locked;
         }
 
+        /// <summary>
+        /// Retrieves positional data for the requested <paramref name="finger"/>'s joints. This is useful for rendering
+        /// a finger visualization based on the "locked" non-penetrating finger position.
+        /// </summary>
+        /// <param name="finger">The finger for which to retrieve positional data.</param>
+        /// <returns>The Poses of the joints of the requested <paramref name="finger"/>.</returns>
         public Pose[] GetFingerJoints(HandFinger finger)
         {
             return _fingerStatuses[(int)finger].LocalJoints;
@@ -466,6 +494,11 @@ namespace Oculus.Interaction
             WhenFingerLocked();
         }
 
+        /// <summary>
+        /// Overrides <see cref="IInteractor.Unselect"/>; this is core Interaction SDK logic and should not be
+        /// invoked directly outside of core functionality. For more information, see the relevant remarks on
+        /// <see cref="IInteractor"/>.
+        /// </summary>
         public override void Unselect()
         {
             if (!ShouldUnselect)
@@ -521,6 +554,12 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Convenience method combining <see cref="InjectHand(IHand)"/>, <see cref="InjectOpenHand(IHand)"/>,
+        /// <see cref="InjectHandSphereMap(IHandSphereMap)"/>, <see cref="InjectHoverLocation(Transform)"/>, and
+        /// <see cref="InjectGrabLocation(Transform)"/>. This method exists to support Interaction SDK's dependency
+        /// injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllTouchHandGrabInteractor(
             IHand hand,
             IHand openHand,
@@ -535,55 +574,105 @@ namespace Oculus.Interaction
             InjectGrabLocation(grabLocation);
         }
 
+        /// <summary>
+        /// Sets an <see cref="IHand"/> as the hand for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             Hand = hand;
             _hand = hand as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Sets an <see cref="IHand"/> as the "open hand" for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOpenHand(IHand openHand)
         {
             OpenHand = openHand;
             _openHand = openHand as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Sets an <see cref="IHandSphereMap"/> as the hand sphere map for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectHandSphereMap(IHandSphereMap handSphereMap)
         {
             HandSphereMap = handSphereMap;
             _handSphereMap = handSphereMap as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Sets a Transform as the hover location for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectHoverLocation(Transform hoverLocation)
         {
             _hoverLocation = hoverLocation;
         }
 
+        /// <summary>
+        /// Sets a Transform as the grab location for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectGrabLocation(Transform grabLocation)
         {
             _grabLocation = grabLocation;
         }
 
+        /// <summary>
+        /// Sets an <see cref="IActiveState"/> as a grab prerequisite for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalGrabPrerequisite(IActiveState grabPrerequisite)
         {
             GrabPrerequisite = grabPrerequisite;
             _grabPrerequisite = grabPrerequisite as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Programmatically sets the min hover distance for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalMinHoverDistance(float minHoverDistance)
         {
             _minHoverDistance = minHoverDistance;
         }
 
+        /// <summary>
+        /// Programmatically sets the curl delta threshold for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalCurlDeltaThreshold(float threshold)
         {
             _curlDeltaThreshold = threshold;
         }
 
+        /// <summary>
+        /// Programmatically sets the curl time threshold for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalCurlTimeThreshold(float seconds)
         {
             _curlTimeThreshold = seconds;
         }
 
+        /// <summary>
+        /// Programmatically sets the iteratiosn for a dynamically instantiated TouchHandGrabInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalIterations(int iterations)
         {
             _iterations = iterations;

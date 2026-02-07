@@ -69,8 +69,6 @@ namespace Oculus.Interaction.Samples.PalmMenu
         {
             _currentSelectedButtonIdx = CalculateNearestButtonIdx();
             _selectionIndicatorDot.position = _paginationDots[_currentSelectedButtonIdx].position;
-
-            _menuParent.SetActive(false);
         }
 
         private void Update()

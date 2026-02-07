@@ -25,16 +25,15 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// Data for the pose of a hand for grabbing an object.
-    /// It contains not only the position of the hand and the fingers but
-    /// other relevant data to the pose like the scale or which
-    /// fingers are locked.
-    ///
-    /// Even though this class is Serializable it is not a Component.
-    /// The HandPoseEditor class should be used
-    /// (in conjunction with the HandGrabInteractableEditor class)
-    /// to edit the values in the inspector.
+    /// Data for the pose of a hand for grabbing an object. It contains not only the position of the hand and
+    /// the fingers but other relevant data to the pose, such as which fingers are locked.
     /// </summary>
+    /// <remarks>
+    /// Even though this class is Serializable, it is not a Component. The HandPoseEditor class should be used
+    /// (in conjunction with the HandGrabInteractableEditor class) to edit the values in the inspector.
+    /// HandPose data can only be used in conjunction with interactors associated with posable hands, such
+    /// as <see cref="HandGrabInteractor"/>.
+    /// </remarks>
     [Serializable]
     public class HandPose
     {
@@ -48,7 +47,7 @@ namespace Oculus.Interaction.HandGrab
         private Quaternion[] _jointRotations = new Quaternion[FingersMetadata.HAND_JOINT_IDS.Length];
 
         /// <summary>
-        /// Handedness of the hand.
+        /// The <see cref="Input.Handedness"/> of the hand represented by the contained pose data.
         /// </summary>
         public Handedness Handedness
         {
@@ -57,9 +56,11 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Collection of joints and their rotations in this hand.
-        /// It follows the FingersMetadata.HAND_JOINT_IDS convention
+        /// The collection of joints and their rotations in this hand.
         /// </summary>
+        /// <remarks>
+        /// This data follows the conventions from <see cref="FingersMetadata.HAND_JOINT_IDS"/>.
+        /// </remarks>
         public Quaternion[] JointRotations
         {
             get
@@ -78,10 +79,11 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Indicates which fingers can be locked, constrained or free in this
-        /// hand pose.
-        /// It follows the Hand.HandFinger order for the collection.
+        /// Indicates which fingers can be locked, constrained, or free in this hand pose.
         /// </summary>
+        /// <remarks>
+        /// Fingers in this data are represented at their index in the <see cref="HandFinger"/> enum.
+        /// </remarks>
         public JointFreedom[] FingersFreedom
         {
             get
@@ -95,6 +97,13 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
+        /// <summary>
+        /// Empty constructor for HandPose.
+        /// </summary>
+        /// <remarks>
+        /// This constructor is automatically invoked by Unity when instantiating deserialized poses
+        /// and contains features for exposing those poses to Editor tools.
+        /// </remarks>
         public HandPose()
         {
 #if UNITY_EDITOR
@@ -108,27 +117,43 @@ namespace Oculus.Interaction.HandGrab
 #endif
         }
 
+        /// <summary>
+        /// A basic handedness-setting constructor for HandPoses.
+        /// </summary>
+        /// <remarks>
+        /// This is a convenience method equivalent to invoking <see cref="HandPose.HandPose"/>, then
+        /// setting <paramref name="handedness"/> as the <see cref="Handedness"/> of the newly-created
+        /// instance.
+        /// </remarks>
+        /// <param name="handedness">The handedness to be set on the new instance.</param>
         public HandPose(Handedness handedness)
         {
             _handedness = handedness;
         }
 
-
+        /// <summary>
+        /// A basic copy constructor for HandPoses.
+        /// </summary>
+        /// <remarks>
+        /// This is a convenience method equivalent to invoking <see cref="HandPose.HandPose"/>, then
+        /// passing <paramref name="other"/> and false to <see cref="CopyFrom(HandPose, bool)"/> on the
+        /// newly-created instance.
+        /// </remarks>
+        /// <param name="other">The HandPose from which the new instance should copy its data.</param>
         public HandPose(HandPose other)
         {
             this.CopyFrom(other);
         }
 
         /// <summary>
-        /// Copies the values over to the hand pose
-        /// without requiring any new allocations.
-        ///
-        /// This is thanks to the fact of the fingers freedom
-        /// and joints rotations collections being always
-        /// fixed size and order.
+        /// Copies the values over to the hand pose without requiring any new allocations.
         /// </summary>
-        /// <param name="from">The hand pose to copy the values from</param>
-        /// <param name="mirrorHandedness">Invert the received handedness</param>
+        /// <remarks>
+        /// This is safe thanks to the flat and predictable way data is stored in <see cref="JointRotations"/>,
+        /// <see cref="FingersFreedom"/> etc. within HandPose instances.
+        /// </remarks>
+        /// <param name="from">The hand pose to copy the values from.</param>
+        /// <param name="mirrorHandedness">Invert the received handedness.</param>
         public void CopyFrom(HandPose from, bool mirrorHandedness = false)
         {
             if (!mirrorHandedness)
@@ -141,7 +166,7 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Interpolates between two HandPoses, if they have the same handedness and joints.
+        /// Interpolates between two HandPoses, if they have the same <see cref="Handedness"/> and joints.
         /// </summary>
         /// <param name="from">Base HandPose to interpolate from.</param>
         /// <param name="to">Target HandPose to interpolate to.</param>

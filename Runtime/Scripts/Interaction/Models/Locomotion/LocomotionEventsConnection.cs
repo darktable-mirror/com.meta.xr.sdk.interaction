@@ -24,6 +24,12 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Locomotion
 {
+    /// <summary>
+    /// This component serves as a nexus point between LocomotionEventBroadcasters
+    /// and a LocomotionEventHandler. Use it to group several LocomotionEventBroadcasters
+    /// and re-route them to your player controller, or invoke it directly to get the event
+    /// forwarded.
+    /// </summary>
     public class LocomotionEventsConnection : MonoBehaviour
         , ILocomotionEventHandler
     {
@@ -102,7 +108,7 @@ namespace Oculus.Interaction.Locomotion
         }
 
         public void InjectAllLocomotionBroadcastersHandlerConnection(
-           ILocomotionEventHandler handler)
+            ILocomotionEventHandler handler)
         {
             InjectHandler(handler);
         }

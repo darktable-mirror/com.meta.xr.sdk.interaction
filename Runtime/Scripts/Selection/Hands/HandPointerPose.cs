@@ -25,16 +25,27 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Sets the origin of the ray used by hand ray interactors.
+    /// Sets the origin of the ray used by <see cref="RayInteractor"/>s for tracked hands.
     /// </summary>
+    /// <remarks>
+    /// RayInteractors themselves are agnostic to the origin of the ray, so they can work with any
+    /// ray but cannot calculate that ray for themselves. HandPointerPose observes an <see cref="IHand"/>
+    /// and uses it to compute a ray origin.
+    /// </remarks>
     public class HandPointerPose : MonoBehaviour, IActiveState
     {
-        /// <summary>
-        /// A hand ray interactor.
-        /// </summary>
-        [Tooltip("A hand ray interactor.")]
+        [Tooltip("The hand used for ray interaction")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// The <see cref="IHand"/> used for ray interaction.
+        /// </summary>
+        /// <remarks>
+        /// This value is typically set in the Unity Editor, but it can also be set programmatically during
+        /// initialization using either <see cref="InjectAllHandPointerPose(IHand, Vector3)"/> or
+        /// <see cref="InjectHand(IHand)"/>.
+        /// </remarks>
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -44,6 +55,10 @@ namespace Oculus.Interaction
         [SerializeField]
         private Vector3 _offset;
 
+        /// <summary>
+        /// Implements <see cref="IActiveState.Active"/>, in this case indicating whether or not a valid ray
+        /// origin is currently available.
+        /// </summary>
         public bool Active => Hand.IsPointerPoseValid;
 
         protected bool _started = false;
@@ -87,6 +102,11 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets all required dependencies for a dynamically instantiated HandPointerPose. This is a convenience method wrapping
+        /// <see cref="InjectHand(IHand)"/> and <see cref="InjectOffset(Vector3)"/>. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllHandPointerPose(IHand hand,
             Vector3 offset)
         {
@@ -94,12 +114,20 @@ namespace Oculus.Interaction
             InjectOffset(offset);
         }
 
+        /// <summary>
+        /// Sets the an <see cref="IHand"/> as the <see cref="Hand"/> for a dynamically instantiated HandPointerPose. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Sets a Unity Vector3 as the ray origin offset for a dynamically instantiated HandPointerPose. This method exists to
+        /// support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOffset(Vector3 offset)
         {
             _offset = offset;

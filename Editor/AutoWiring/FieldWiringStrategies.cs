@@ -75,5 +75,102 @@ namespace Oculus.Interaction.Editor
 
             return false;
         }
+        /// <summary>
+        /// Searches for the component in an array of GameObject Paths and wires the first found component under it
+        /// </summary>
+        public static bool WireFieldToPathComponent(MonoBehaviour monoBehaviour, FieldInfo field, Type targetType, params string[] gameobjectPaths)
+        {
+            foreach (var path in gameobjectPaths)
+            {
+                GameObject gameObject = GameObject.Find(path);
+                if (gameObject != null)
+                {
+                    var component = gameObject.GetComponentInChildren(targetType, true);
+                    if (component != null)
+                    {
+                        field.SetValue(monoBehaviour, component);
+                        EditorUtility.SetDirty(monoBehaviour);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Searches for the component to wire in the local hierarchy of the target. It tries to minimise the score
+        /// of each potential component by adding +1 if needs to go up in the hierarchy, and +3 if it needs to go down.
+        /// </summary>
+        public static bool WireFieldToNearestComponent(MonoBehaviour monoBehaviour, FieldInfo field, Type targetType)
+        {
+            GameObject[] rootObjs = SceneManager.GetActiveScene().GetRootGameObjects();
+
+            List<Component> components = new List<Component>();
+            foreach (GameObject rootGameObject in rootObjs)
+            {
+                components.AddRange(rootGameObject.GetComponentsInChildren(targetType, true));
+            }
+
+            List<Transform> ancestors = GetAncestors(monoBehaviour.transform);
+            int bestScore = int.MaxValue;
+            Component bestComponent = null;
+            foreach (Component component in components)
+            {
+                List<Transform> ancestorsB = GetAncestors(component.transform);
+                int score = GetHierarchyScore(ancestors, ancestorsB, 1, 3);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestComponent = component;
+                }
+            }
+
+            if (bestComponent != null)
+            {
+                field.SetValue(monoBehaviour, bestComponent);
+                EditorUtility.SetDirty(monoBehaviour);
+                return true;
+            }
+
+            return false;
+
+            int GetHierarchyScore(List<Transform> ancestorsA, List<Transform> ancestorsB,
+                int upPenalty, int downPenalty)
+            {
+                int indexA = 0;
+                int indexB = -1;
+
+                for (indexA = 0; indexA < ancestorsA.Count; indexA++)
+                {
+                    indexB = ancestorsB.FindIndex(t => t == ancestorsA[indexA]);
+                    if (indexB != -1)
+                    {
+                        break;
+                    }
+                }
+
+                //no common hierarchy found
+                //the score is the sum of both entire lists of ancestors
+                if (indexB == -1)
+                {
+                    return ancestorsA.Count * upPenalty
+                        + ancestorsB.Count * downPenalty;
+                }
+
+                return indexA * upPenalty
+                    + indexB * downPenalty;
+            }
+
+            List<Transform> GetAncestors(Transform transform)
+            {
+                List<Transform> ancestors = new List<Transform>();
+                while (transform != null)
+                {
+                    ancestors.Add(transform);
+                    transform = transform.parent;
+                }
+                return ancestors;
+            }
+        }
     }
 }

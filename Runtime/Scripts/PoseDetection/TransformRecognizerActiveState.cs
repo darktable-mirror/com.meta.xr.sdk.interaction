@@ -25,22 +25,46 @@ using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// A serializable list of <see cref="TransformFeatureConfig"/>s, implicitly all associated with a single
+    /// transform.
+    /// </summary>
+    /// <remarks>
+    /// Each TransformFeatureConfig describes only one aspect (<see cref="TransformFeature"/>) of a transform,
+    /// meaning multiple can be applicable at the same time; for example, the "stop" hand gesture must satisfy
+    /// both <see cref="TransformFeature.FingersUp"/> and <see cref="TransformFeature.PalmAwayFromFace"/>. A
+    /// TransformFeatureConfigList can thus be thought of as a list of requirements, all of which must be
+    /// satisfied in order for the transform to be acceptable for recognition.
+    /// </remarks>
     [Serializable]
     public class TransformFeatureConfigList
     {
         [SerializeField]
         private List<TransformFeatureConfig> _values;
 
+        /// <summary>
+        /// The list of <see cref="TransformFeatureConfig"/>s which must all be satisfied in order for the
+        /// associated transform to be considered acceptable for recognition.
+        /// </summary>
         public List<TransformFeatureConfig> Values => _values;
     }
 
+    /// <summary>
+    /// Specializes <see cref="FeatureConfigBase{TFeature}"/> (which simply stores information related to the
+    /// state of a feature) for <see cref="TransformFeature"/>s. This is used by
+    /// <see cref="TransformRecognizerActiveState"/>, among others, to assess whether a transform is acceptably
+    /// posed for recognition.
+    /// </summary>
     [Serializable]
     public class TransformFeatureConfig : FeatureConfigBase<TransformFeature>
     {
     }
 
     /// <summary>
-    /// Used in hand pose detection to get the current state of the hand's transforms and compares it to the required transforms. If both match, the state is active.
+    /// Used in hand pose detection (often as part of a <see cref="Sequence"/> to get the current state of the
+    /// hand's Transforms and compare it to the required states. The "Transform states" in question broadly
+    /// pertain to the hand's orientation in user-relative terms; see <see cref="TransformFeature"/> for details.
+    /// If the current state of the hand transforms meets the specified requirements, <see cref="Active"/> is true.
     /// </summary>
     public class TransformRecognizerActiveState : MonoBehaviour, IActiveState
     {
@@ -49,7 +73,13 @@ namespace Oculus.Interaction.PoseDetection
         /// </summary>
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// The <see cref="IHand"/> to be observed. While this hand adopts a pose which meets the requirements,
+        /// <see cref="Active"/> will be true.
+        /// </summary>
         public IHand Hand { get; private set; }
+
         /// <summary>
         /// An <cref="ITransformFeatureStateProvider" />, which provides the current state of the tracked hand's transforms.
         /// </summary>
@@ -73,8 +103,19 @@ namespace Oculus.Interaction.PoseDetection
             " edit at runtime at your own risk.")]
         private TransformConfig _transformConfig;
 
+        /// <summary>
+        /// The list of <see cref="TransformFeatureConfig"/>s which must be satisfied for recognition by this TransformRecognizerActiveState.
+        /// </summary>
+        /// <remarks>
+        /// For an overview of the role of this list in shape recognition, see the remarks on
+        /// <see cref="TransformFeatureConfigList"/>.
+        /// </remarks>
         public IReadOnlyList<TransformFeatureConfig> FeatureConfigs => _transformFeatureConfigs.Values;
 
+        /// <summary>
+        /// The transform config used in conjunction with an <see cref="ITransformFeatureStateProvider"/> and data from the
+        /// <see cref="FeatureConfigs"/> to calculate whether or not this recognizer should be <see cref="Active"/>.
+        /// </summary>
         public TransformConfig TransformConfig => _transformConfig;
 
         protected bool _started = false;
@@ -126,6 +167,19 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
+        /// <summary>
+        /// Retrieves the feature vector for the given inputs, invoking the internal <see cref="ITransformFeatureStateProvider"/>'s
+        /// <see cref="ITransformFeatureStateProvider.GetFeatureVectorAndWristPos(TransformConfig, TransformFeature, bool, ref Vector3?, ref Vector3?)"/>
+        /// method with the <see cref="TransformConfig"/> and the provided arguments.
+        /// </summary>
+        /// <remarks>
+        /// A "feature vector" in this case is simply a Vector3 whose value should be interpreted in some specific way depending on which
+        /// <see cref="TransformFeature"/>. This is an internal API which you should not invoke directly in typical usage.
+        /// </remarks>
+        /// <param name="feature">The <see cref="TransformFeature"/> for which to retrieve the vector.</param>
+        /// <param name="isHandVector">A boolean indicating whether the feature is being requested for a hand or for a controller.</param>
+        /// <param name="featureVec">Output parameter to be populated with the requested feature vector.</param>
+        /// <param name="wristPos">Output parameter to be populated with the wrist position to which the feature vector is related.</param>
         public void GetFeatureVectorAndWristPos(TransformFeature feature, bool isHandVector,
             ref Vector3? featureVec, ref Vector3? wristPos)
         {
@@ -133,6 +187,10 @@ namespace Oculus.Interaction.PoseDetection
                 TransformConfig, feature, isHandVector, ref featureVec, ref wristPos);
         }
 
+        /// <summary>
+        /// Implements <see cref="IActiveState.Active"/>, in this case indicating whether the monitored transform currently
+        /// satisfies the recognition conditions specified in the <see cref="TransformConfig"/> and <see cref="FeatureConfigs"/>.
+        /// </summary>
         public bool Active
         {
             get
@@ -159,6 +217,14 @@ namespace Oculus.Interaction.PoseDetection
 
         #region Inject
 
+        /// <summary>
+        /// Sets all required dependencies for a dynamically instantiated TransformRecognizerActiveState. This is a convenience
+        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
+        /// <see cref="InjectTransformFeatureStateProvider(ITransformFeatureStateProvider)"/>,
+        /// <see cref="InjectTransformFeatureList(TransformFeatureConfigList)"/>m and <see cref="InjectTransformConfig(TransformConfig)"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectAllTransformRecognizerActiveState(IHand hand,
             ITransformFeatureStateProvider transformFeatureStateProvider,
             TransformFeatureConfigList transformFeatureList,
@@ -170,23 +236,44 @@ namespace Oculus.Interaction.PoseDetection
             InjectTransformConfig(transformConfig);
         }
 
+        /// <summary>
+        /// Sets an <see cref="IHand"/> as the <see cref="Hand"/> for a dynamically instantiated
+        /// TransformRecognizerActiveState. This method exists to support Interaction SDK's dependency injection pattern and is not needed for
+        /// typical Unity Editor-based usage.
+        /// </summary>
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
 
+        /// <summary>
+        /// Sets an <see cref="ITransformFeatureStateProvider"/> as the feature state provider (which assesses whether or not the monitored
+        /// hand's transforms meet the requirements for recognition) for a dynamically instantiated
+        /// TransformRecognizerActiveState. This method exists to support Interaction SDK's dependency injection pattern and is not needed for
+        /// typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTransformFeatureStateProvider(ITransformFeatureStateProvider transformFeatureStateProvider)
         {
             TransformFeatureStateProvider = transformFeatureStateProvider;
             _transformFeatureStateProvider = transformFeatureStateProvider as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Sets a <see cref="TransformFeatureConfigList"/> as the <see cref="FeatureConfigs"/> for a dynamically instantiated
+        /// TransformRecognizerActiveState. This method exists to support Interaction SDK's dependency injection pattern and is not needed for
+        /// typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTransformFeatureList(TransformFeatureConfigList transformFeatureList)
         {
             _transformFeatureConfigs = transformFeatureList;
         }
 
+        /// <summary>
+        /// Sets a <see cref="PoseDetection.TransformConfig"/> as the <see cref="TransformConfig"/> for a dynamically instantiated
+        /// TransformRecognizerActiveState. This method exists to support Interaction SDK's dependency injection pattern and is not needed for
+        /// typical Unity Editor-based usage.
+        /// </summary>
         public void InjectTransformConfig(TransformConfig transformConfig)
         {
             _transformConfig = transformConfig;

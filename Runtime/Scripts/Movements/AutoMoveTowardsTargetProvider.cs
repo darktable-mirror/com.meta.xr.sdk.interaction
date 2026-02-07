@@ -132,7 +132,7 @@ namespace Oculus.Interaction
 
         public AutoMoveTowardsTarget(PoseTravelData travellingData, IPointableElement pointableElement)
         {
-            _identifier = UniqueIdentifier.Generate();
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
             _travellingData = travellingData;
             _pointableElement = pointableElement;
         }

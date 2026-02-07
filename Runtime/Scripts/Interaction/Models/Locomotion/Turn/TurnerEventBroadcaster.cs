@@ -142,7 +142,7 @@ namespace Oculus.Interaction.Locomotion
 
         protected virtual void Awake()
         {
-            _identifier = UniqueIdentifier.Generate();
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
 
             Interactor = _interactor as IInteractor;
             Axis = _axis as IAxis1D;

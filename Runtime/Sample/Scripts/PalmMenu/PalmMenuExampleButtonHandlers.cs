@@ -122,7 +122,7 @@ namespace Oculus.Interaction.Samples.PalmMenu
                 _currentColorIdx = 0;
             }
 
-            _controlledObject.GetComponent<Renderer>().material.SetColor("_Color", _colors[_currentColorIdx]);
+            _controlledObject.GetComponent<Renderer>().material.color = _colors[_currentColorIdx];
         }
 
         /// <summary>

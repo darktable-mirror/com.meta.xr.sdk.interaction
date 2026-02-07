@@ -346,6 +346,19 @@ namespace Oculus.Interaction.Locomotion
             set => _maxReboundSteps = value;
         }
 
+        /// <summary>
+        /// When Velocity is ignored the character will not try to catch up
+        /// to the player and the character won't slide or fall.
+        /// It is preferred to re-enable the movement by calling EnableMovement
+        /// instead of setting this variable to false directly.
+        /// </summary>
+        [SerializeField]
+        [Tooltip("When Velocity is ignored the character will not try to catch up " +
+            "to the player and the character won't slide or fall." +
+            "It is preferred to re-enable the movement by calling " + nameof(EnableMovement) +
+            " instead of setting this variable to false directly.")]
+        private bool _velocityDisabled;
+
         [Header("Anchors")]
         /// <summary>
         /// Optional. This transform pose will be updated
@@ -383,17 +396,30 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Indicates wheter the character was detected as grounded after
+        /// Indicates whether the character was detected as grounded after
         /// the last move.
         /// </summary>
         public bool IsGrounded => _isGrounded;
+        /// <summary>
+        /// Indicates whether the character is running
+        /// </summary>
+        public bool IsRunning => _isRunning;
+        /// <summary>
+        /// Indicates whether the character is crouching
+        /// </summary>
+        public bool IsCrouching => _isCrouching;
+        /// <summary>
+        /// Velocity movements can be disabled either by calling DisableMovement or
+        /// teleporting to a Hostpot that sets the Head (instead of the feet) to a specific pose.
+        /// </summary>
+        public bool IgnoringVelocity => _velocityDisabled || _isHeadInHotspot;
 
         private bool ControllingPlayer => _playerOrigin != null && _playerEyes != null;
 
         private Pose _accumulatedDeltaFrame;
         private Vector3 _velocity;
-        private bool _ignorePhysics;
-        private Vector3 _ignorePhysicsCenter;
+        private bool _isHeadInHotspot;
+        private Vector3? _headHotspotCenter;
         private RaycastHit _groundHit;
         private bool _isGrounded;
         private bool _isRunning;
@@ -452,7 +478,7 @@ namespace Oculus.Interaction.Locomotion
 
             UpdateCharacterHeight();
 
-            if (!_ignorePhysics)
+            if (!IgnoringVelocity)
             {
                 CatchUpCharacterToPlayer();
 
@@ -496,8 +522,9 @@ namespace Oculus.Interaction.Locomotion
                 return;
             }
 
+            TryExitHotspot(true);
+
             _velocity += Vector3.up * _jumpForce;
-            EnableMovement();
         }
 
         /// <summary>
@@ -519,7 +546,6 @@ namespace Oculus.Interaction.Locomotion
             if (_isCrouching != crouch)
             {
                 _isCrouching = crouch;
-                EnableMovement();
             }
         }
 
@@ -541,7 +567,7 @@ namespace Oculus.Interaction.Locomotion
             if (_isRunning != run)
             {
                 _isRunning = run;
-                EnableMovement();
+                TryExitHotspot(true);
             }
         }
 
@@ -636,14 +662,13 @@ namespace Oculus.Interaction.Locomotion
 
         private void AddVelocity(Vector3 velocity)
         {
+            TryExitHotspot(true);
             _velocity += velocity * GetModifiedSpeedFactor();
-            EnableMovement();
         }
 
         private void MoveAbsoluteFeet(Vector3 target)
         {
-            _ignorePhysics = false;
-
+            TryExitHotspot(true);
             //Move to target
             Vector3 characterFeet = GetCharacterFeet();
             Vector3 offset = target - characterFeet;
@@ -666,15 +691,17 @@ namespace Oculus.Interaction.Locomotion
             Vector3 characterHead = GetCharacterHead();
             Vector3 offset = target - characterHead;
             _capsule.transform.position += offset;
-            DisableMovement();
+
+            _isHeadInHotspot = true;
+            _headHotspotCenter = GetCharacterHead();
         }
 
         private void MoveRelative(Vector3 offset)
         {
             if (_isGrounded)
             {
+                TryExitHotspot(true);
                 _velocity = Vector3.zero;
-                _ignorePhysics = false;
                 MoveCharacter(offset);
             }
         }
@@ -697,25 +724,29 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Disables grounding until a new input is requested or the movement is manually re-enabled
+        /// Disables grounding and velocity movements. Preventing the character
+        /// from catching up to the player, sliding or falling.
         /// </summary>
         public void DisableMovement()
         {
-            _ignorePhysics = true;
-            _ignorePhysicsCenter = GetCharacterHead();
+            _velocityDisabled = true;
         }
 
         /// <summary>
-        /// Re-enables movement if it was disabled. Making sure grounding is working again
+        /// Re-enables movement if it was disabled. Making sure grounding is working again.
         /// </summary>
         public void EnableMovement()
         {
-            if (!_ignorePhysics)
+            if (!IgnoringVelocity)
             {
                 return;
             }
 
-            _ignorePhysics = false;
+            _velocityDisabled = false;
+            _isHeadInHotspot = false;
+            _headHotspotCenter = null;
+            _velocity = Vector3.zero;
+
             bool grounded = CalculateGround(out RaycastHit groundHit);
             if (grounded && IsFlat(groundHit.normal))
             {
@@ -727,10 +758,10 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
-        private bool TryExitHotspot()
+        private bool TryExitHotspot(bool force = false)
         {
-            if (_ignorePhysics
-                && IsHeadFarFromPoint(_ignorePhysicsCenter, _exitHotspotDistance))
+            if (_isHeadInHotspot && _headHotspotCenter.HasValue
+                && (force || IsHeadFarFromPoint(_headHotspotCenter.Value, _exitHotspotDistance)))
             {
                 EnableMovement();
                 return true;
@@ -779,6 +810,7 @@ namespace Oculus.Interaction.Locomotion
                 return;
             }
 
+            Pose capsulePose = _capsule.transform.GetPose();
             Vector3 originalHeadPosition = GetPlayerHead();
             _playerOrigin.rotation = delta.rotation * _playerOrigin.rotation;
             _playerOrigin.position = _playerOrigin.position + originalHeadPosition - GetPlayerHead();
@@ -789,6 +821,8 @@ namespace Oculus.Interaction.Locomotion
                 + (_isCrouching ? _crouchHeightOffset : 0f)
                 + _heightOffset;
             _playerOrigin.position = finalPosition;
+            _capsule.transform.SetPose(capsulePose);
+
         }
 
         /// <summary>
@@ -801,11 +835,13 @@ namespace Oculus.Interaction.Locomotion
                 return;
             }
 
+            Pose capsulePose = _capsule.transform.GetPose();
             Vector3 characterFeet = GetCharacterFeet();
             Vector3 playerHeadOffset = _playerOrigin.position - GetPlayerHead();
             playerHeadOffset.y = 0f;
             _playerOrigin.position = characterFeet + playerHeadOffset;
             _accumulatedDeltaFrame = Pose.identity;
+            _capsule.transform.SetPose(capsulePose);
         }
 
         private void UpdateVelocity()
@@ -1287,6 +1323,16 @@ namespace Oculus.Interaction.Locomotion
         public void InjectCapsule(CapsuleCollider capsule)
         {
             _capsule = capsule;
+        }
+
+        public void InjectOptionalPlayerEyes(Transform playerEyes)
+        {
+            _playerEyes = playerEyes;
+        }
+
+        public void InjectOptionalPlayerOrigin(Transform playerOrigin)
+        {
+            _playerOrigin = playerOrigin;
         }
 
         #endregion

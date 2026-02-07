@@ -69,10 +69,15 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
-        private UniqueIdentifier _identifier = UniqueIdentifier.Generate();
+        private UniqueIdentifier _identifier;
         public int Identifier => _identifier.ID;
 
         public event Action<LocomotionEvent> WhenLocomotionPerformed = delegate { };
+
+        protected virtual void Awake()
+        {
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
+        }
 
         /// <summary>
         /// Fires a Snap Turn in anti-clockwise direction

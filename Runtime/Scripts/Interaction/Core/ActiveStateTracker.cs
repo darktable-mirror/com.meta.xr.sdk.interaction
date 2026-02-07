@@ -84,6 +84,9 @@ namespace Oculus.Interaction
                 }
             }
 
+            this.AssertCollectionItems(_gameObjects, nameof(_gameObjects));
+            this.AssertCollectionItems(_monoBehaviours, nameof(_monoBehaviours));
+
             SetDependentsActive(false);
         }
 

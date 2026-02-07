@@ -39,7 +39,7 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            _id = UniqueIdentifier.Generate();
+            _id = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
         }
 
         protected virtual void Update()

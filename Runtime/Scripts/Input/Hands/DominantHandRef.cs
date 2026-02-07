@@ -75,7 +75,7 @@ namespace Oculus.Interaction.Input
 
         public int CurrentDataVersion => Hand.CurrentDataVersion;
 
-        private Action _whenHandUpdated;
+        private Action _whenHandUpdated = delegate { };
         public event Action WhenHandUpdated
         {
             add => _whenHandUpdated += value;

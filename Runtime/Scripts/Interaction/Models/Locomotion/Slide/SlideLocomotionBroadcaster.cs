@@ -46,7 +46,7 @@ namespace Oculus.Interaction.Locomotion
         /// The transform to use as a reference for the movement. Typically set to the
         /// hand or the head of the player
         /// </summary>
-        [SerializeField]
+        [SerializeField, Optional]
         private Transform _aiming;
         public Transform Aiming
         {
@@ -103,13 +103,14 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
-        private UniqueIdentifier _identifier = UniqueIdentifier.Generate();
+        private UniqueIdentifier _identifier;
         public int Identifier => _identifier.ID;
 
         protected bool _started = false;
 
         protected virtual void Awake()
         {
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
             Axis2D = _axis2D as IAxis2D;
         }
 
@@ -117,7 +118,6 @@ namespace Oculus.Interaction.Locomotion
         {
             this.BeginStart(ref _started);
             this.AssertField(Axis2D, nameof(_axis2D));
-            this.AssertField(_aiming, nameof(_aiming));
             this.EndStart(ref _started);
         }
 
@@ -150,6 +150,11 @@ namespace Oculus.Interaction.Locomotion
 
         private Vector3 StepDirection(Vector2 axisValue)
         {
+            if (_aiming == null)
+            {
+                return new Vector3(axisValue.x, 0f, axisValue.y);
+            }
+
             Vector3 forward = _aiming.forward;
             Vector3 up = Vector3.up;
             float dot = Vector3.Dot(forward, up);

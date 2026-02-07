@@ -24,18 +24,31 @@ using UnityEngine;
 namespace Oculus.Interaction.Throw
 {
     /// <summary>
-    /// A helper class that uses and underlying RandomSampleConsensus to select the best pair of linear
+    /// A helper class that uses an underlying <see cref="RandomSampleConsensus{TModel}"/> to select the best pair of linear
     /// and angular velocities from a buffer of recent timed poses.
     /// </summary>
+    /// <remarks>
+    /// RANSACVelocity allows for the stable estimation of velocity under noise-prone circumstances. This is particuarly
+    /// important when throwing objects because of the unreliability of data around the moment of intended release: if the
+    /// perceived moment of release is slightly too late, for example, the behavior of the throwing implement (hand, controller,
+    /// etc.) should not impact the calculated velocity. RANSAC velocity estimation across several frames mitigates this problem.
+    /// </remarks>
     public class RANSACVelocity
     {
         private bool _highConfidenceStreak = false;
         private float _lastProcessedTime = 0;
 
         private float _maxSyntheticSpeed = 5.0f;
+
         /// <summary>
-        /// Maximum speed (in m/s) allowed for synthetic poses
+        /// Maximum speed (in m/s) allowed for synthetic poses. This is used in internal calculations and should generally not
+        /// need to be tuned.
         /// </summary>
+        /// <remarks>
+        /// Synthetic poses are generated and used by RANSACVelocity to fill tracking gaps (when
+        /// <see cref="Input.IHand.IsHighConfidence"/> for a tracked hand is false, for example). Capping the allowed speed
+        /// mitigates the risk of generating nonsensical synthetic poses.
+        /// </remarks>
         public float MaxSyntheticSpeed
         {
             get => _maxSyntheticSpeed;
@@ -53,18 +66,40 @@ namespace Oculus.Interaction.Throw
         {
         }
 
+        /// <summary>
+        /// Creates a new RANSACVelocity for estimating velocity.
+        /// </summary>
+        /// <param name="samplesCount">The size of the rolling sample buffer from which to seek consensus.</param>
+        /// <param name="samplesDeadZone">The number of most recent samples to exclude from the consensus.</param>
         public RANSACVelocity(int samplesCount = 10, int samplesDeadZone = 2)
         {
             _poses = new RingBuffer<TimedPose>(samplesCount);
             _ransac = new RandomSampleConsensus<Vector3>(samplesCount, samplesDeadZone);
         }
 
+        /// <summary>
+        /// Initializes a RANSACVelocity calculator, clearing its state and preparing it to receive new data.
+        /// Can be called repeatedly to reset the state of an existing RANSACVelocity.
+        /// </summary>
         public void Initialize()
         {
             _poses.Clear();
             _highConfidenceStreak = false;
         }
 
+        /// <summary>
+        /// Consumes a new frame of Pose data --- for example, from the <see cref="IGrabbable.Transform"/> of a grabbed
+        /// <see cref="GrabInteractable"/>. The RANSACVelocity instance must be regularly supplied with such data so
+        /// that velocities can be estimated when needed.
+        /// </summary>
+        /// <param name="pose">The Pose observed.</param>
+        /// <param name="time">The time at which <paramref name="pose"/> was observed.</param>
+        /// <param name="isHighConfidence">
+        /// Whether or not <paramref name="pose"/> was observed with high confidence. For example, if <paramref name="pose"/>
+        /// is from an <see cref="IGrabbable.Transform"/> being held by an <see cref="Input.IHand"/> for which
+        /// <see cref="Input.IHand.IsHighConfidence"/> is false, then <paramref name="pose"/> might also be considered to
+        /// be known with low confidence.
+        /// </param>
         public void Process(Pose pose, float time,
             bool isHighConfidence = true)
         {
@@ -111,6 +146,12 @@ namespace Oculus.Interaction.Throw
             _lastProcessedTime = time;
         }
 
+        /// <summary>
+        /// Estimates the current translational and rotational velocities based on the available data.
+        /// If there is insufficient data to produce an estimate, returns 0 trivial velocities.
+        /// </summary>
+        /// <param name="velocity">Output parameter for translational velocity.</param>
+        /// <param name="torque">Output parameter for rotational velocity.</param>
         public void GetVelocities(out Vector3 velocity, out Vector3 torque)
         {
             if (_poses.Count >= 2)

@@ -51,6 +51,12 @@ namespace Oculus.Interaction
         public int Identifier { get; }
 
         /// <summary>
+        /// A unique value associated with this specific event, meaning the semantic occurrence at a specific point in time which
+        /// motivated the creation of this data object.
+        /// </summary>
+        public UInt64 EventId { get; }
+
+        /// <summary>
         /// A characterization of the type of interaction this event represents. Each PointerEvent can represent only one simple
         /// interaction, and complex interactions (for example, an interactable being deselected by one interactor in order to be selected
         /// by another) must consequently be represented by multiple sequential PointerEvents.
@@ -84,10 +90,16 @@ namespace Oculus.Interaction
         public PointerEvent(int identifier, PointerEventType type, Pose pose, object data = null)
         {
             Identifier = identifier;
+            EventId = ++_nextEventId;
+            // At 100 pointer events per frame, this field is expected not to overflow for more than fifty million years, so hitting this
+            // assert suggests either a massive overproduction of pointer events or memory corruption.
+            Debug.Assert(_nextEventId != UInt64.MaxValue);
             Type = type;
             Pose = pose;
             Data = data;
         }
+
+        private static UInt64 _nextEventId = 0;
     }
 
     /// <summary>

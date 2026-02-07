@@ -418,7 +418,7 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            _identifier = UniqueIdentifier.Generate();
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
             ActiveState = _activeState as IActiveState;
             CandidateTiebreaker = _candidateTiebreaker as IComparer<TInteractable>;
             InteractableFilters =

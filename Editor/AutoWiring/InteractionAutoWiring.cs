@@ -21,7 +21,9 @@
 using Oculus.Interaction.Input;
 using Oculus.Interaction.Locomotion;
 using Oculus.Interaction.PoseDetection;
+using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 
 namespace Oculus.Interaction.Editor
 {
@@ -130,6 +132,59 @@ namespace Oculus.Interaction.Editor
                         {
                             FieldWiringStrategies.WireFieldToAncestors
                         }),
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(TunnelingEffect),
+                new[] {
+                    new ComponentWiringStrategyConfig("_leftEyeAnchor", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/LeftEyeAnchor")
+                        }),
+                    new ComponentWiringStrategyConfig("_rightEyeAnchor", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/RightEyeAnchor")
+                        }),
+                    new ComponentWiringStrategyConfig("_centerEyeCamera", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                        }),
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(PlayerLocomotor),
+                new[] {
+                    new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/..")
+                        }),
+                    new ComponentWiringStrategyConfig("_playerHead", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                        })
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(CapsuleLocomotionHandler),
+                new[] {
+                    new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/..")
+                        }),
+                    new ComponentWiringStrategyConfig("_playerEyes", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                        })
                 }
             );
 

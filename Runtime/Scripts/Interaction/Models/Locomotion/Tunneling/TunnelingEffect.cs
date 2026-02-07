@@ -173,6 +173,12 @@ namespace Oculus.Interaction
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
+
+            this.AssertField(_leftEyeAnchor, nameof(_leftEyeAnchor));
+            this.AssertField(_rightEyeAnchor, nameof(_rightEyeAnchor));
+            this.AssertField(_centerEyeCamera, nameof(_centerEyeCamera));
+            this.AssertField(_meshFilter, nameof(_meshFilter));
+
             _meshTransform = _meshFilter.gameObject.transform;
             _meshRenderer = _meshFilter.GetComponent<MeshRenderer>();
             _maskMesh = new Mesh();

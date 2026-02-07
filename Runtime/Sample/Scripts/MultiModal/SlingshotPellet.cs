@@ -37,10 +37,15 @@ namespace Oculus.Interaction.Samples
 
         public HandGrabInteractor HandGrabber => _lastHandGrabInteractor;
 
-        private UniqueIdentifier Identifier = UniqueIdentifier.Generate();
+        private UniqueIdentifier Identifier;
 
         private bool _hasPendingForce;
         private Vector3 _linearVelocity;
+
+        private void Awake()
+        {
+            Identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
+        }
 
         private void OnEnable()
         {

@@ -25,8 +25,14 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Exposes Unity events that broadcast state changes from an <see cref="IInteractableView"/> (an Interactable).
+    /// Exposes Unity events that broadcast state changes from an <see cref="IInteractableView"/> (an interactable).
     /// </summary>
+    /// <remarks>
+    /// This is one of the most convenient ways to manage interaction consequences in the Unity Editor. Through the
+    /// events exposed to the Editor by InteractableUnityEventWrapper, you can directly connect core interactable state
+    /// changes (<see cref="WhenHover"/>, <see cref="WhenUnhover"/>, etc.) to invocations elsewhere in the scene, such
+    /// as enabling or disabling a GameObject when a button is pressed, for example.
+    /// </remarks>
     public class InteractableUnityEventWrapper : MonoBehaviour
     {
         /// <summary>
@@ -95,13 +101,72 @@ namespace Oculus.Interaction
 
         #region Properties
 
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.State"/> goes from
+        /// <see cref="InteractableState.Normal"/> to <see cref="InteractableState.Hover"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a decomposition of <see cref="IInteractableView.WhenStateChanged"/> intended to allow
+        /// individual state changes to be specifically and conveniently leveraged through the Editor.
+        /// </remarks>
         public UnityEvent WhenHover => _whenHover;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.State"/> goes from
+        /// <see cref="InteractableState.Hover"/> to <see cref="InteractableState.Normal"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a decomposition of <see cref="IInteractableView.WhenStateChanged"/> intended to allow
+        /// individual state changes to be specifically and conveniently leveraged through the Editor.
+        /// </remarks>
         public UnityEvent WhenUnhover => _whenUnhover;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.State"/> goes from
+        /// <see cref="InteractableState.Hover"/> to <see cref="InteractableState.Select"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a decomposition of <see cref="IInteractableView.WhenStateChanged"/> intended to allow
+        /// individual state changes to be specifically and conveniently leveraged through the Editor.
+        /// </remarks>
         public UnityEvent WhenSelect => _whenSelect;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.State"/> goes from
+        /// <see cref="InteractableState.Select"/> to <see cref="InteractableState.Hover"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a decomposition of <see cref="IInteractableView.WhenStateChanged"/> intended to allow
+        /// individual state changes to be specifically and conveniently leveraged through the Editor.
+        /// </remarks>
         public UnityEvent WhenUnselect => _whenUnselect;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.WhenInteractorViewAdded"/>
+        /// event is invoked, which occurs whenever a new <see cref="IInteractorView"/> begins interacting with
+        /// the underlying interactable.
+        /// </summary>
         public UnityEvent WhenInteractorViewAdded => _whenInteractorViewAdded;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.WhenInteractorViewRemoved"/>
+        /// event is invoked, which occurs whenever an <see cref="IInteractorView"/> ceases interacting with
+        /// the underlying interactable.
+        /// </summary>
         public UnityEvent WhenInteractorViewRemoved => _whenInteractorViewRemoved;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.WhenSelectingInteractorViewAdded"/>
+        /// event is invoked, which occurs whenever a new <see cref="IInteractorView"/> begins selecting the underlying
+        /// interactable.
+        /// </summary>
         public UnityEvent WhenSelectingInteractorViewAdded => _whenSelectingInteractorViewAdded;
+
+        /// <summary>
+        /// Unity event invoked whenever the underlying <see cref="IInteractableView.WhenSelectingInteractorViewRemoved"/>
+        /// event is invoked, which occurs whenever a new <see cref="IInteractorView"/> ceases selecting the underlying
+        /// interactable.
+        /// </summary>
         public UnityEvent WhenSelectingInteractorViewRemoved => _whenSelectingInteractorViewRemoved;
 
         #endregion
@@ -198,11 +263,22 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets all required dependencies for a dynamically instantiated InteractableUnityEventWrapper. This is a
+        /// convenience method wrapping <see cref="InjectInteractableView(IInteractableView)"/>. This method exists
+        /// to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
         public void InjectAllInteractableUnityEventWrapper(IInteractableView interactableView)
         {
             InjectInteractableView(interactableView);
         }
 
+        /// <summary>
+        /// Sets the an <see cref="IInteractableView"/> as the underlying interactable for a dynamically instantiated
+        /// InteractableUnityEventWrapper. This method exists to support Interaction SDK's dependency injection pattern
+        /// and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractableView(IInteractableView interactableView)
         {
             _interactableView = interactableView as UnityEngine.Object;

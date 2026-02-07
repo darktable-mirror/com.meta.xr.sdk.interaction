@@ -74,14 +74,32 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Serializable data-only version of the HandGrabPose so it can be stored when they
+        /// Serializable data-only version of the <see cref="HandGrabPose"/> so it can be stored when instances
         /// are generated at Play-Mode (where Hand-tracking works).
         /// </summary>
+        /// <remarks>
+        /// This is used (among other uses) by Unity Editor tools to aid in the creation, saving, and loading of
+        /// hand poses.
+        /// </remarks>
         [System.Serializable]
         public struct HandGrabPoseData
         {
+            /// <summary>
+            /// The 3D pose (position and orientation, as distinct from <see cref="HandPose"/>) which serves as the origin of
+            /// the grip for the pose; in other words, this is the grab point from which the <see cref="handPose"/> should be
+            /// considered to be offset.
+            /// </summary>
             public Pose gripPose;
+
+            /// <summary>
+            /// The <see cref="HandPose"/> (joint/finger data, as distinct from 3D pose) which represents the intended shape
+            /// of the hand when grabbing.
+            /// </summary>
             public HandPose handPose;
+
+            /// <summary>
+            /// The hand scale for <see cref="handPose"/>.
+            /// </summary>
             public float scale;
         }
 

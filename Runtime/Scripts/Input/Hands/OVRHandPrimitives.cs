@@ -336,17 +336,29 @@ namespace Oculus.Interaction.Input
         }
     }
 
+    /// <summary>
+    /// Contains the data for a single joint within the <see cref="HandSkeleton"/> hierarchy.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HandSkeleton"/>'s joint hierarchy is stored as an array, but structured as a tree; to calculate
+    /// transform data for a join in the hierarchy, one need only start at the correct joint index in
+    /// <see cref="HandSkeleton.Joints"/> and follow the <see cref="parent"/> indices backward up the hierarchy to
+    /// the root, concatenating transforms throughout the process.
+    /// </remarks>
     public struct HandSkeletonJoint
     {
         /// <summary>
-        /// Id of the parent joint in the skeleton hierarchy. Must always have a lower index than
-        /// this joint.
+        /// Index of the <see cref="HandSkeletonJoint"/> in the skeleton hierarchy (<see cref="HandSkeleton.Joints"/>).
+        /// Must always have a lower index than this joint.
         /// </summary>
         public int parent;
 
         /// <summary>
         /// Stores the pose of the joint, in local space.
         /// </summary>
+        /// <remarks>
+        /// For an overview of the process of calculating joint poses in non-local space, see the remarks on <see cref="HandSkeletonJoint"/>.
+        /// </remarks>
         public Pose pose;
 
         /// <summary>

@@ -28,30 +28,41 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction.PoseDetection
 {
     /// <summary>
-    /// Chains together a number of IActiveStates into a sequence.
+    /// Chains together a number of <see cref="IActiveState"/>s into a sequence.
+    /// </summary>
+    /// <remarks>
     /// The Sequence._stepsToActivate field contains an optional list of IActiveState's which must be 'activated' in
     /// order.
-    /// The sequence can progress from Step N to N + 1 when: MinActiveTime <= "Time step N active for" <= MaxStepTime, and:
+    /// The sequence can progress from Step N to N + 1 when: <see cref="ActivationStep.MinActiveTime"/> <= "Time step
+    /// N active for" <= <see cref="ActivationStep.MaxStepTime"/>, and:
+    ///
     ///   Step N just became inactive OR
     ///   Step N is the last step OR
     ///   Step N+1 is active
     ///
     /// Note that once the sequence has moved on to the next step, the previous step does not need to remain active.
     /// Each step has three fields:
-    ///   ActiveState: The IActiveState that is used to determine if the conditions of this step are fulfilled
-    ///   MinActiveTime: How long (in seconds) the IActiveState of this step must be contiguously active before moving
+    ///   <see cref="ActivationStep.ActiveState"/>: The IActiveState that is used to determine if the conditions of this step are fulfilled
+    ///   <see cref="ActivationStep.MinActiveTime"/>: How long (in seconds) the IActiveState of this step must be contiguously active before moving
     ///                  on to the next step. If the ActiveState drops out of being active for even a single frame
     ///                  the countdown is reset.
-    ///   MaxStepTime: If the elapsed time that the sequence is spent waiting for this step to reach its MinActiveTime
+    ///   <see cref="ActivationStep.MaxStepTime"/>: If the elapsed time that the sequence is spent waiting for this step to reach its MinActiveTime
     ///                exceeds this value then the whole sequence is reset back to the beginning.
     ///
     /// Once all steps are complete the Sequence.Active becomes true. It will remain true as long as RemainActiveWhile
     /// is true. If _remainActiveCooldown > 0, Sequence.Active will remain active even after RemainActiveWhile becomes
     /// false until the cooldown timer is met. The timer is reset if RemainActiveWhile becomes true again.
-    /// </summary>
+    /// </remarks>
     public class Sequence : MonoBehaviour,
         IActiveState, ITimeConsumer
     {
+        /// <summary>
+        /// Wrapper for <see cref="IActiveState"/>s which are to be incorporated into a <see cref="Sequence"/>.
+        /// </summary>
+        /// <remarks>
+        /// This type is exclusively intended to be used as part of a <see cref="Sequence"/>, and details of its
+        /// intended usage and expected behavior are documented in the remarks for that type.
+        /// </remarks>
         [Serializable]
         public class ActivationStep
         {
@@ -59,12 +70,28 @@ namespace Oculus.Interaction.PoseDetection
             [SerializeField, Interface(typeof(IActiveState))]
             private UnityEngine.Object _activeState;
 
+            /// <summary>
+            /// The <see cref="IActiveState"/> whose activation is the condition for completing an ActivationStep of
+            /// the containing <see cref="Sequence"/>.
+            /// </summary>
+            /// <remarks>
+            /// For a detailed overview of the function of ActivationSteps and their role in Sequences, please see the
+            /// documentation for <see cref="Sequence"/>.
+            /// </remarks>
             public IActiveState ActiveState { get; private set; }
 
             [SerializeField]
             [Tooltip("This step must be consistently active for this amount of time before continuing to the next step.")]
             private float _minActiveTime;
 
+            /// <summary>
+            /// The minimum amount of time for which <see cref="ActiveState"/> must be active in order for this
+            /// ActivationStep to be considered completed.
+            /// </summary>
+            /// <remarks>
+            /// For a detailed overview of the function of ActivationSteps and their role in Sequences, please see the
+            /// documentation for <see cref="Sequence"/>.
+            /// </remarks>
             public float MinActiveTime => _minActiveTime;
 
             [SerializeField]
@@ -73,12 +100,33 @@ namespace Oculus.Interaction.PoseDetection
                 "This value must be greater than minActiveTime, or zero. This value is ignored if zero, and for the first step in the list.")]
             private float _maxStepTime;
 
+            /// <summary>
+            /// The maximum amount of time a <see cref="Sequence"/> can remain in this ActivationStep (without proceeding
+            /// to the next one) before the Sequence "fails out" and must start again from the beginning.
+            /// </summary>
+            /// <remarks>
+            /// For a detailed overview of the function of ActivationSteps and their role in Sequences, please see the
+            /// documentation for <see cref="Sequence"/>.
+            /// </remarks>
             public float MaxStepTime => _maxStepTime;
 
+            /// <summary>
+            /// Basic constructor for ActivationStep. Should not be called directly.
+            /// </summary>
+            /// <remarks>
+            /// This empty constructor is typically invoked by Unity logic when deserializing a serialized-and-saved
+            /// ActivationStep.
+            /// </remarks>
             public ActivationStep()
             {
             }
 
+            /// <summary>
+            /// Constructor for constructing new ActivationSteps programmatically.
+            /// </summary>
+            /// <param name="activeState">The <see cref="IActiveState"/> to be assigned to <see cref="ActiveState"/></param>
+            /// <param name="minActiveTime">The float value to be assigned to <see cref="MinActiveTime"/></param>
+            /// <param name="maxStepTime">The float value to be assigned to <see cref="MaxStepTime"/></param>
             public ActivationStep(IActiveState activeState, float minActiveTime, float maxStepTime)
             {
                 ActiveState = activeState;
@@ -86,6 +134,10 @@ namespace Oculus.Interaction.PoseDetection
                 _maxStepTime = maxStepTime;
             }
 
+            /// <summary>
+            /// Method invoked when a <see cref="Sequence"/> "moves into" this ActivationStep. This method should only ever
+            /// be invoked by the internal logic of its containing Sequence.
+            /// </summary>
             public void Start()
             {
                 if (ActiveState == null)
@@ -114,6 +166,13 @@ namespace Oculus.Interaction.PoseDetection
         private float _remainActiveCooldown;
 
         private Func<float> _timeProvider = () => Time.time;
+
+        /// <summary>
+        /// Implements <see cref="ITimeConsumer.SetTimeProvider(Func{float})"/>.
+        /// Sets the time provider for this sequence, allowing for the default time provider (Unity's built-in Time.time)
+        /// to be overridden with custom behavior to enable pausing, time dilation, etc.
+        /// </summary>
+        /// <param name="timeProvider">The new time provider to be used by this instance.</param>
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
@@ -267,6 +326,10 @@ namespace Oculus.Interaction.PoseDetection
 
         #endregion
 
+        /// <summary>
+        /// Implements <see cref="IActiveState.Active"/>, in this case indicating whether the described sequence
+        /// of IActiveStates has been "recognized" as having occurred with acceptable order and timing.
+        /// </summary>
         public bool Active { get; private set; }
 
         static Sequence()
@@ -287,11 +350,22 @@ namespace Oculus.Interaction.PoseDetection
 
         #region Inject
 
+        /// <summary>
+        /// Sets the <see cref="ActivationStep"/>s for a dynamically instantiated Sequence. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectOptionalStepsToActivate(ActivationStep[] stepsToActivate)
         {
             _stepsToActivate = stepsToActivate;
         }
 
+        /// <summary>
+        /// Sets the <see cref="IActiveState"/> for the optional "remain active while" capability (which allows a Sequence to
+        /// remain active pending the inactivity of the given IActiveState rather than resetting after activation) for a dynamically
+        /// instantiated Sequence. This method exists to support Interaction SDK's dependency injection pattern and is not needed
+        /// for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRemainActiveWhile(IActiveState activeState)
         {
             _remainActiveWhile = activeState as UnityEngine.Object;

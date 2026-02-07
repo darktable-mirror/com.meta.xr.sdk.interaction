@@ -18,15 +18,31 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Surfaces
 {
+    /// <summary>
+    /// Indicates that a type exposes an axis-aligned bounding box called <see cref="Bounds"/> of the
+    /// built-in Unity type of the same name. Because of its limited applicability, you should avoid
+    /// making new types which implement or consume this interface.
+    /// </summary>
+    /// <remarks>
+    /// Contractually, this bounding box is specifically axis-aligned to world space, limiting its utility
+    /// almost exclusively to culling optimizations in spatial arithmetic (for example, when raycasting
+    /// against a <see cref="CylinderSurface"/>).
+    /// </remarks>
     public interface IBounds
     {
         /// <summary>
-        /// The world space axis-aligned bounding box (AABB)
+        /// The world space axis-aligned bounding box (AABB).
         /// </summary>
+        /// <remarks>
+        /// As a fundamentally world space-aligned data type, these bounds are incapable of expressing
+        /// precise spatial data and should only be leveraged for specialized optimizations. For an example
+        /// usage, see <see cref="Locomotion.TeleportInteractable"/>.
+        /// </remarks>
         Bounds Bounds { get; }
     }
 }

@@ -23,11 +23,18 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// A collection of utility functions expanding the functionality of Unity's built-in Transform type.
+    /// </summary>
     public static class TransformExtensions
     {
         /// <summary>
-        /// Transforms position from world space to local space
+        /// Transforms a 3D position from world space to local space, ignoring scaling.
         /// </summary>
+        /// <remarks>
+        /// This is useful for specialized operations which manipulate scale while performing calculations which would
+        /// otherwise be affected by scale; for example usage, see the PanelwithManipulators sample.
+        /// </remarks>
         public static Vector3 InverseTransformPointUnscaled(this Transform transform, Vector3 position)
         {
             Matrix4x4 worldToLocal = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one).inverse;
@@ -35,8 +42,12 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Transforms position from local space to world space
+        /// Transforms a 3D position from local space to world space, ignoring scaling.
         /// </summary>
+        /// <remarks>
+        /// This is useful for specialized operations which manipulate scale while performing calculations which would
+        /// otherwise be affected by scale; for example usage, see the PanelwithManipulators sample.
+        /// </remarks>
         public static Vector3 TransformPointUnscaled(this Transform transform, Vector3 position)
         {
             Matrix4x4 localToWorld = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
@@ -44,12 +55,11 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Transform a bounding box from local to world space.
+        /// Transforms a bounding box from local to world space.
         /// </summary>
-        /// <param name="transform">Transfrom that
-        /// <paramref name="bounds"/> is local to</param>
-        /// <param name="bounds">The bounds to transform, in local space</param>
-        /// <returns>The bounding box in world space</returns>
+        /// <param name="transform">Transfrom that <paramref name="bounds"/> is local to.</param>
+        /// <param name="bounds">The bounds to transform, in local space.</param>
+        /// <returns>The bounding box in world space.</returns>
         public static Bounds TransformBounds(this Transform transform, in Bounds bounds)
         {
             Bounds worldBounds = new Bounds();
@@ -75,11 +85,35 @@ namespace Oculus.Interaction
             return worldBounds;
         }
 
+        /// <summary>
+        /// Walks the hierarchy beneath <paramref name="parent"/> searching for a Transform whose GameObject is named
+        /// <paramref name="name"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a convience method equivalent to calling <see cref="FindChildRecursive(Transform, Predicate{Transform})"/>
+        /// with a predicate that simply checks the name.
+        /// </remarks>
+        /// <param name="parent">The Transform which will serve as the root of the search.</param>
+        /// <param name="name">The name for which to search.</param>
+        /// <returns>
+        /// The first child found with the requested name. If more than one candidate meets the requirement, there is
+        /// no guarantee which of them will be returned. If there are no candidates, returns null.
+        /// </returns>
         public static Transform FindChildRecursive(this Transform parent, string name)
         {
             return parent.FindChildRecursive((child) => child.name.Contains(name));
         }
 
+        /// <summary>
+        /// Walks the hierarchy beneath <paramref name="parent"/> searching for a Transform for which <paramref name="predicate"/>
+        /// succeeds.
+        /// </summary>
+        /// <param name="parent">The Transform which will serve as the root of the search.</param>
+        /// <param name="predicate">The predicate for which to search.</param>
+        /// <returns>
+        /// The first child found for which the predicate succeeds. If more than one candidate meets the requirement, there is
+        /// no guarantee which of them will be returned. If there are no candidates, returns null.
+        /// </returns>
         public static Transform FindChildRecursive(this Transform parent, Predicate<Transform> predicate)
         {
             foreach (Transform child in parent)

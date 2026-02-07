@@ -20,12 +20,14 @@
 
 using System;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Selects and unselects based on the Active State. If this component is piped into the Selector property of the Interactor component, it can replace poses for existing interactors with custom poses.
+    /// Selects and unselects based on the provided <see cref="ActiveState"/>. If this component is piped into
+    /// the <see cref="Interactor{TInteractor, TInteractable}.Selector"/> property of an interactor, it can
+    /// replace the selection mechanism (trigger pulls, pinch or grab poses, etc.) with any other mechanism which
+    /// can be represented as an <see cref="IActiveState"/>.
     /// </summary>
     public class ActiveStateSelector : MonoBehaviour, ISelector
     {
@@ -40,7 +42,16 @@ namespace Oculus.Interaction
 
         private bool _selecting = false;
 
+        /// <summary>
+        /// Implementation of <see cref="ISelector.WhenSelected"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenSelected = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="ISelector.WhenUnselected"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenUnselected = delegate { };
 
         protected virtual void Awake()
@@ -71,11 +82,21 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Wrapper for <see cref="InjectActiveState(IActiveState)"/> for injecting the required dependencies
+        /// to a dynamically-allocated ActiveStateSelector instance. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllActiveStateSelector(IActiveState activeState)
         {
             InjectActiveState(activeState);
         }
 
+        /// <summary>
+        /// Sets the underlying <see cref="IActiveState"/> for a dynamically-allocated ActiveStateSelector instance.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical
+        /// Unity Editor-based usage.
+        /// </summary>
         public void InjectActiveState(IActiveState activeState)
         {
             _activeState = activeState as UnityEngine.Object;

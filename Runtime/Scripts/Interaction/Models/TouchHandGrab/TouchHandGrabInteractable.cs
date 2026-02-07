@@ -25,9 +25,9 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// TouchHandGrabInteractable provides a hand-specific grab interactable that
-    /// owns a set of colliders that associated TouchHandGrabInteractors can then use
-    /// for determining selection and release.
+    /// Provides a hand-specific, collisions-based, grab interaction model (distinct from <see cref="HandGrab.HandGrabInteractor"/>'s
+    /// spatial hueristic approach) where selection begins when finger tips overlap with an associated interactable. This interaction
+    /// mode simulates the physicality of grabbing a real-world object with the fingertips.
     /// </summary>
     public class TouchHandGrabInteractable : PointerInteractable<TouchHandGrabInteractor, TouchHandGrabInteractable>
     {
@@ -38,6 +38,14 @@ namespace Oculus.Interaction
         private List<Collider> _colliders;
 
         private ColliderGroup _colliderGroup;
+
+        /// <summary>
+        /// Retrieves the <see cref="Interaction.ColliderGroup"/> associated with this interactable.
+        /// </summary>
+        /// <remarks>
+        /// TouchHandGrabInteractables can require multiple Colliders in order to effectively characterize the grabbable shape,
+        /// particularly for complex models, so a group is used to aggregate them.
+        /// </remarks>
         public ColliderGroup ColliderGroup => _colliderGroup;
 
         protected override void Start()
@@ -50,17 +58,34 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Convenience method combining <see cref="InjectBoundsCollider(Collider)"/> and <see cref="InjectColliders(List{Collider})"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         public void InjectAllTouchHandGrabInteractable(Collider boundsCollider, List<Collider> colliders)
         {
             InjectBoundsCollider(boundsCollider);
             InjectColliders(colliders);
         }
 
+        /// <summary>
+        /// Sets a Unity Collider as the bounds collider for a dynamically instantiated TouchHandGrabInteractable. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
         private void InjectBoundsCollider(Collider boundsCollider)
         {
             _boundsCollider = boundsCollider;
         }
 
+        /// <summary>
+        /// Sets the list of Unity Colliders to be made into an <see cref="Interaction.ColliderGroup"/> of a dynamically
+        /// instantiated TouchHandGrabInteractable. Because <see cref="ColliderGroup"/> is instantiated from this list in Unity's
+        /// Start() method, this _must_ be called before the MonoBehaviour lifecycle initializes this instance; otherwise, the
+        /// provided <paramref name="colliders"/> will be ignored. This method exists to support Interaction SDK's dependency
+        /// injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectColliders(List<Collider> colliders)
         {
             _colliders = colliders;

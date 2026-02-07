@@ -75,6 +75,12 @@ namespace Oculus.Interaction
         /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenSelectableUnhovered;
 
+        /// <summary>
+        /// Global event invoked whenever a new <see cref="Pointer"/> is started. Though this event itself is static, it is
+        /// invoked by the PointableCanvasModule instance in the scene as part of <see cref="Process"/>.
+        /// </summary>
+        public static event Action<Pointer> WhenPointerStarted;
+
         [Tooltip("If true, the initial press position will be used as the drag start " +
             "position, rather than the position when drag threshold is exceeded. This is used " +
             "to prevent the pointer position shifting relative to the surface while dragging.")]
@@ -123,14 +129,14 @@ namespace Oculus.Interaction
             Instance?.RemovePointerCanvas(pointerCanvas);
         }
 
-        private Dictionary<int, Pointer> _pointerMap = new Dictionary<int, Pointer>();
+        private Dictionary<int, PointerImpl> _pointerMap = new Dictionary<int, PointerImpl>();
         private List<RaycastResult> _raycastResultCache = new List<RaycastResult>();
-        private List<Pointer> _pointersForDeletion = new List<Pointer>();
+        private List<PointerImpl> _pointersForDeletion = new List<PointerImpl>();
         private Dictionary<IPointableCanvas, Action<PointerEvent>> _pointerCanvasActionMap =
             new Dictionary<IPointableCanvas, Action<PointerEvent>>();
         private List<BaseInputModule> _inputModules = new List<BaseInputModule>();
 
-        private Pointer[] _pointersToProcessScratch = Array.Empty<Pointer>();
+        private PointerImpl[] _pointersToProcessScratch = Array.Empty<PointerImpl>();
 
         private void AddPointerCanvas(IPointableCanvas pointerCanvas)
         {
@@ -148,7 +154,7 @@ namespace Oculus.Interaction
             List<int> pointerIDs = new List<int>(_pointerMap.Keys);
             foreach (int pointerID in pointerIDs)
             {
-                Pointer pointer = _pointerMap[pointerID];
+                PointerImpl pointer = _pointerMap[pointerID];
                 if (pointer.Canvas != pointerCanvas.Canvas)
                 {
                     continue;
@@ -162,15 +168,16 @@ namespace Oculus.Interaction
 
         private void HandlePointerEvent(Canvas canvas, PointerEvent evt)
         {
-            Pointer pointer;
+            PointerImpl pointer;
 
             switch (evt.Type)
             {
                 case PointerEventType.Hover:
-                    pointer = new Pointer(canvas);
+                    pointer = new PointerImpl(evt.Identifier, canvas);
                     pointer.PointerEventData = new PointerEventData(eventSystem);
                     pointer.SetPosition(evt.Pose.position);
                     _pointerMap.Add(evt.Identifier, pointer);
+                    WhenPointerStarted?.Invoke(pointer);
                     break;
                 case PointerEventType.Unhover:
                     if (_pointerMap.TryGetValue(evt.Identifier, out pointer))
@@ -213,13 +220,63 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
+        /// Representation of an ongoing interaction between a <see cref="PointerInteractor{TInteractor, TInteractable}"/>
+        /// and the <see cref="PointerInteractable{TInteractor, TInteractable}"/>s at which it points. Instance of this
+        /// can be observed and leveraged to add pointer interaction functionality no built into PointableCanvasModule,
+        /// such as scrolling based on controller thumbsticks.
+        /// </summary>
+        public class Pointer
+        {
+            internal Pointer(int identifier)
+            {
+                Identifier = identifier;
+            }
+
+            /// <summary>
+            /// The <see cref="PointerEvent.Identifier"/> of the <see cref="PointerEvent"/>s which control the state of
+            /// this Pointer. Canonically, this will be the same as the <see cref="IInteractorView.Identifier"/> of the
+            /// actuating interactor.
+            /// </summary>
+            public int Identifier { get; }
+
+            internal PointerEventData PointerEventData { get; set; }
+
+            /// <summary>
+            /// Invoked when the Pointer has been updated, exposing the PointerEventData representing what
+            /// PointableCanvasModule does and knows about this Pointer's behavior.
+            /// </summary>
+            /// <remarks>
+            /// PointerEventData is exposed here in order to be leveraged in extending functionality, such as scrolling
+            /// support. However, modifying this data is not supported and can result in unexpected behavior. Rather than
+            /// modifying this data, consumers should copy relevant information to their own PointerEventData instances
+            /// and use those to execute events. For similar reasons, references to this PointerEventData should not be
+            /// cached off or accessed except during the WhenUpdated callback itself.
+            /// </remarks>
+            public event Action<PointerEventData> WhenUpdated = _ => { };
+
+            /// <summary>
+            /// Invoked when the pointer is being disposed. Observers can use this signal to clean up any references or
+            /// resources they may have retained related to this Pointer.
+            /// </summary>
+            public event Action WhenDisposed = () => { };
+
+            internal void InvokeWhenUpdated()
+            {
+                WhenUpdated(PointerEventData);
+            }
+
+            internal void InvokeWhenDisposed()
+            {
+                WhenDisposed();
+            }
+        }
+
+        /// <summary>
         /// Pointer class that is used for state associated with IPointables that are currently
         /// tracked by any IPointableCanvases in the scene.
         /// </summary>
-        private class Pointer
+        private class PointerImpl : Pointer
         {
-            public PointerEventData PointerEventData { get; set; }
-
             public bool MarkedForDeletion { get; private set; }
 
             private Canvas _canvas;
@@ -237,7 +294,7 @@ namespace Oculus.Interaction
             private bool _pressed;
             private bool _released;
 
-            public Pointer(Canvas canvas)
+            public PointerImpl(int identifier, Canvas canvas) : base(identifier)
             {
                 _canvas = canvas;
                 _pressed = _released = false;
@@ -396,7 +453,7 @@ namespace Oculus.Interaction
             return new RaycastResult();
         }
 
-        private void UpdateRaycasts(Pointer pointer, out bool pressed, out bool released)
+        private void UpdateRaycasts(PointerImpl pointer, out bool pressed, out bool released)
         {
             PointerEventData pointerEventData = pointer.PointerEventData;
             Vector2 prevPosition = pointerEventData.position;
@@ -470,7 +527,7 @@ namespace Oculus.Interaction
             ProcessPointers(_pointerMap.Values, false);
         }
 
-        private void ProcessPointers(ICollection<Pointer> pointers, bool clearAndReleasePointers)
+        private void ProcessPointers(ICollection<PointerImpl> pointers, bool clearAndReleasePointers)
         {
             // Before processing pointers, take a copy of the array since _pointersForDeletion or
             // _pointerMap may be modified if a pointer event handler adds or removes a
@@ -484,7 +541,7 @@ namespace Oculus.Interaction
 
             if (pointersToProcessCount > _pointersToProcessScratch.Length)
             {
-                _pointersToProcessScratch = new Pointer[pointersToProcessCount];
+                _pointersToProcessScratch = new PointerImpl[pointersToProcessCount];
             }
 
             pointers.CopyTo(_pointersToProcessScratch, 0);
@@ -493,13 +550,18 @@ namespace Oculus.Interaction
                 pointers.Clear();
             }
 
-            foreach (Pointer pointer in _pointersToProcessScratch)
+            foreach (PointerImpl pointer in _pointersToProcessScratch)
             {
                 ProcessPointer(pointer, clearAndReleasePointers);
+
+                if (clearAndReleasePointers)
+                {
+                    pointer.InvokeWhenDisposed();
+                }
             }
         }
 
-        private void ProcessPointer(Pointer pointer, bool forceRelease = false)
+        private void ProcessPointer(PointerImpl pointer, bool forceRelease = false)
         {
             bool pressed = false;
             bool released = false;
@@ -525,9 +587,11 @@ namespace Oculus.Interaction
 
             HandleSelectableHover(pointer, wasDragging);
             HandleSelectablePress(pointer, pressed, released, wasDragging);
+
+            pointer.InvokeWhenUpdated();
         }
 
-        private void HandleSelectableHover(Pointer pointer, bool wasDragging)
+        private void HandleSelectableHover(PointerImpl pointer, bool wasDragging)
         {
             bool dragging = pointer.PointerEventData.dragging || wasDragging;
 
@@ -546,7 +610,7 @@ namespace Oculus.Interaction
             }
         }
 
-        private void HandleSelectablePress(Pointer pointer, bool pressed, bool released, bool wasDragging)
+        private void HandleSelectablePress(PointerImpl pointer, bool pressed, bool released, bool wasDragging)
         {
             bool dragging = pointer.PointerEventData.dragging || wasDragging;
 

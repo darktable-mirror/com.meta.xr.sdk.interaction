@@ -73,23 +73,9 @@ namespace Oculus.Interaction.Editor.QuickActions
             "moves the player rig around the scene.")]
         [ConditionalHide(nameof(_deviceTypes), DeviceTypes.None,
             ConditionalHideAttribute.DisplayMode.HideIfTrue)]
-        [WizardDependency(FindMethod = nameof(FindLocomotor), FixMethod = nameof(FixLocomotor))]
+        [WizardDependency(FindMethod = nameof(FindLocomotor), FixMethod = nameof(FixLocomotor), Category = Category.Optional)]
         private UnityEngine.Object _locomotor;
         private ILocomotionEventHandler Locomotor => _locomotor as ILocomotionEventHandler;
-
-        [SerializeField]
-        [Tooltip("The Camera Rig origin transform of the player. It will be moved on teleport.")]
-        [ConditionalHide(nameof(_deviceTypes), DeviceTypes.None,
-            ConditionalHideAttribute.DisplayMode.HideIfTrue)]
-        [WizardDependency(FindMethod = nameof(FindCameraRigAnchor))]
-        private Transform _cameraRigAnchor;
-
-        [SerializeField]
-        [Tooltip("The Center Eye transform of the player, used to correctly orient the player on teleport.")]
-        [ConditionalHide(nameof(_deviceTypes), DeviceTypes.None,
-            ConditionalHideAttribute.DisplayMode.HideIfTrue)]
-        [WizardDependency(FindMethod = nameof(FindCenterEyeAnchor))]
-        private Transform _centerEyeAnchor;
 
         [SerializeField]
         [Tooltip("Teleport Interactables are Surfaces the Interactor can teleport to.")]
@@ -198,6 +184,10 @@ namespace Oculus.Interaction.Editor.QuickActions
         private void FindLocomotor()
         {
             _locomotor = GameObject.FindAnyObjectByType<PlayerLocomotor>();
+            if (_locomotor == null)
+            {
+                _locomotor = GameObject.FindAnyObjectByType<CapsuleLocomotionHandler>();
+            }
         }
 
         private void FixLocomotor()
@@ -211,26 +201,8 @@ namespace Oculus.Interaction.Editor.QuickActions
                 locomotorGO.transform.SetParent(hmd.transform.parent);
             }
 
-            PlayerLocomotor locomotor = locomotorGO.AddComponent<PlayerLocomotor>();
-            locomotor.InjectAllPlayerLocomotor(_cameraRigAnchor, _centerEyeAnchor);
-            _locomotor = locomotor;
-        }
-
-        private void FindCameraRigAnchor()
-        {
-            GameObject cameraRig = GameObject.Find("TrackingSpace");
-            if (cameraRig != null)
-            {
-                _cameraRigAnchor = cameraRig.transform.parent;
-            }
-        }
-
-        private void FindCenterEyeAnchor()
-        {
-            if (Camera.main != null)
-            {
-                _centerEyeAnchor = Camera.main.transform;
-            }
+            _locomotor = locomotorGO.AddComponent<PlayerLocomotor>();
+            UnityObjectAddedBroadcaster.HandleObjectWasAdded(locomotorGO);
         }
 
         private ISurface GenerateColliderSurface(GameObject root)

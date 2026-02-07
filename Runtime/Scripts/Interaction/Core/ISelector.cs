@@ -23,12 +23,37 @@ using System;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// ISelector defines an input abstraction that can broadcast
-    /// select and release events
+    /// Defines an input abstraction that can broadcast select events and release events.
     /// </summary>
+    /// <remarks>
+    /// Implementing types can be used to create and provide new mechanisms of selection, either by implementing
+    /// this type directly in a custom type or by implementing <see cref="IActiveState"/> and routing logic through
+    /// an <see cref="ActiveStateSelector"/>, for example.
+    /// </remarks>
     public interface ISelector
     {
+        /// <summary>
+        /// Invoked to represent selection.
+        /// </summary>
+        /// <remarks>
+        /// This event should be invoked when the input state is observed to represent the user's intent to select, the
+        /// conditions for which vary by selection mechanism; for example, <see cref="IndexPinchSelector"/> invokes
+        /// this event when the user's index finger and thumb are observed to go from "not pinching" to "pinching."
+        /// Contractually, there must be a 1:1 relationship between WhenSelected and <see cref="WhenUnselected"/>
+        /// invocations, with one of the latter always following one of the former.
+        /// </remarks>
         event Action WhenSelected;
+
+        /// <summary>
+        /// Invoked to represent unselection.
+        /// </summary>
+        /// <remarks>
+        /// This event should be invoked when the input state is observed to represent the user's intent to stop
+        /// selecting, the conditions for which vary by selection mechanism; for example, <see cref="IndexPinchSelector"/>
+        /// invokes this event when the user's index finger and thumb are observed to go from "pinching" to "not
+        /// pinching." Contractually, there must be a 1:1 relationship between <see cref="WhenSelected"/> and
+        /// WhenUnselected invocations, with one of the latter always following one of the former.
+        /// </remarks>
         event Action WhenUnselected;
     }
 }

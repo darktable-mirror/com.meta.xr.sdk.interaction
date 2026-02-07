@@ -25,8 +25,10 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A Transformer that can translate, rotate and scale a transform using any
-    /// number of GrabPoints while also constraining the transformation if desired.
+    /// An <see cref="ITransformer"/> that can translate, rotate and scale a transform using any number of grab points
+    /// while also constraining the transformation if desired. This is the default Interaction SDK grab behavior
+    /// and should be preferred over older implementations such as <see cref="OneGrabFreeTransformer"/> and
+    /// <see cref="TwoGrabFreeTransformer"/>.
     /// </summary>
     public class GrabFreeTransformer : MonoBehaviour, ITransformer
     {
@@ -125,6 +127,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.Initialize(IGrabbable)"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
@@ -132,6 +138,10 @@ namespace Oculus.Interaction
             _relativeScaleConstraints = TransformerUtils.GenerateParentConstraints(_scaleConstraints, _grabbable.Transform.localScale);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.BeginTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void BeginTransform()
         {
             int count = _grabbable.GrabPoints.Count;
@@ -154,6 +164,10 @@ namespace Oculus.Interaction
             _lastScale = targetTransform.localScale;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.UpdateTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void UpdateTransform()
         {
             int count = _grabbable.GrabPoints.Count;
@@ -172,6 +186,10 @@ namespace Oculus.Interaction
             targetTransform.position = TransformerUtils.GetConstrainedTransformPosition(position, _relativePositionConstraints, targetTransform.parent);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="ITransformer.EndTransform"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void EndTransform()
         {
             //return the uneeded space
@@ -263,16 +281,31 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets the optional <see cref="TransformerUtils.PositionConstraints"/> for a dynamically-allocated
+        /// GrabFreeTransformer instance. This method exists to support Interaction SDK's dependency injection pattern
+        /// and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalPositionConstraints(TransformerUtils.PositionConstraints constraints)
         {
             _positionConstraints = constraints;
         }
 
+        /// <summary>
+        /// Sets the optional <see cref="TransformerUtils.RotationConstraints"/> for a dynamically-allocated
+        /// GrabFreeTransformer instance. This method exists to support Interaction SDK's dependency injection pattern
+        /// and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRotationConstraints(TransformerUtils.RotationConstraints constraints)
         {
             _rotationConstraints = constraints;
         }
 
+        /// <summary>
+        /// Sets the optional <see cref="TransformerUtils.ScaleConstraints"/> for a dynamically-allocated
+        /// GrabFreeTransformer instance. This method exists to support Interaction SDK's dependency injection pattern
+        /// and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalScaleConstraints(TransformerUtils.ScaleConstraints constraints)
         {
             _scaleConstraints = constraints;

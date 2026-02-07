@@ -682,7 +682,7 @@ namespace Oculus.Interaction.HandGrab
         /// <summary>
         /// Convenience method combining <see cref="InjectHandGrabApi(HandGrabAPI)"/>,
         /// <see cref="InjectDistantCandidateComputer(DistantCandidateComputer{DistanceHandGrabInteractor, DistanceHandGrabInteractable})"/>,
-        /// <see cref="InjectGrabOrigin(Transform)"/>, /// <see cref="InjectHand(IHand)"/>, and
+        /// <see cref="InjectGrabOrigin(Transform)"/>, <see cref="InjectHand(IHand)"/>, and
         /// <see cref="InjectSupportedGrabTypes(GrabTypeFlags)"/>. This method exists to support Interaction SDK's dependency injection
         /// pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>

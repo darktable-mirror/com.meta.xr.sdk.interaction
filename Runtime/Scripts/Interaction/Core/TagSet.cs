@@ -26,8 +26,15 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A Tag Set that can be added to a GameObject with an Interactable to be filtered against.
+    /// A set of string tags for use in filtering. At most one TagSet should ever be present on a single GameObject.
     /// </summary>
+    /// <remarks>
+    /// The most common use of tag filtering in the Interaction SDK is constraining which interactors can interact
+    /// with which interactables by using the <see cref="Interactor{TInteractor, TInteractable}.InteractableFilters"/>
+    /// and <see cref="Interactable{TInteractor, TInteractable}.InteractorFilters"/>. Any criteria which can be
+    /// expressed in an <see cref="IGameObjectFilter"/> can be used for filtering, including string-based techniques
+    /// leveraging TagSet, such as in <see cref="TagSetFilter"/>.
+    /// </remarks>
     public class TagSet : MonoBehaviour
     {
         /// <summary>
@@ -48,13 +55,31 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Checks whether the tag set contains the specified <paramref name="tag"/>.
+        /// </summary>
+        /// <param name="tag">The string to check for within the tag set</param>
+        /// <returns>True if the set contains <paramref name="tag"/>, false otherwise</returns>
         public bool ContainsTag(string tag) => _tagSet.Contains(tag);
 
+        /// <summary>
+        /// Adds a new string to the tag set.
+        /// </summary>
+        /// <param name="tag">The string to be added as a new tag in the set</param>
         public void AddTag(string tag) => _tagSet.Add(tag);
+
+        /// <summary>
+        /// Removes a string from the tag set.
+        /// </summary>
+        /// <param name="tag">The string to be removed as a tag from the set</param>
         public void RemoveTag(string tag) => _tagSet.Remove(tag);
 
         #region Inject
 
+        /// <summary>
+        /// Sets the list of tags in a dynamically instantiated TagSet. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalTags(List<string> tags)
         {
             _tags = tags;

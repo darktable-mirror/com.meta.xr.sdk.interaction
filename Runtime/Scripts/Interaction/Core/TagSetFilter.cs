@@ -25,8 +25,17 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Compares string tags to filter GameObjects.
+    /// Leverages <see cref="TagSet"/>s to fill the <see cref="IGameObjectFilter"/> role of determining whether
+    /// a GameObject should be included in or excluded from a certain operation - for example, whether an
+    /// <see cref="Interactor{TInteractor, TInteractable}"/> should be allowed to interact with an
+    /// <see cref="Interactable{TInteractor, TInteractable}"/>.
     /// </summary>
+    /// <remarks>
+    /// TagSetFilter supports both "require tags" and "exclude tags". "Require tags" are tags which must all be
+    /// present on a GameObject's <see cref="TagSet"/> in order for the GameObject to not be excluded by
+    /// <see cref="Filter(GameObject)"/>. Similarly, "exclude tags" are tags which, if any appear in a GameObject's
+    /// <see cref="TagSet"/>, that GameObject will be excluded by <see cref="Filter(GameObject)"/>.
+    /// </remarks>
     public class TagSetFilter : MonoBehaviour, IGameObjectFilter
     {
         /// <summary>
@@ -62,6 +71,12 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Checks whether a GameObject should be excluded ("filtered out") based on the presence
+        /// or absence of tags in a <see cref="TagSet"/> on the GameObject.
+        /// </summary>
+        /// <param name="gameObject">The GameObject to check for tags.</param>
+        /// <returns>True if the GameObject should be _included_, false if it should be _excluded_ ("filtered out").</returns>
         public bool Filter(GameObject gameObject)
         {
             bool hasTagSet = gameObject.TryGetComponent(out TagSet tagSet);
@@ -96,11 +111,19 @@ namespace Oculus.Interaction
 
         #region Inject
 
+        /// <summary>
+        /// Sets the list of "require tags" in a dynamically instantiated TagSetFilter. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalRequireTags(string[] requireTags)
         {
             _requireTags = requireTags;
         }
 
+        /// <summary>
+        /// Sets the list of "exclude tags" in a dynamically instantiated TagSetFilter. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalExcludeTags(string[] excludeTags)
         {
             _excludeTags = excludeTags;
