@@ -175,7 +175,7 @@ namespace Oculus.Interaction
                     Vector3 p = (Vector3)position;
                     Vector3 pmin = p - width / 2f;
                     Vector3 pmax = p + width / 2f;
-                    if (i == 0)
+                    if (i == 0 && j == 0)
                     {
                         min = pmin;
                         max = pmax;

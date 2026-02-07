@@ -158,7 +158,7 @@ namespace Oculus.Interaction
             public float VelocityExpansionMinSpeed;
             [Tooltip("Full recoil window expansion reached at this speed.")]
             public float VelocityExpansionMaxSpeed;
-            [Tooltip("Window will expand by this distance when average Z velocity reaches max speed.")]
+            [Tooltip("Window will expand by this distance when Z velocity reaches max speed.")]
             public float VelocityExpansionDistance;
             [Tooltip("Window will contract toward ExitDistance at this rate (in meters) per second when velocity lowers.")]
             public float VelocityExpansionDecayRate;

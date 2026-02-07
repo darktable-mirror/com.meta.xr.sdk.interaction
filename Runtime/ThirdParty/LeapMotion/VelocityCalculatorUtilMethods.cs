@@ -11,12 +11,14 @@ permissions and limitations under the License.
 ************************************************************************************/
 
 using UnityEngine;
+using System;
 
 namespace Oculus.Interaction.Throw
 {
     /// <summary>
     /// Based on modified LeapMotion's PhysicsUtility class. See associated license.
     /// </summary>
+    [Obsolete]
     public class VelocityCalculatorUtilMethods
     {
         public static Vector3 ToLinearVelocity(Vector3 startPosition, Vector3 destinationPosition,

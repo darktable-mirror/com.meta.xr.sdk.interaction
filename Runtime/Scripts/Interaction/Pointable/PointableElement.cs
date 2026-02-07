@@ -25,14 +25,30 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Processes PointerEvents.
+    /// </summary>
     public class PointableElement : MonoBehaviour, IPointableElement
     {
+        /// <summary>
+        /// If checked, if you’re selecting an object with one hand and then select it with the other hand, the original hand is forced to release the object.
+        /// </summary>
+        [Tooltip("If checked, if you’re selecting an object with one hand and then select it with the other hand, the original hand is forced to release the object.")]
         [SerializeField]
         private bool _transferOnSecondSelection;
 
+        /// <summary>
+        /// If checked, when you select an object, that hand’s Vector3 points are added to the beginning of the list of Vector3 points instead of the end.
+        /// This property has very unique usecases, so in most cases you should use the Transfer on Second Selection property instead.
+        /// </summary>
+        [Tooltip("If checked, when you select an object, that hand’s Vector3 points are added to the beginning of the list of Vector3 points instead of the end. This property has very unique usecases, so in most cases you should use the Transfer on Second Selection property instead.")]
         [SerializeField]
         private bool _addNewPointsToFront = false;
 
+        /// <summary>
+        /// Events will be forwarded to this element. Can be used to chain multiple PointableElements together. However, we recommend using the Interactable's Forward Element field instead.
+        /// </summary>
+        [Tooltip("Events will be forwarded to this element. Can be used to chain multiple PointableElements together. However, we recommend using the Interactable's Forward Element field instead.")]
         [SerializeField, Interface(typeof(IPointableElement)), Optional]
         private UnityEngine.Object _forwardElement;
 

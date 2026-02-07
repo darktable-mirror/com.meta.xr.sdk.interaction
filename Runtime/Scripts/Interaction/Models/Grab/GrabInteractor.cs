@@ -46,9 +46,9 @@ namespace Oculus.Interaction
         private Tween _tween;
         private bool _outsideReleaseDist = false;
 
-        [SerializeField, Interface(typeof(IVelocityCalculator)), Optional]
+        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
-        public IVelocityCalculator VelocityCalculator { get; set; }
+        public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
         private GrabInteractable _selectedInteractableOverride;
         private bool _isSelectionOverriden = false;
@@ -57,7 +57,7 @@ namespace Oculus.Interaction
         {
             base.Awake();
             Selector = _selector as ISelector;
-            VelocityCalculator = _velocityCalculator as IVelocityCalculator;
+            VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
             _nativeId = 0x4772616249746f72;
         }
 
@@ -292,7 +292,7 @@ namespace Oculus.Interaction
             _grabTarget = grabTarget;
         }
 
-        public void InjectOptionalVelocityCalculator(IVelocityCalculator velocityCalculator)
+        public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;
             VelocityCalculator = velocityCalculator;

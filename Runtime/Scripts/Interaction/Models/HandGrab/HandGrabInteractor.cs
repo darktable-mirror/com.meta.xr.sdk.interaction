@@ -81,9 +81,9 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Optional]
         private SphereCollider _pinchCollider;
 
-        [SerializeField, Interface(typeof(IVelocityCalculator)), Optional]
+        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
-        public IVelocityCalculator VelocityCalculator { get; set; }
+        public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
         private bool _handGrabShouldSelect = false;
         private bool _handGrabShouldUnselect = false;
@@ -136,7 +136,7 @@ namespace Oculus.Interaction.HandGrab
         {
             base.Awake();
             Hand = _hand as IHand;
-            VelocityCalculator = _velocityCalculator as IVelocityCalculator;
+            VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
             _nativeId = 0x4847726162497472;
         }
 
@@ -282,13 +282,15 @@ namespace Oculus.Interaction.HandGrab
         protected override void InteractableUnselected(HandGrabInteractable interactable)
         {
             base.InteractableUnselected(interactable);
+
             this.Movement = null;
             _currentGrabType = GrabTypeFlags.None;
 
-            ReleaseVelocityInformation throwVelocity = VelocityCalculator != null ?
-                VelocityCalculator.CalculateThrowVelocity(interactable.transform) :
-                new ReleaseVelocityInformation(Vector3.zero, Vector3.zero, Vector3.zero);
-            interactable.ApplyVelocities(throwVelocity.LinearVelocity, throwVelocity.AngularVelocity);
+            if (VelocityCalculator != null)
+            {
+                ReleaseVelocityInformation velocity = VelocityCalculator.CalculateThrowVelocity(interactable.transform);
+                interactable.ApplyVelocities(velocity.LinearVelocity, velocity.AngularVelocity);
+            }
         }
 
         protected override void HandlePointerEventRaised(PointerEvent evt)
@@ -599,7 +601,7 @@ namespace Oculus.Interaction.HandGrab
             _pinchCollider = pinchCollider;
         }
 
-        public void InjectOptionalVelocityCalculator(IVelocityCalculator velocityCalculator)
+        public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;
             VelocityCalculator = velocityCalculator;

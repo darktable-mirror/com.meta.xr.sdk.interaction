@@ -48,6 +48,9 @@ namespace Oculus.Interaction.Editor
 
         private void DrawSphereEditor()
         {
+            if (_pointProperty == null)
+                return;
+
             Transform transform = _pointProperty.objectReferenceValue as Transform;
             if (transform == null)
             {

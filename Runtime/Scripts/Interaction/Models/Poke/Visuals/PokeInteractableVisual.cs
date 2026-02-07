@@ -24,11 +24,22 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Determines the visual effect that occurs when you poke a Poke Interactable, like a button.
+    /// </summary>
     public class PokeInteractableVisual : MonoBehaviour
     {
+        /// <summary>
+        /// The Poke Interactable.
+        /// </summary>
+        [Tooltip("The Poke Interactable.")]
         [SerializeField]
         private PokeInteractable _pokeInteractable;
 
+        /// <summary>
+        /// Acts as the limit of the button (the point where it's fully depressed).
+        /// </summary>
+        [Tooltip("Acts as the limit of the button (the point where it's fully depressed).")]
         [SerializeField]
         private Transform _buttonBaseTransform;
 
@@ -118,7 +129,7 @@ namespace Oculus.Interaction
                 else
                 {
                     _postProcessInteractor = null;
-                    
+
                     // There are no interactors in hover state. Update component position one last
                     // time to put it at the max offset.
                     UpdateComponentPosition();

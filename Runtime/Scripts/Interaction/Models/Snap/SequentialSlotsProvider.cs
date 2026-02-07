@@ -107,6 +107,12 @@ namespace Oculus.Interaction
                 result = _slots[index].GetPose();
                 return true;
             }
+            int bestFreeIndex = FindBestSlotIndex(pose.position, true);
+            if (bestFreeIndex >= 0)
+            {
+                result = _slots[bestFreeIndex].GetPose();
+                return true;
+            }
             result = Pose.identity;
             return false;
         }

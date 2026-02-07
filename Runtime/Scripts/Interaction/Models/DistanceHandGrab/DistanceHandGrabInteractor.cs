@@ -56,9 +56,9 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Optional]
         private Transform _pinchPoint;
 
-        [SerializeField, Interface(typeof(IVelocityCalculator)), Optional]
+        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
         private UnityEngine.Object _velocityCalculator;
-        public IVelocityCalculator VelocityCalculator { get; set; }
+        public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
         [SerializeField]
         private DistantCandidateComputer<DistanceHandGrabInteractor, DistanceHandGrabInteractable> _distantCandidateComputer
@@ -114,7 +114,7 @@ namespace Oculus.Interaction.HandGrab
         {
             base.Awake();
             Hand = _hand as IHand;
-            VelocityCalculator = _velocityCalculator as IVelocityCalculator;
+            VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
         }
 
         protected override void Start()
@@ -397,7 +397,7 @@ namespace Oculus.Interaction.HandGrab
             _pinchPoint = pinchPoint;
         }
 
-        public void InjectOptionalVelocityCalculator(IVelocityCalculator velocityCalculator)
+        public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;
             VelocityCalculator = velocityCalculator;

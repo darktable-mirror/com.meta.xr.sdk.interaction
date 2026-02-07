@@ -71,7 +71,12 @@ namespace Oculus.Interaction.Editor
             ObjectFactory.componentWasAdded += handleComponentWasAdded;
             AssemblyReloadEvents.beforeAssemblyReload += handleBeforeAssemblyReload;
 
+#if UNITY_2022_2_OR_NEWER
+            // loadedSceneCount was graduated from EditorSceneManager to SceneManager in 2022.2
+            for (int idx = 0; idx < SceneManager.loadedSceneCount; ++idx)
+#else
             for (int idx = 0; idx < EditorSceneManager.loadedSceneCount; ++idx)
+#endif
             {
                 handleSceneOpened(EditorSceneManager.GetSceneAt(idx), OpenSceneMode.Additive);
             }

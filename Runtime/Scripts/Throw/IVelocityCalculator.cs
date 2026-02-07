@@ -27,6 +27,7 @@ namespace Oculus.Interaction.Throw
     /// <summary>
     /// Transform information used to derive velocities.
     /// </summary>
+    [Obsolete]
     public struct TransformSample
     {
         public TransformSample(Vector3 position, Quaternion rotation, float time,
@@ -82,15 +83,14 @@ namespace Oculus.Interaction.Throw
     /// Interface to velocity calculator used to make throwing
     /// possible.
     /// </summary>
-    public interface IVelocityCalculator
+    [Obsolete("Use " + nameof(IThrowVelocityCalculator) + " directly instead")]
+    public interface IVelocityCalculator : IThrowVelocityCalculator
     {
         float UpdateFrequency { get; }
 
         event Action<List<ReleaseVelocityInformation>> WhenThrowVelocitiesChanged;
 
         event Action<ReleaseVelocityInformation> WhenNewSampleAvailable;
-
-        ReleaseVelocityInformation CalculateThrowVelocity(Transform objectThrown);
 
         IReadOnlyList<ReleaseVelocityInformation> LastThrowVelocities();
 

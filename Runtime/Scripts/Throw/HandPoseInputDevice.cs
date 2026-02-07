@@ -154,8 +154,7 @@ namespace Oculus.Interaction.Throw
                 return false;
             }
 
-            Pose palmOffset = Pose.identity;
-            if (!Hand.GetPalmPoseLocal(out palmOffset))
+            if (!Hand.GetPalmPoseLocal(out Pose palmOffset))
             {
                 return false;
             }

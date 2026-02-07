@@ -30,6 +30,7 @@ namespace Oculus.Interaction.Throw
     /// Velocity calculator that depends only on an IPoseInputDevice,
     /// which means its input agnostic.
     /// </summary>
+    [Obsolete("Use " + nameof(RANSACVelocityCalculator) + " instead")]
     public class StandardVelocityCalculator : MonoBehaviour,
         IVelocityCalculator, ITimeConsumer
     {

@@ -111,5 +111,20 @@ namespace Oculus.Interaction
 
             return ComputeWorldSurfacePose(pose, out result);
         }
+
+        #region Inject
+
+        public void InjectAllSurfaceSnapPoseDelegate(ISurface surface)
+        {
+            InjectSurface(surface);
+        }
+
+        public void InjectSurface(ISurface surface)
+        {
+            _surface = surface as UnityEngine.Object;
+            Surface = surface;
+        }
+
+        #endregion
     }
 }
