@@ -100,6 +100,12 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "ISDK_RayGrabInteraction",
                 "f1c9f92f4fa1883459a0dfa57e136262");
 
+
+        public static readonly Template TeleportInteractable =
+            new Template(
+                "ISDK_TeleportInteraction",
+                "70cf16e50c457a54cad0b0a504b7d646");
+
         #endregion Interactables
 
         #region Interactors
@@ -124,6 +130,11 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "DistanceHandGrabInteractor",
                 "7ea5ce61c81c5ba40a697e2642e80c83");
 
+        public static readonly Template HandTeleportInteractor =
+            new Template(
+                "HandTeleportInteractorGroup",
+                "1b3597a7837cb3545b4a4f6e30856067");
+
         public static readonly Template ControllerPokeInteractor =
             new Template(
                 "PokeInteractor",
@@ -144,12 +155,18 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "DistanceGrabInteractor",
                 "d9ef0d4c78b4bfd409cb884dfe1524d6");
 
+        public static readonly Template ControllerTeleportInteractor =
+            new Template(
+                "ControllerTeleportInteractorGroup",
+                "dd6fa3a95e908604fa8656608ea793a1");
+
         private static Dictionary<InteractorTypes, Template> _handInteractorTemplates = new()
         {
             [InteractorTypes.Grab] = HandGrabInteractor,
             [InteractorTypes.Poke] = HandPokeInteractor,
             [InteractorTypes.Ray] = HandRayInteractor,
             [InteractorTypes.DistanceGrab] = DistanceHandGrabInteractor,
+            [InteractorTypes.Teleport] = HandTeleportInteractor,
 
         };
 
@@ -159,6 +176,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Poke] = ControllerPokeInteractor,
             [InteractorTypes.Ray] = ControllerRayInteractor,
             [InteractorTypes.DistanceGrab] = ControllerDistanceGrabInteractor,
+            [InteractorTypes.Teleport] = ControllerTeleportInteractor,
         };
 
         /// <summary>
@@ -187,10 +205,21 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// <param name="parent">The Transform the prefab will be instantiated under</param>
         /// <param name="template">The <see cref="Template"/>to be instantiated</param>
         /// <returns>The GameObject at the root of the prefab.</returns>
-        public static GameObject CreateFromTemplate(Transform parent, Template template)
+        public static GameObject CreateFromTemplate(Transform parent, Template template, bool asPrefab = false)
         {
-            GameObject result = Object.Instantiate(AssetDatabase.LoadMainAssetAtPath(
-                AssetDatabase.GUIDToAssetPath(template.AssetGUID))) as GameObject;
+            GameObject result;
+
+            // Retain prefab link
+            if (asPrefab)
+            {
+                result = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadMainAssetAtPath(
+                    AssetDatabase.GUIDToAssetPath(template.AssetGUID))) as GameObject;
+
+            } else
+            {
+                result = Object.Instantiate(AssetDatabase.LoadMainAssetAtPath(
+                    AssetDatabase.GUIDToAssetPath(template.AssetGUID))) as GameObject;
+            }
             result.name = template.DisplayName;
             result.transform.SetParent(parent?.transform, false);
             Undo.RegisterCreatedObjectUndo(result, "Add " + template.DisplayName);

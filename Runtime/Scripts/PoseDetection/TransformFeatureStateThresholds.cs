@@ -107,7 +107,7 @@ namespace Oculus.Interaction.PoseDetection
         public double MinTimeInState => _minTimeInState;
     }
 
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Detection/Transform Thresholds")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Detection/Transform Thresholds")]
     public class TransformFeatureStateThresholds : ScriptableObject,
         IFeatureThresholds<TransformFeature, string>
     {

@@ -36,19 +36,34 @@ namespace Oculus.Interaction.Editor.QuickActions
     {
         protected class DeviceTypeAttribute : PropertyAttribute
         {
+            public DeviceTypes SupportedTypes { get; private set; } = DeviceTypes.All;
+
             public IReadOnlyList<(string name, DeviceTypes type)> GetDevices()
             {
                 var names = new List<(string, DeviceTypes)>();
-                if (InteractorUtils.CanAddHandInteractorsToRig())
+                if ((SupportedTypes & DeviceTypes.Hands) != 0
+                    && InteractorUtils.CanAddHandInteractorsToRig())
                 {
                     names.Add(("Add To Hands", DeviceTypes.Hands));
                 }
-                if (InteractorUtils.CanAddControllerInteractorsToRig())
+                if ((SupportedTypes & DeviceTypes.Controllers) != 0
+                    && InteractorUtils.CanAddControllerInteractorsToRig())
                 {
                     names.Add(("Add To Controllers", DeviceTypes.Controllers));
                 }
                 return names;
             }
+
+            public DeviceTypeAttribute() : base()
+            {
+
+            }
+
+            public DeviceTypeAttribute(DeviceTypes supportedTypes) : base()
+            {
+                SupportedTypes = supportedTypes;
+            }
+
         }
 
         [CustomPropertyDrawer(typeof(DeviceTypeAttribute))]
@@ -339,7 +354,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             public WizardSettingAttribute() { }
         }
 
-        protected const string MENU_FOLDER = "GameObject/Interaction SDK/";
+        public const string MENU_FOLDER = "GameObject/Interaction SDK/";
 
         /// <summary>
         /// Window should not be drawn in batch mode, ie from Unit Tests

@@ -31,7 +31,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Ray Interaction to Canvas";
 
-        [MenuItem(MENU_NAME, priority = 200)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.RAY_CANVAS)]
         private static void OpenWizard()
         {
             ShowWindow<RayCanvasWizard>(Selection.gameObjects[0]);

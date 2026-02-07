@@ -25,7 +25,6 @@ using UnityEngine;
 using UnityEditor;
 
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
-using Assert = NUnit.Framework.Assert;
 using Debug = UnityEngine.Debug;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -47,7 +46,7 @@ namespace Oculus.Interaction
             EditorApplication.delayCall += HandleDelayCall;
         }
 
-        [MenuItem("Oculus/Interaction/Update Interaction SDK Plugin")]
+        [MenuItem("Meta/Interaction/Update Interaction SDK Plugin")]
         public static void UpdatePlugin()
         {
             PerformUpdate(verbose: true);

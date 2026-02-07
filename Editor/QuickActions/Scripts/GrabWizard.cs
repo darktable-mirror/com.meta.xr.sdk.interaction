@@ -33,7 +33,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Grab Interaction";
 
-        [MenuItem(MENU_NAME, priority = 100)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.ORDER_GRAB)]
         private static void OpenWizard()
         {
             ShowWindow<GrabWizard>(Selection.gameObjects[0]);

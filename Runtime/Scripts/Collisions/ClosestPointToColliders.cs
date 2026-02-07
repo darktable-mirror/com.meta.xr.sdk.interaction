@@ -27,24 +27,49 @@ namespace Oculus.Interaction
         public static Vector3 ClosestPointToColliders(Vector3 point, Collider[] colliders)
         {
             Vector3 closestPoint = point;
-            float closestDistance = float.MaxValue;
+            float closestSqrDistance = float.PositiveInfinity;
             foreach (Collider collider in colliders)
             {
-                if (Collisions.IsPointWithinCollider(point, collider))
+                Vector3 closest = ClosestPointToCollider(point, collider);
+                float sqrDistance = Vector3.SqrMagnitude(closest - point);
+
+                if (sqrDistance <= float.Epsilon)
                 {
-                    return point;
+                    return closest;
                 }
 
-                Vector3 closest = collider.ClosestPoint(point);
-                float distance = (closest - point).magnitude;
-                if (distance < closestDistance)
+                if (sqrDistance < closestSqrDistance)
                 {
-                    closestDistance = distance;
+                    closestSqrDistance = sqrDistance;
                     closestPoint = closest;
                 }
             }
 
             return closestPoint;
+        }
+
+        public static Vector3 ClosestPointToCollider(Vector3 point, Collider collider)
+        {
+            if (collider is MeshCollider meshCollider)
+            {
+                //Convex Mesh Colliders have a small error near the edges. So we magnetize the point a bit
+                if (meshCollider.convex)
+                {
+                    Vector3 convexColliderPoint = Physics.ClosestPoint(point, collider, collider.transform.position, collider.transform.rotation);
+                    if (Vector3.SqrMagnitude(convexColliderPoint - point) < collider.contactOffset * collider.contactOffset)
+                    {
+                        return point;
+                    }
+                    return convexColliderPoint;
+                }
+                //Concave Mesh Colliders always return the point itself when using Physics.ClosestPoint.
+                else
+                {
+                    return meshCollider.ClosestPointOnBounds(point);
+                }
+            }
+
+            return Physics.ClosestPoint(point, collider, collider.transform.position, collider.transform.rotation);
         }
     }
 }

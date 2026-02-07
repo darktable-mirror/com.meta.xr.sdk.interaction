@@ -37,6 +37,11 @@ namespace Oculus.Interaction
         {
             public bool ConstrainAxis;
             public FloatRange AxisRange;
+
+            public static ConstrainedAxis Unconstrained => new ConstrainedAxis()
+            {
+                ConstrainAxis = false, AxisRange = new FloatRange() { Min = 1, Max = 1 }
+            };
         }
 
         [Serializable]

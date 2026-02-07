@@ -32,7 +32,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Poke Interaction to Canvas";
 
-        [MenuItem(MENU_NAME, priority = 201)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.POKE_CANVAS)]
         private static void OpenWizard()
         {
             ShowWindow<PokeCanvasWizard>(Selection.gameObjects[0]);

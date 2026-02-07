@@ -92,7 +92,7 @@ namespace Oculus.Interaction.HandGrab
 
         protected override void Start()
         {
-            this.BeginStart(ref _started);
+            this.BeginStart(ref _started, ()=> base.Start());
             this.AssertField(UseAPI, nameof(UseAPI));
             this.EndStart(ref _started);
         }

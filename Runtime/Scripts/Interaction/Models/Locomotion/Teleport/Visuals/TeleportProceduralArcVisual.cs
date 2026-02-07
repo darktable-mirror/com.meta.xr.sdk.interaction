@@ -130,6 +130,8 @@ namespace Oculus.Interaction.Locomotion
                 _interactor.WhenStateChanged -= HandleInteractorStateChanged;
                 _interactor.WhenInteractableSet.Action -= HandleInteractableSet;
                 _interactor.WhenInteractableUnset.Action -= HandleInteractableUnset;
+
+                _tubeRenderer.Hide();
             }
         }
 
@@ -162,8 +164,7 @@ namespace Oculus.Interaction.Locomotion
             }
 
             Color tint = Color.white;
-            if (_interactor.Interactable == null
-                || !_interactor.Interactable.AllowTeleport)
+            if (!_interactor.HasValidDestination())
             {
                 tint = _noDestinationTint;
             }

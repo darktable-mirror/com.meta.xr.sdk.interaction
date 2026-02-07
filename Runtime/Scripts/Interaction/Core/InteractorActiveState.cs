@@ -33,6 +33,7 @@ namespace Oculus.Interaction
             HasSelectedInteractable = 1 << 3,
             IsNormal = 1 << 4,
             IsHovering = 1 << 5,
+            IsDisabled = 1 << 6,
         }
 
         [SerializeField, Interface(typeof(IInteractor))]
@@ -90,6 +91,11 @@ namespace Oculus.Interaction
                 }
                 if ((_property & InteractorProperty.IsHovering) != 0
                     && Interactor.State == InteractorState.Hover)
+                {
+                    return true;
+                }
+                if ((_property & InteractorProperty.IsDisabled) != 0
+                    && Interactor.State == InteractorState.Disabled)
                 {
                     return true;
                 }

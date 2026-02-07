@@ -161,7 +161,7 @@ namespace Oculus.Interaction
 
             Vector3 localPosition = UpdateTransformerPointData(_grabbable.GrabPoints);
 
-            _lastScale = UpdateScale(count) * _lastScale;
+            _lastScale = count <= 1 ? targetTransform.localScale : UpdateScale(count) * _lastScale;
             targetTransform.localScale = TransformerUtils.GetConstrainedTransformScale(_lastScale, _relativeScaleConstraints);
 
             _lastRotation = UpdateRotation(count) * _lastRotation;

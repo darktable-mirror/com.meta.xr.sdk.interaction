@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -32,6 +33,7 @@ namespace Oculus.Interaction
         /// <param name="radius">Capsule Radius</param>
         /// <param name="collider">Collider to check against</param>
         /// <returns>Whether or not an approximate collision occured.</returns>
+        [Obsolete("This method is not in use and will soon be deleted.")]
         public static bool IsCapsuleWithinColliderApprox(Vector3 p0, Vector3 p1, float radius, Collider collider)
         {
             int divisions = Mathf.CeilToInt((p1 - p0).magnitude / radius) * 2;

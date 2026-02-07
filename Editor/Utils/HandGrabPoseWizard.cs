@@ -92,7 +92,7 @@ namespace Oculus.Interaction.HandGrab.Editor
         private GUIStyle _richTextStyle;
         private Vector2 _scrollPos = Vector2.zero;
 
-        [MenuItem("Oculus/Interaction/Hand Grab Pose Recorder")]
+        [MenuItem("Meta/Interaction/Hand Grab Pose Recorder")]
         private static void CreateWizard()
         {
             HandGrabPoseWizard window = EditorWindow.GetWindow<HandGrabPoseWizard>();

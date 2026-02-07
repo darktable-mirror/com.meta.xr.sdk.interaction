@@ -26,7 +26,7 @@ namespace Oculus.Interaction.Editor
     public static class PackageCleanup
     {
 
-        public const string PACKAGE_VERSION = "0.65.0";
+        public const string PACKAGE_VERSION = "0.66.0";
         public const string DEPRECATED_TAG = "oculus_interaction_deprecated";
         public const string MOVED_TAG = "oculus_interaction_moved_";
 

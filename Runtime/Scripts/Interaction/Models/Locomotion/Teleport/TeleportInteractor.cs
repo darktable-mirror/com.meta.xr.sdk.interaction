@@ -133,6 +133,34 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
+        /// <summary>
+        /// Delegate to accept or reject the selection of teleport destination
+        /// </summary>
+        /// <param name="interactable">The interactable the interactor wants to teleport to.</param>
+        /// <param name="destination">The final Pose the interactor wants to move to.</param>
+        /// <returns>True if the destination is accepted, false if rejected.</returns>
+        public delegate bool AcceptDestinationComputer(TeleportInteractable interactable, Pose destination);
+        private AcceptDestinationComputer _acceptDestination;
+        /// <summary>
+        /// This optional delegate method offers one chance to accept or reject a valid target destination.
+        /// It will be executed upon the current Interactable and desired target Pose in order
+        /// to allow selection.
+        ///
+        /// Return true to allow Selection, false to disallow selection.
+        /// When it is not set, it always allows to select valid interactables.
+        /// </summary>
+        public AcceptDestinationComputer AcceptDestination
+        {
+            get
+            {
+                return _acceptDestination;
+            }
+            set
+            {
+                _acceptDestination = value;
+            }
+        }
+
         protected override void Awake()
         {
             base.Awake();
@@ -167,19 +195,29 @@ namespace Oculus.Interaction.Locomotion
             return base.CanSelect(interactable);
         }
 
+        public bool HasValidDestination()
+        {
+            Pose target = TeleportTarget;
+            return Interactable != null
+                && Interactable.AllowTeleport
+                && (_acceptDestination == null || _acceptDestination(Interactable, target));
+        }
+
         protected override void InteractableSelected(TeleportInteractable interactable)
         {
             base.InteractableSelected(interactable);
-            if (interactable == null
-                || !interactable.AllowTeleport)
+
+            Pose target = TeleportTarget;
+
+            if (!HasValidDestination())
             {
-                LocomotionEvent deniedLocomotionEvent = new LocomotionEvent(this.Identifier, TeleportTarget,
+                LocomotionEvent deniedLocomotionEvent = new LocomotionEvent(this.Identifier, target,
                     LocomotionEvent.TranslationType.None, LocomotionEvent.RotationType.None);
                 _whenLocomotionPerformed.Invoke(deniedLocomotionEvent);
                 return;
             }
 
-            LocomotionEvent locomotionEvent = new LocomotionEvent(this.Identifier, TeleportTarget,
+            LocomotionEvent locomotionEvent = new LocomotionEvent(this.Identifier, target,
                 interactable.EyeLevel ?
                 LocomotionEvent.TranslationType.AbsoluteEyeLevel
                 : LocomotionEvent.TranslationType.Absolute,

@@ -106,7 +106,7 @@ namespace Oculus.Interaction.HandGrab
         /// </summary>
         [Tooltip("Collider used to detect a palm grab.")]
         [SerializeField, Optional]
-        private SphereCollider _gripCollider;
+        private Collider _gripCollider;
 
         /// <summary>
         /// Specifies a moving point at the center of the tips of the currently pinching fingers.
@@ -121,7 +121,7 @@ namespace Oculus.Interaction.HandGrab
         /// </summary>
         [Tooltip("Collider used to detect a pinch grab.")]
         [SerializeField, Optional]
-        private SphereCollider _pinchCollider;
+        private Collider _pinchCollider;
 
         /// <summary>
         /// Determines how the object will move when thrown.
@@ -455,14 +455,14 @@ namespace Oculus.Interaction.HandGrab
 
             if (_gripCollider != null
                 && (selectingGrabTypes & GrabTypeFlags.Palm) != 0
-                && !OverlapsSphere(interactable, _gripCollider))
+                && !OverlapsVolume(interactable, _gripCollider))
             {
                 selectingGrabTypes &= ~GrabTypeFlags.Palm;
             }
 
             if (_pinchCollider != null
                 && (selectingGrabTypes & GrabTypeFlags.Pinch) != 0
-                && !OverlapsSphere(interactable, _pinchCollider))
+                && !OverlapsVolume(interactable, _pinchCollider))
             {
                 selectingGrabTypes &= ~GrabTypeFlags.Pinch;
             }
@@ -527,15 +527,15 @@ namespace Oculus.Interaction.HandGrab
             base.Unselect();
         }
 
-        private bool OverlapsSphere(HandGrabInteractable interactable, SphereCollider sphere)
+        private bool OverlapsVolume(HandGrabInteractable interactable, Collider volume)
         {
-            Vector3 point = sphere.transform.position;
-            float radius = sphere.bounds.extents.x;
-
             foreach (Collider collider in interactable.Colliders)
             {
                 if (collider.enabled &&
-                    Collisions.IsSphereWithinCollider(point, radius, collider))
+                    Physics.ComputePenetration(
+                        volume, volume.transform.position, volume.transform.rotation,
+                        collider, collider.transform.position, collider.transform.rotation,
+                        out _, out _))
                 {
                     return true;
                 }
@@ -646,7 +646,7 @@ namespace Oculus.Interaction.HandGrab
         /// <summary>
         /// Adds a grip collider to a dynamically instantiated GameObject.
         /// </summary>
-        public void InjectOptionalGripCollider(SphereCollider gripCollider)
+        public void InjectOptionalGripCollider(Collider gripCollider)
         {
             _gripCollider = gripCollider;
         }
@@ -662,7 +662,7 @@ namespace Oculus.Interaction.HandGrab
         /// <summary>
         /// Adds a pinch collider to a dynamically instantiated GameObject.
         /// </summary>
-        public void InjectOptionalPinchCollider(SphereCollider pinchCollider)
+        public void InjectOptionalPinchCollider(Collider pinchCollider)
         {
             _pinchCollider = pinchCollider;
         }

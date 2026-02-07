@@ -34,7 +34,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Interactor(s) To Hand";
 
-        [MenuItem(MENU_NAME)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.HAND_INTERACTORS)]
         private static void OpenWizard()
         {
             ShowWindow<HandInteractorWizard>(Selection.gameObjects[0]);

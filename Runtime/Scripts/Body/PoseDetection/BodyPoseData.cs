@@ -26,7 +26,7 @@ using Oculus.Interaction.Collections;
 
 namespace Oculus.Interaction.Body.PoseDetection
 {
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Detection/Body Pose")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Detection/Body Pose")]
     public class BodyPoseData : ScriptableObject,
         IBodyPose, ISerializationCallbackReceiver
     {

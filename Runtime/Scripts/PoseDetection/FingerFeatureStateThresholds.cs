@@ -97,7 +97,7 @@ namespace Oculus.Interaction.PoseDetection
     /// A state threshold is a set of boundaries that determine when a finger has transitioned between states.
     /// For example, the curl feature has 3 states: Open, Neutral, and Closed. So the state thresholds for curl use an angle in degrees to define when the finger's state has changed from Open to Neutral, Neutral to Closed, or vice-versa.
     /// </summary>
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Detection/Finger Thresholds")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Detection/Finger Thresholds")]
     public class FingerFeatureStateThresholds : ScriptableObject,
         IFeatureThresholds<FingerFeature, string>
     {

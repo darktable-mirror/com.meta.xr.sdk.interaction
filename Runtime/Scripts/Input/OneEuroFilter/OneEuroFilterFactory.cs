@@ -56,5 +56,12 @@ namespace Oculus.Interaction.Input
                 (values) => new Quaternion(values[0], values[1], values[2], values[3]).normalized,
                 (value, index) => value[index]);
         }
+
+        public static IOneEuroFilter<Pose> CreatePose()
+        {
+            return new OneEuroFilterMulti<Pose>(7,
+                (values) => new Pose(new Vector3(values[0], values[1], values[2]), new Quaternion(values[3], values[4], values[5], values[6]).normalized),
+                (value, index) => (index > 2)? value.rotation[index-3] : value.position[index]);
+        }
     }
 }

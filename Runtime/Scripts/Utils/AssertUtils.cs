@@ -50,7 +50,7 @@ namespace Oculus.Interaction
             string componentName = component.GetType().Name;
 
             Assert.IsTrue(value,
-                (whereItFailed ?? $"At GameObject <color={ HiglightColor}><b>{ gameObjectName}</b></color>, component <b>{ componentName}</b>. ") +
+                (whereItFailed ?? $"At GameObject <color={HiglightColor}><b>{gameObjectName}</b></color>, component <b>{componentName}</b>. ") +
                 (whyItFailed ?? "") +
                 (howToFix ?? ""));
         }
@@ -187,6 +187,47 @@ namespace Oculus.Interaction
                     (whereItFailed ?? $"At GameObject <color={HiglightColor}><b>{gameObjectName}</b></color>, component <b>{componentName}</b>. ") +
                     (whyItFailed ?? $"Invalid item in the collection <b>{niceVariableName}</b> at index <b>{index}</b>. ") +
                     (howToFix ?? $"Assign a <b>{variableType}</b> to the collection <b>{niceVariableName}</b> at index <b>{index}</b>. "));
+                index++;
+            }
+        }
+
+        /// <summary>
+        /// Shows a Warning for each item in a Serialized collection in a Component that is null.
+        /// It works just for UnityEngine.Object collections,
+        /// Note that the collection it might contain 0 items.
+        /// In case of failure, it will print a warning showing why it failed, where it failed
+        /// and suggest how to fix it.
+        /// </summary>
+        /// <param name="component">The component to which the collection belongs.</param>
+        /// <param name="value">The value of the collection.</param>
+        /// <param name="variableName">The printed name of the serialized collection.</param>
+        /// <param name="whyItFailed">Optional parameter specifying the reason the assert failed.
+        /// If none is provided it will indicate, for each failed item, that the item must not be null.</param>
+        /// <param name="whereItFailed">Optional parameter specifying where the failure can be found.
+        /// If none is provided it will print the component address (GameObject->Component->Collection Name).</param>
+        /// <param name="howToFix">Optional parameter suggesting how to fix the problem.
+        /// If none is provided it will suggest assigning a valid item of the required type to the collection at each missing index.</param>
+        [Conditional("UNITY_ASSERTIONS")]
+        public static void WarnInspectorCollectionItems(this Component component,
+            IEnumerable<UnityEngine.Object> value, string variableName,
+            string whyItFailed = null, string whereItFailed = null, string howToFix = null)
+        {
+            string gameObjectName = component.name;
+            string componentName = component.GetType().Name;
+            string niceVariableName = Nicify(variableName);
+            string variableType = typeof(UnityEngine.Object).Name;
+
+            int index = 0;
+            foreach (UnityEngine.Object item in value)
+            {
+                string message = (whereItFailed ?? $"At GameObject <color={HiglightColor}><b>{gameObjectName}</b></color>, component <b>{componentName}</b>. ") +
+                    (whyItFailed ?? $"Invalid item in the collection <b>{niceVariableName}</b> at index <b>{index}</b>. ") +
+                    (howToFix ?? $"Assign a <b>{variableType}</b> to the collection <b>{niceVariableName}</b> at index <b>{index}</b> or remove the entry. ");
+
+                if (item == null)
+                {
+                    UnityEngine.Debug.LogWarning(message, component);
+                }
                 index++;
             }
         }

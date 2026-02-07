@@ -150,7 +150,7 @@ namespace Oculus.Interaction
             return QueuedUnselect;
         }
 
-        private InteractorState _state = InteractorState.Normal;
+        private InteractorState _state = InteractorState.Disabled;
         public event Action<InteractorStateChangeArgs> WhenStateChanged = delegate { };
         public event Action WhenPreprocessed = delegate { };
         public event Action WhenProcessed = delegate { };
@@ -420,11 +420,16 @@ namespace Oculus.Interaction
         /// </summary>
         public void Preprocess()
         {
-            DoPreprocess();
+            if (_started)
+            {
+                DoPreprocess();
+            }
+
             if (!UpdateActiveState())
             {
                 Disable();
             }
+
             WhenPreprocessed();
         }
 
@@ -455,7 +460,12 @@ namespace Oculus.Interaction
         public void Postprocess()
         {
             _selectorQueue.Clear();
-            DoPostprocess();
+
+            if (_started)
+            {
+                DoPostprocess();
+            }
+
             WhenPostprocessed();
         }
 
@@ -465,6 +475,7 @@ namespace Oculus.Interaction
         public virtual void ProcessCandidate()
         {
             _candidate = null;
+
             if (!UpdateActiveState())
             {
                 return;
@@ -710,8 +721,8 @@ namespace Oculus.Interaction
             }
         }
 
-        protected virtual void HandleEnabled() {}
-        protected virtual void HandleDisabled() {}
+        protected virtual void HandleEnabled() { }
+        protected virtual void HandleDisabled() { }
 
         protected virtual void HandleSelected()
         {
@@ -725,11 +736,12 @@ namespace Oculus.Interaction
 
         private bool UpdateActiveState()
         {
+            bool active = this.isActiveAndEnabled && _started;
             if (ActiveState != null)
             {
-                return ActiveState.Active;
+                active = active && ActiveState.Active;
             }
-            return this.enabled;
+            return active;
         }
 
         public bool IsRootDriver { get; set; } = true;

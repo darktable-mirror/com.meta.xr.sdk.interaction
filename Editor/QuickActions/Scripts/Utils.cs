@@ -86,4 +86,21 @@ namespace Oculus.Interaction.Editor.QuickActions
             return true;
         }
     }
+
+    internal static class MenuOrder
+    {
+        // Inputs and Interactors
+        internal const int COMPREHENSIVE_RIG_NEW = 100;
+        internal const int COMPREHENSIVE_RIG_ADD = 101;
+        internal const int HAND_INTERACTORS = 102;
+        internal const int CONTROLLER_INTERACTORS = 103;
+        // 3D Interactions
+        internal const int ORDER_GRAB = 110;
+        internal const int RAY_GRAB = 111;
+        internal const int DISTANCE_GRAB = 112;
+        internal const int TELEPORT_LOCOMOTION = 115;
+        // Canvas Interactions
+        internal const int RAY_CANVAS = 120;
+        internal const int POKE_CANVAS = 121;
+    }
 }

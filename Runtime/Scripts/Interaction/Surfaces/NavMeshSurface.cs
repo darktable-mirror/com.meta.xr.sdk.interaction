@@ -82,6 +82,9 @@ namespace Oculus.Interaction.Surfaces
             }
         }
 
+        [InspectorButton(nameof(OpenUnityNavigation)), SerializeField]
+        private string _openUnityNavigation;
+
         public Transform Transform => null;
         private int _areaMask;
 
@@ -235,6 +238,13 @@ namespace Oculus.Interaction.Surfaces
                     return false;
                 }
             }
+        }
+
+        private void OpenUnityNavigation()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.ExecuteMenuItem("Window/AI/Navigation");
+#endif
         }
     }
 }

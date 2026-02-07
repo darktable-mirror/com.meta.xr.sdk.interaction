@@ -254,6 +254,7 @@ namespace Oculus.Interaction
         private int _vertsCount;
 
         private float _totalLength = 0f;
+        private bool _hidden = false;
 
         private static readonly int _fadeLimitsShaderID = Shader.PropertyToID("_FadeLimit");
         private static readonly int _fadeSignShaderID = Shader.PropertyToID("_FadeSign");
@@ -270,9 +271,14 @@ namespace Oculus.Interaction
 
         #endregion
 
+        protected virtual void Awake()
+        {
+            _hidden = this.enabled;
+        }
+
         protected virtual void OnEnable()
         {
-            _renderer.enabled = true;
+            _renderer.enabled = !_hidden;
         }
 
         protected virtual void OnDisable()
@@ -281,7 +287,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Updates the mesh data for the tube with  the specified points
+        /// Updates the mesh data for the tube with  the specified points.
+        /// If the component is enabled it will automatically show the renderer.
         /// </summary>
         /// <param name="points">The points that the tube must follow</param>
         /// <param name="space">Indicates if the points are specified in local space or world space</param>
@@ -295,7 +302,8 @@ namespace Oculus.Interaction
             }
             _vertsData = new NativeArray<VertexLayout>(_vertsCount, Allocator.Temp);
             UpdateMeshData(points, space);
-            _renderer.enabled = enabled;
+            _renderer.enabled = this.enabled;
+            _hidden = false;
         }
 
         /// <summary>
@@ -304,6 +312,16 @@ namespace Oculus.Interaction
         public void Hide()
         {
             _renderer.enabled = false;
+            _hidden = true;
+        }
+
+        /// <summary>
+        /// Shows the renderer of the tube
+        /// </summary>
+        public void Show()
+        {
+            _renderer.enabled = true;
+            _hidden = false;
         }
 
         private void InitializeMeshData(int steps)

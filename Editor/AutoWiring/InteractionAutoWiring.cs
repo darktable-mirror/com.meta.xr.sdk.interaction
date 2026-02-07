@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using Oculus.Interaction.Locomotion;
 using Oculus.Interaction.PoseDetection;
 using UnityEditor;
 
@@ -116,6 +117,19 @@ namespace Oculus.Interaction.Editor
                         {
                             FieldWiringStrategies.WireFieldToAncestors
                         })
+                }
+            );
+            #endregion
+
+            #region Locomotion
+
+            AutoWiring.Register(
+                typeof(LocomotionTurnerInteractor),
+                new[] {
+                    new ComponentWiringStrategyConfig("_transformer", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors
+                        }),
                 }
             );
             #endregion

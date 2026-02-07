@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
@@ -35,19 +36,21 @@ namespace Oculus.Interaction.DistanceReticles
 
         private static readonly int _highlightShaderID = Shader.PropertyToID("_Highlight");
 
+        [Obsolete]
         public enum TeleportReticleMode
         {
             Hidden,
             ValidTarget,
             InvalidTarget
         }
-
         /// <summary>
         /// Determines if the teleport reticle is hidden or marked as either valid or invalid when hovering over this spot.
         /// </summary>
         [Tooltip("Determines if the teleport reticle is hidden or marked as either valid or invalid when hovering over this spot.")]
         [SerializeField]
+        [Obsolete("Use "+ nameof(_hideReticle) + " instead"), Optional(OptionalAttribute.Flag.Obsolete)]
         private TeleportReticleMode _reticleMode = TeleportReticleMode.ValidTarget;
+        [Obsolete("Use " + nameof(HideReticle) + " instead")]
         public TeleportReticleMode ReticleMode
         {
             get
@@ -57,6 +60,24 @@ namespace Oculus.Interaction.DistanceReticles
             set
             {
                 _reticleMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Determines if the teleport reticle is hidden when hovering over this spot.
+        /// </summary>
+        [Tooltip("Determines if the teleport reticle is hidden when hovering over this spot.")]
+        [SerializeField]
+        public bool _hideReticle = false;
+        public bool HideReticle
+        {
+            get
+            {
+                return _hideReticle;
+            }
+            set
+            {
+                _hideReticle = value;
             }
         }
 
@@ -82,6 +103,10 @@ namespace Oculus.Interaction.DistanceReticles
         public void InjectOptionalSnapPoint(Transform snapPoint)
         {
             _snapPoint = snapPoint;
+        }
+        public void InjectOptionalMaterialPropertyBlockEditor(MaterialPropertyBlockEditor materialBlock)
+        {
+            _materialBlock = materialBlock;
         }
         #endregion
     }

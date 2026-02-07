@@ -32,7 +32,7 @@ namespace Oculus.Interaction.HandGrab
     /// Use this to store information once in Play-Mode (where Hand-tracking can be used)
     /// and then restore it forever at Edit-time.
     /// </summary>
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Authoring/HandGrabInteractable Data Collection")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Authoring/HandGrabInteractable Data Collection")]
     public class HandGrabInteractableDataCollection : ScriptableObject
     {
         /// <summary>

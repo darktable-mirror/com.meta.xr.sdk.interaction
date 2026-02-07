@@ -35,7 +35,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Distance Grab Interaction";
 
-        [MenuItem(MENU_NAME, priority = 101)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.DISTANCE_GRAB)]
         private static void OpenWizard()
         {
             ShowWindow<DistanceGrabWizard>(Selection.gameObjects[0]);

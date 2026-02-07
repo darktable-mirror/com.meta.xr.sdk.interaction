@@ -72,31 +72,21 @@ namespace Oculus.Interaction.DistanceReticles
             bool highlight = HighlightState != null && HighlightState.Active;
             data.Highlight(highlight);
 
-            if (data.ReticleMode == ReticleDataTeleport.TeleportReticleMode.Hidden)
+            if (data.HideReticle)
             {
                 return;
             }
+
             Vector3 position = data.ProcessHitPoint(_interactor.ArcEnd.Point);
             Quaternion rotation = Quaternion.LookRotation(_interactor.ArcEnd.Normal);
             this.transform.SetPositionAndRotation(position, rotation);
 
             float progress = Progress != null ? Progress.Value() : 0f;
-            Renderer reticle = null;
-            if (data.ReticleMode == ReticleDataTeleport.TeleportReticleMode.ValidTarget)
-            {
-                reticle = _validTargetRenderer;
-            }
-            else if (data.ReticleMode == ReticleDataTeleport.TeleportReticleMode.InvalidTarget)
-            {
-                reticle = _invalidTargetRenderer;
-            }
+            bool validDestination = _interactor.HasValidDestination();
 
-            if (reticle == null)
-            {
-                return;
-            }
-
-            UpdateReticle(data.ReticleMode);
+            _validTargetRenderer.enabled = validDestination;
+            _invalidTargetRenderer.enabled = !validDestination;
+            Renderer reticle = validDestination ? _validTargetRenderer : _invalidTargetRenderer;
             SetReticleProgress(reticle, progress);
             if (HighlightState != null)
             {
@@ -106,7 +96,6 @@ namespace Oculus.Interaction.DistanceReticles
 
         protected override void Draw(ReticleDataTeleport data)
         {
-            UpdateReticle(data.ReticleMode);
         }
 
         protected override void Hide()
@@ -134,20 +123,6 @@ namespace Oculus.Interaction.DistanceReticles
         {
             reticle.material.SetFloat(_highlightKey, highlight ? 1f : 0f);
         }
-
-        private void UpdateReticle(ReticleDataTeleport.TeleportReticleMode reticleMode)
-        {
-            if (_validTargetRenderer != null)
-            {
-                _validTargetRenderer.enabled = reticleMode == ReticleDataTeleport.TeleportReticleMode.ValidTarget;
-            }
-
-            if (_invalidTargetRenderer != null)
-            {
-                _invalidTargetRenderer.enabled = reticleMode == ReticleDataTeleport.TeleportReticleMode.InvalidTarget;
-            }
-        }
-
 
         #region Inject
 

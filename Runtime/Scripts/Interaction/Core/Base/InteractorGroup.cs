@@ -90,7 +90,7 @@ namespace Oculus.Interaction
             (interactor, index) => interactor.HasInteractable;
 
 
-        private InteractorState _state = InteractorState.Normal;
+        private InteractorState _state = InteractorState.Disabled;
         public InteractorState State
         {
             get
@@ -117,7 +117,15 @@ namespace Oculus.Interaction
         {
             _identifier = UniqueIdentifier.Generate();
             ActiveState = _activeState as IActiveState;
-            Interactors = _interactors?.ConvertAll(mono => mono as IInteractor);
+
+            if (_interactors != null)
+            {
+                this.WarnInspectorCollectionItems(_interactors, nameof(_interactors));
+                Interactors = _interactors
+                    .FindAll(mono => mono != null)
+                    .ConvertAll(mono => mono as IInteractor);
+            }
+
             CandidateComparer = _candidateComparer as ICandidateComparer;
         }
 
@@ -138,10 +146,6 @@ namespace Oculus.Interaction
 
         protected virtual void OnEnable()
         {
-            if (_started)
-            {
-                Enable();
-            }
         }
 
         protected virtual void OnDisable()
@@ -275,7 +279,7 @@ namespace Oculus.Interaction
 
         public virtual void Process()
         {
-            for (int i = 0; i < Interactors.Count; i++)
+            for (int i = 0; Interactors != null && i < Interactors.Count; i++)
             {
                 Interactors[i].Process();
             }
@@ -284,7 +288,7 @@ namespace Oculus.Interaction
 
         public virtual void Postprocess()
         {
-            for (int i = 0; i < Interactors.Count; i++)
+            for (int i = 0; Interactors != null && i < Interactors.Count; i++)
             {
                 Interactors[i].Postprocess();
             }
@@ -293,6 +297,11 @@ namespace Oculus.Interaction
 
         public virtual void ProcessCandidate()
         {
+            if (!UpdateActiveState())
+            {
+                return;
+            }
+
             for (int i = 0; i < Interactors.Count; i++)
             {
                 IInteractor interactor = Interactors[i];
@@ -324,7 +333,7 @@ namespace Oculus.Interaction
 
         public virtual void Disable()
         {
-            for (int i = 0; i < Interactors.Count; i++)
+            for (int i = 0; Interactors != null && i < Interactors.Count; i++)
             {
                 Interactors[i].Disable();
             }
@@ -358,11 +367,12 @@ namespace Oculus.Interaction
 
         protected bool UpdateActiveState()
         {
+            bool active = this.isActiveAndEnabled && _started;
             if (ActiveState != null)
             {
-                return ActiveState.Active;
+                active = active && ActiveState.Active;
             }
-            return this.enabled;
+            return active;
         }
 
         protected virtual void Update()

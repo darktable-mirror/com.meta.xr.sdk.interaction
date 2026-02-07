@@ -24,7 +24,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Input/Hand Filter Parameters")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Input/Hand Filter Parameters")]
     [System.Serializable]
     public class HandFilterParameterBlock : ScriptableObject
     {

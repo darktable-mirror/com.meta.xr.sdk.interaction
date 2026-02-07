@@ -81,7 +81,7 @@ namespace Oculus.Interaction.Utils
         private bool _forceUpdateGhost = true;
 
 
-        [MenuItem("Oculus/Interaction/Hand Animation Recorder")]
+        [MenuItem("Meta/Interaction/Hand Animation Recorder")]
         private static void CreateWizard()
         {
             HandAnimationRecorder window = EditorWindow.GetWindow<HandAnimationRecorder>();

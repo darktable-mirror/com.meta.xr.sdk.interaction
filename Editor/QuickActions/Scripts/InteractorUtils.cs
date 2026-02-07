@@ -25,6 +25,7 @@ using System.Reflection;
 using UnityEngine;
 using Oculus.Interaction.Input;
 using Oculus.Interaction.HandGrab;
+using Oculus.Interaction.Locomotion;
 
 using Object = UnityEngine.Object;
 using UnityEditor;
@@ -39,7 +40,8 @@ namespace Oculus.Interaction.Editor.QuickActions
         Grab = 1 << 1,
         Ray = 1 << 2,
         DistanceGrab = 1 << 3,
-        All = (1 << 4) - 1,
+        Teleport = 1 << 4,
+        All = (1 << 5) - 1,
     }
 
     [Flags]
@@ -64,6 +66,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 [InteractorTypes.Grab] = typeof(HandGrabInteractor),
                 [InteractorTypes.Ray] = typeof(RayInteractor),
                 [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
+                [InteractorTypes.Teleport] = typeof(TeleportInteractor),
             };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerTypeLookup =
@@ -73,6 +76,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 [InteractorTypes.Grab] = typeof(GrabInteractor),
                 [InteractorTypes.Ray] = typeof(RayInteractor),
                 [InteractorTypes.DistanceGrab] = typeof(DistanceGrabInteractor),
+                [InteractorTypes.Teleport] = typeof(TeleportInteractor)
             };
 
         /// <summary>

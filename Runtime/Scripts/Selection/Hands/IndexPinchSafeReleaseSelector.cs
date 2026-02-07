@@ -46,20 +46,28 @@ namespace Oculus.Interaction
         [Tooltip("If checked, the selector will select during the frame when the pinch is released as opposed to when it's pinching.")]
         [SerializeField]
         private bool _selectOnRelease = true;
-
-        public bool Active => this.enabled && _isIndexFingerPinching && !_cancelled;
+        public bool SelectOnRelease
+        {
+            get => _selectOnRelease;
+            set => _selectOnRelease = value;
+        }
 
         /// <summary>
-        /// An <see cref="IActiveState"/> that confirms a release actually happened. To confirm a release happened, the <see cref="IActiveState"/> should
-        /// check either a pose or the distance between the index finger and thumb.
+        /// Indicates how extended the index needs to be in order to be safe to unpinch
         /// </summary>
-        [Tooltip("Confirms that a release actually happened by checking either a pose or the distance between the index finger and thumb.")]
-        [SerializeField, Interface(typeof(IActiveState))]
-        private UnityEngine.Object _indexReleaseSafeguard;
-        private IActiveState IndexReleaseSafeguard;
+        [Tooltip("Indicates how extended the index needs to be in order to be safe to unpinch.")]
+        [SerializeField, Range(-1f, 1f)]
+        private float _safeReleaseThreshold = 0.5f;
+        public float SafeReleaseThreshold
+        {
+            get => _safeReleaseThreshold;
+            set => _safeReleaseThreshold = value;
+        }
 
-        private bool _isIndexFingerPinching;
-        private bool _cancelled;
+        public bool Active => _active;
+
+        private bool _wasPinching;
+        private bool _active;
         private bool _pendingUnselect;
 
         public event Action WhenSelected = delegate { };
@@ -70,7 +78,6 @@ namespace Oculus.Interaction
         protected virtual void Awake()
         {
             Hand = _hand as IHand;
-            IndexReleaseSafeguard = _indexReleaseSafeguard as IActiveState;
         }
 
         protected virtual void Start()
@@ -85,8 +92,7 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated += HandleHandUpdated;
-                _isIndexFingerPinching = false;
-                _pendingUnselect = false;
+                _wasPinching = Hand.GetIndexFingerIsPinching();
             }
         }
 
@@ -95,86 +101,90 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated -= HandleHandUpdated;
+
+                _active = false;
+                _pendingUnselect = false;
             }
         }
 
         private void HandleHandUpdated()
         {
-            bool isPinchDetected = Hand.GetIndexFingerIsPinching();
-            bool isReleaseDetected = !isPinchDetected && IndexReleaseSafeguard.Active;
+            if (_selectOnRelease && _pendingUnselect)
+            {
+                _pendingUnselect = false;
+                this.WhenUnselected.Invoke();
+            }
+
+            bool isPinching = Hand.GetIndexFingerIsPinching();
+
+            if (_wasPinching != isPinching)
+            {
+                _wasPinching = isPinching;
+                if (isPinching)
+                {
+                    _active = true;
+                    if (!_selectOnRelease)
+                    {
+                        this.WhenSelected.Invoke();
+                    }
+                }
+            }
+
 
             if (_selectOnRelease)
             {
-                ProcessSelectOnRelease(isPinchDetected, isReleaseDetected);
+                if (_active && !isPinching && IsIndexExtended())
+                {
+                    this.WhenSelected.Invoke();
+                    _active = false;
+                    _pendingUnselect = true;
+                }
             }
             else
             {
-                ProcessSelectOnPinch(isPinchDetected, isReleaseDetected);
-            }
-        }
-
-        private void ProcessSelectOnPinch(bool isPinchDetected, bool isReleaseDetected)
-        {
-            if (!_isIndexFingerPinching && isPinchDetected && !_cancelled)
-            {
-                _isIndexFingerPinching = true;
-                WhenSelected.Invoke();
-            }
-            else if (_isIndexFingerPinching && isReleaseDetected)
-            {
-                _isIndexFingerPinching = false;
-                WhenUnselected.Invoke();
-            }
-
-            if (!_isIndexFingerPinching && _cancelled)
-            {
-                _cancelled = false;
-            }
-        }
-
-        private void ProcessSelectOnRelease(bool isPinchDetected, bool isReleaseDetected)
-        {
-            if (!_isIndexFingerPinching && isPinchDetected)
-            {
-                _isIndexFingerPinching = true;
-            }
-
-            if (!_isIndexFingerPinching && _pendingUnselect)
-            {
-                _pendingUnselect = false;
-                WhenUnselected.Invoke();
-            }
-
-            if (_isIndexFingerPinching && isReleaseDetected)
-            {
-                _isIndexFingerPinching = false;
-                if (!_cancelled)
+                if (_active && !isPinching && IsIndexExtended())
                 {
-                    WhenSelected.Invoke();
-                    _pendingUnselect = true;
+                    this.WhenUnselected.Invoke();
+                    _active = false;
                 }
-                _cancelled = false;
             }
         }
 
-        public void Cancel()
+        protected virtual bool IsIndexExtended()
         {
-            if (_isIndexFingerPinching)
+            if (Hand.GetFingerPinchStrength(HandFinger.Index) == 0f)
             {
-                _cancelled = true;
+                return true;
             }
+
+            if (!Hand.GetJointPoseFromWrist(HandJointId.HandIndex1, out Pose index1)
+                || !Hand.GetJointPoseFromWrist(HandJointId.HandIndex2, out Pose index2)
+                || !Hand.GetJointPoseFromWrist(HandJointId.HandIndexTip, out Pose indexTip))
+            {
+                return true;
+            }
+
+            Vector3 proximalDir = (index2.position - index1.position).normalized;
+            Vector3 medialDistalDir = (indexTip.position - index2.position).normalized;
+
+            float angularDifference = Vector3.Dot(proximalDir, medialDistalDir);
+            return angularDifference >= _safeReleaseThreshold;
+
         }
+
+        [Obsolete("Disable the component to Cancel any ongoing pinch")]
+        public void Cancel() { }
 
         #region Inject
 
-        public void InjectAllIndexPinchSafeReleaseSelector(IHand hand,
-            bool selectOnRelease,
-            IActiveState indexReleaseSafeguard)
+        public void InjectAllIndexPinchSafeReleaseSelector(IHand hand)
         {
             InjectHand(hand);
-            InjectSelectOnRelease(selectOnRelease);
-            InjectIndexReleaseSafeguard(indexReleaseSafeguard);
         }
+
+
+        [Obsolete("Use " + nameof(SelectOnRelease) + " setter instead.")]
+        public void InjectSelectOnRelease(bool selectOnRelease) { }
 
         public void InjectHand(IHand hand)
         {
@@ -182,16 +192,6 @@ namespace Oculus.Interaction
             Hand = hand;
         }
 
-        public void InjectSelectOnRelease(bool selectOnRelease)
-        {
-            _selectOnRelease = selectOnRelease;
-        }
-
-        public void InjectIndexReleaseSafeguard(IActiveState indexReleaseSafeguard)
-        {
-            _indexReleaseSafeguard = indexReleaseSafeguard as UnityEngine.Object;
-            IndexReleaseSafeguard = indexReleaseSafeguard;
-        }
         #endregion
     }
 }

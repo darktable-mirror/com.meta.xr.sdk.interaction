@@ -25,7 +25,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
 {
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Detection/Shape")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Detection/Shape")]
     public class ShapeRecognizer : ScriptableObject
     {
         [Serializable]

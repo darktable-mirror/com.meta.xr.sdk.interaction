@@ -27,7 +27,7 @@ namespace Oculus.Interaction.HandGrab.Visuals
     /// Holds references to the prefabs for Ghost-Hands, so they can be instantiated
     /// in runtime to represent static poses.
     /// </summary>
-    [CreateAssetMenu(menuName = "Oculus/Interaction/SDK/Pose Authoring/Hand Ghost Provider")]
+    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Authoring/Hand Ghost Provider")]
     public class HandGhostProvider : ScriptableObject
     {
         /// <summary>

@@ -34,7 +34,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         private const string MENU_NAME = MENU_FOLDER +
             "Add Interactor(s) To Controller";
 
-        [MenuItem(MENU_NAME)]
+        [MenuItem(MENU_NAME, priority = MenuOrder.CONTROLLER_INTERACTORS)]
         private static void OpenWizard()
         {
             ShowWindow<ControllerInteractorWizard>(Selection.gameObjects[0]);
