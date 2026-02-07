@@ -24,10 +24,30 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.DebugTree
 {
+    /// <summary>
+    /// Interface indicating the inheriting type can be represented as a node in a tree-like UI structure for debugging
+    /// and other development purposes.
+    /// </summary>
+    /// <remarks>
+    /// This type is explicitly intended for use alongside <see cref="DebugTreeUI{TLeaf}"/>; for a canonical usage example,
+    /// see <see cref="PoseDetection.Debug.ActiveStateDebugTreeUI"/>.
+    /// </remarks>
+    /// <typeparam name="TLeaf"></typeparam>
     public interface INodeUI<TLeaf>
         where TLeaf : class
     {
+        /// <summary>
+        /// The region in which children of this node within the UI tree should be displayed.
+        /// </summary>
         RectTransform ChildArea { get; }
+
+        /// <summary>
+        /// This method should only be called by the <see cref="DebugTreeUI{TLeaf}"/> which contains this node. Associates the
+        /// provided <paramref name="node"/> with this UI representation for it.
+        /// </summary>
+        /// <param name="node">The node which this INodeUI<TLeaf> should be bound to represent</param>
+        /// <param name="isRoot">Indicates whether or not <paramref name="node"/> is the root node of the tree</param>
+        /// <param name="isDuplicate">Indicates whether <paramref name="node"/> has already been bound to a different INodeUI<TLeaf></param>
         void Bind(ITreeNode<TLeaf> node, bool isRoot, bool isDuplicate);
     }
 

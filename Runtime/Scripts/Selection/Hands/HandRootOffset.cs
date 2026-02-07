@@ -21,6 +21,7 @@
 using Oculus.Interaction.Input;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace Oculus.Interaction

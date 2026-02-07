@@ -20,8 +20,22 @@
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Outdated interface no longer used by the Interaction SDK.
+    /// </summary>
+    /// <remarks>
+    /// This interface will be removed in a future release, and new dependencies should not be take upon it.
+    /// </remarks>
+    [System.Obsolete]
     public interface IControllerDataModifier
     {
+        /// <summary>
+        /// Obsolete method no longer used by the Interaction SDK. Historically, invoking this would alter
+        /// the data represented in <paramref name="controllerDataAsset"/> according to the modification
+        /// encapsulated in the implementing concrete type.
+        /// </summary>
+        /// <param name="controllerDataAsset">The <see cref="ControllerDataAsset"/> in which to modify data</param>
+        /// <param name="handedness">The handedness of <paramref name="controllerDataAsset"/></param>
         void Apply(ControllerDataAsset controllerDataAsset, Handedness handedness);
     }
 }

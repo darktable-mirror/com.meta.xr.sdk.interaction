@@ -105,17 +105,21 @@ namespace Oculus.Interaction.Input
 
         protected virtual void Awake()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             HandVisual = _handVisual as IHandVisual;
+#pragma warning restore CS0618 // Type or member is obsolete
             Hand = _hand as IHand;
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
+#pragma warning disable CS0618 // Type or member is obsolete
             if (Hand == null && HandVisual != null)
             {
                 Hand = HandVisual.Hand;
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             this.AssertField(Hand, nameof(Hand));
             this.AssertField(_jointsRadiusFeature, nameof(_jointsRadiusFeature));
             this.EndStart(ref _started);

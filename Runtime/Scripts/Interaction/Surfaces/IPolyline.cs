@@ -23,17 +23,23 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Defines an sequence of points in 3D space
+    /// Defines a sequence of connected points in 3D space that form a polyline shape.
+    /// This interface is commonly used for defining paths, boundaries, or trajectories
+    /// in spatial interactions and surface definitions.
     /// </summary>
+    /// <remarks>
+    /// See <see cref="Oculus.Interaction.TransformsPolyline"/> and <see cref="Oculus.Interaction.Locomotion.TeleportArcGravity"/> for example implementations.
+    /// </remarks>
     public interface IPolyline
     {
         /// <summary>
-        /// Max number of points that define the polyline
+        /// Max number of points that define the <see cref="IPolyline"/>.
         /// </summary>
+        /// <returns>The number of points in the polyline sequence.</returns>
         int PointsCount { get; }
 
         /// <summary>
-        /// Calculates the position N vertex of the polyline
+        /// Calculates the position N vertex of the <see cref="IPolyline"/>.
         /// </summary>
         /// <param name="index">The N vertex of the polyline been queried.</param>
         /// <returns>The position of the polyline at the index-th point</returns>

@@ -55,19 +55,6 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// When the aiming transform points too far up or down (based on this value)
-        /// the final forward direction will be slerped between the aiming.forward and
-        /// the aiming.up or .down to ensure that the final forward is stable.
-        /// </summary>
-        [SerializeField]
-        private Vector2 _dotSafeDirectionThreshold = new Vector2(0.8f, 0.9f);
-        public Vector2 DotSafeDirectionThreshold
-        {
-            get => _dotSafeDirectionThreshold;
-            set => _dotSafeDirectionThreshold = value;
-        }
-
-        /// <summary>
         /// Deadzone applied to the vertical axis
         /// </summary>
         [SerializeField, Optional]
@@ -87,7 +74,6 @@ namespace Oculus.Interaction.Locomotion
         {
             get => _horizontalDeadZone;
             set => _horizontalDeadZone = value;
-
         }
 
         private Action<LocomotionEvent> _whenLocomotionPerformed = delegate { };
@@ -124,12 +110,13 @@ namespace Oculus.Interaction.Locomotion
         protected virtual void Update()
         {
             Vector2 axis = ProcessAxisSensitivity();
-            Vector3 step = StepDirection(axis);
+            Pose step = StepDirection(new Vector3(axis.x, 0f, axis.y));
 
-            if (!Mathf.Approximately(step.sqrMagnitude, 0f))
+            if (!Mathf.Approximately(step.position.sqrMagnitude, 0f))
             {
-                var locomotionEvent = new LocomotionEvent(this.Identifier,
-                    step, LocomotionEvent.TranslationType.Velocity);
+                var locomotionEvent = new LocomotionEvent(this.Identifier, step,
+                    LocomotionEvent.TranslationType.Velocity,
+                    LocomotionEvent.RotationType.None);
                 _whenLocomotionPerformed.Invoke(locomotionEvent);
             }
         }
@@ -148,30 +135,18 @@ namespace Oculus.Interaction.Locomotion
             return value;
         }
 
-        private Vector3 StepDirection(Vector2 axisValue)
+        private Pose StepDirection(Vector3 axisValue)
         {
             if (_aiming == null)
             {
-                return new Vector3(axisValue.x, 0f, axisValue.y);
+                return new Pose(axisValue, Quaternion.identity);
             }
 
-            Vector3 forward = _aiming.forward;
-            Vector3 up = Vector3.up;
-            float dot = Vector3.Dot(forward, up);
+            Vector3 step = _aiming.right * axisValue.x
+                + _aiming.up * axisValue.y
+                + _aiming.forward * axisValue.z;
 
-            if (Mathf.Abs(dot) > _dotSafeDirectionThreshold.x)
-            {
-                Vector3 safeForward = _aiming.up * -Mathf.Sign(dot);
-                float t = Mathf.InverseLerp(_dotSafeDirectionThreshold.x, _dotSafeDirectionThreshold.y, Mathf.Abs(dot));
-                forward = Vector3.Slerp(forward, safeForward, t);
-            }
-
-            Vector2 normalisedAxis = axisValue.normalized;
-            float angle = Mathf.Atan2(normalisedAxis.y, -normalisedAxis.x) * Mathf.Rad2Deg - 90f;
-            Vector3 worldForward = Vector3.ProjectOnPlane(forward, up).normalized;
-            Vector3 direction = Quaternion.AngleAxis(angle, up) * worldForward * axisValue.magnitude;
-
-            return direction;
+            return new Pose(step, _aiming.rotation);
         }
 
         #region Inject

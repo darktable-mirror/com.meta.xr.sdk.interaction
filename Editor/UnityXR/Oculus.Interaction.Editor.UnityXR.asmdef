@@ -7,7 +7,8 @@
         "Unity.XR.Management",
         "Unity.XR.CoreUtils",
         "Unity.XR.Hands",
-        "Oculus.Interaction.Editor"
+        "Oculus.Interaction.Editor",
+        "Oculus.Interaction.UnityXR"
     ],
     "includePlatforms": [
         "Editor"

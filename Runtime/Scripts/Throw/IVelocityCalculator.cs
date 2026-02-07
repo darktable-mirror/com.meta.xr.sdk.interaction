@@ -80,20 +80,47 @@ namespace Oculus.Interaction.Throw
     }
 
     /// <summary>
-    /// Interface to velocity calculator used to make throwing
-    /// possible.
+    /// Defines a velocity calculation system for throwing mechanics in the Interaction SDK.
+    /// This interface provides methods and events for calculating, tracking, and notifying about throw velocities,
+    /// particularly useful for implementing realistic throwing behaviors for virtual objects.
     /// </summary>
+    /// <remarks>
+    /// This interface extends <see cref="IThrowVelocityCalculator"/> and adds additional functionality for:
+    /// <list type="bullet">
+    /// <item><description>Real-time velocity updates and notifications</description></item>
+    /// <item><description>Historical velocity tracking</description></item>
+    /// <item><description>Configurable update frequency for velocity calculations</description></item>
+    /// </list>
+    /// Note: This interface is marked as obsolete. Use <see cref="IThrowVelocityCalculator"/> directly instead.
+    /// </remarks>
     [Obsolete("Use " + nameof(IThrowVelocityCalculator) + " directly instead")]
     public interface IVelocityCalculator : IThrowVelocityCalculator
     {
+        /// <summary>
+        /// Gets the frequency at which the velocity calculations are updated. The frequency is calculated in updates per second.
+        /// </summary>
         float UpdateFrequency { get; }
 
+        /// <summary>
+        /// Event triggered when the throw velocities are recalculated, providing a list of all current <see cref="ReleaseVelocityInformation"/>.
+        /// </summary>
         event Action<List<ReleaseVelocityInformation>> WhenThrowVelocitiesChanged;
 
+        /// <summary>
+        /// Event triggered when a new velocity sample becomes available. This is used for real-time velocity updates.
+        /// </summary>
         event Action<ReleaseVelocityInformation> WhenNewSampleAvailable;
 
+        /// <summary>
+        /// Retrieves the most recently calculated <see cref="ReleaseVelocityInformation"/>.
+        /// </summary>
+        /// <returns>A read-only list of velocity information from the last calculation.</returns>
         IReadOnlyList<ReleaseVelocityInformation> LastThrowVelocities();
 
+        /// <summary>
+        /// Configures the frequency at which velocity calculations are updated.
+        /// </summary>
+        /// <param name="frequency">The desired update frequency in updates per second.</param>
         void SetUpdateFrequency(float frequency);
     }
 }

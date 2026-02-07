@@ -28,13 +28,24 @@ namespace Oculus.Interaction.Hands.Editor
     [CustomEditor(typeof(FromHandPrefabDataSource))]
     public class FromHandPrefabDataSourceEditor : UnityEditor.Editor
     {
+        private SerializedProperty _jointsProperty;
+
+        protected virtual void OnEnable()
+        {
+#if ISDK_OPENXR_HAND
+            _jointsProperty = serializedObject.FindProperty("_jointTransformsOpenXR");
+#else
+            _jointsProperty = serializedObject.FindProperty("_jointTransforms");
+#endif
+        }
+
         public override void OnInspectorGUI()
         {
             DrawPropertiesExcluding(serializedObject);
             serializedObject.ApplyModifiedProperties();
 
             FromHandPrefabDataSource source = (FromHandPrefabDataSource)target;
-            InitializeSkeleton(source);
+            HandJointsAutoPopulatorHelper.InitializeCollection(_jointsProperty);
 
             if (GUILayout.Button("Auto Map Joints"))
             {
@@ -43,24 +54,14 @@ namespace Oculus.Interaction.Hands.Editor
                 EditorSceneManager.MarkSceneDirty(source.gameObject.scene);
             }
 
-            EditorGUILayout.LabelField("Joints", EditorStyles.boldLabel);
-            for (int i = (int)HandJointId.HandStart; i < (int)HandJointId.HandEnd; ++i)
-            {
-                string jointName = ((HandJointId)i).ToString();
-                source.JointTransforms[i] = (Transform)EditorGUILayout.ObjectField(jointName,
-                    source.JointTransforms[i], typeof(Transform), true);
-            }
-        }
-
-        private void InitializeSkeleton(FromHandPrefabDataSource source)
-        {
-            HandJointsAutoPopulatorHelper.InitializeCollection(source.JointTransforms);
+            HandJointsAutoPopulatorHelper.DisplayJoints(_jointsProperty);
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void AutoMapJoints(FromHandPrefabDataSource source)
         {
             Transform rootTransform = source.transform;
-            HandJointsAutoPopulatorHelper.AutoMapJoints(source.JointTransforms, rootTransform);
+            HandJointsAutoPopulatorHelper.AutoMapJoints(_jointsProperty, rootTransform);
         }
 
     }

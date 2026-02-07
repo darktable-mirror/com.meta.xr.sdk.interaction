@@ -633,6 +633,16 @@ namespace Oculus.Interaction
             return SurfacePatch.BackingSurface.ClosestSurfacePoint(point, out hit);
         }
 
+        private void Reset()
+        {
+            _minThresholds.Enabled = false;
+            _dragThresholds.Enabled = false;
+            _positionPinning.Enabled = true;
+            _recoilAssist.Enabled = true;
+            _recoilAssist.UseVelocityExpansion = true;
+            _recoilAssist.UseDynamicDecay = true;
+        }
+
         #region Inject
 
         /// <summary>

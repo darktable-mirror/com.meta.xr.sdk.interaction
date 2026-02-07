@@ -63,6 +63,7 @@ namespace Oculus.Interaction.Locomotion
     /// When moving using Translation.Velocity or Translation.Relative, if a collision against a wall is registered, the capsule will try to rebound
     /// and slide along it using _maxReboundSteps iterations.
     /// </summary>
+    [Obsolete("Use " + nameof(FirstPersonLocomotor) + " instead")]
     public class CapsuleLocomotionHandler : MonoBehaviour,
         ILocomotionEventHandler, IDeltaTimeConsumer
     {
@@ -433,6 +434,8 @@ namespace Oculus.Interaction.Locomotion
         //Percentile 50 averaged between Male and Female
         private const float _sellionToBackOfHeadHalf = 0.0965f;
 
+        private const float _cornerHitEpsilon = 0.001f;
+
         private Queue<LocomotionEvent> _deferredLocomotionEvent = new Queue<LocomotionEvent>();
         private YieldInstruction _endOfFrame = new WaitForEndOfFrame();
         private Coroutine _endOfFrameRoutine = null;
@@ -768,25 +771,31 @@ namespace Oculus.Interaction.Locomotion
             }
             return false;
         }
-
         private void UpdateCharacterHeight()
         {
-            float characterHeight = _capsule.height + _skinWidth * 2f;
-            float playerHeight = ControllingPlayer && _autoUpdateHeight ?
-                GetPlayerHeadTop().y - _playerOrigin.position.y : _defaultHeight;
-            float extraHeight = (_isCrouching ? _crouchHeightOffset : 0f) + _heightOffset;
-            float desiredHeight = Mathf.Max(playerHeight + extraHeight, _capsule.radius * 2f + _skinWidth * 2f);
+            float characterHeight = _capsule.height;
+            float playerHeight = _heightOffset
+                + (_isCrouching ? _crouchHeightOffset : 0f)
+                + (ControllingPlayer && _autoUpdateHeight ?
+                    GetPlayerHeadTop().y - _playerOrigin.position.y : _defaultHeight);
 
-            if (desiredHeight > _capsule.height
-                && CheckMoveCharacter(Vector3.up * (desiredHeight - characterHeight), out Vector3 movement))
+            float deltaThreshold = _skinWidth;
+            float desiredHeight = Mathf.Max(playerHeight, _capsule.radius * 2f);
+            float heightDelta = desiredHeight - characterHeight;
+
+            if (heightDelta > deltaThreshold
+                && CheckMoveCharacter(Vector3.up * heightDelta, out Vector3 movement))
             {
-                desiredHeight = characterHeight + movement.y;
+                heightDelta = Mathf.Max(0f, movement.y - _skinWidth);
             }
 
-            Vector3 capsulePosition = _capsule.transform.position;
-            capsulePosition.y += (desiredHeight - characterHeight) * 0.5f;
-            _capsule.transform.position = capsulePosition;
-            _capsule.height = desiredHeight - _skinWidth * 2f;
+            if (Mathf.Abs(heightDelta) <= deltaThreshold)
+            {
+                return;
+            }
+
+            _capsule.height = characterHeight + heightDelta;
+            _capsule.transform.position += Vector3.up * heightDelta * 0.5f;
         }
 
         private void CatchUpCharacterToPlayer()
@@ -893,9 +902,9 @@ namespace Oculus.Interaction.Locomotion
             Vector3 originalFlatDelta = Vector3.ProjectOnPlane(delta, Vector3.up);
             return ReboundRecursive(capsuleBase, capsuleTop, _capsule.radius, delta, originalFlatDelta, bounces);
 
-            Vector3 ReboundRecursive(Vector3 capsuleBase, Vector3 capsuleTop, float radius, Vector3 delta, Vector3 originalFlatDelta, int step)
+            Vector3 ReboundRecursive(Vector3 capsuleBase, Vector3 capsuleTop, float radius, Vector3 delta, Vector3 originalFlatDelta, int bounceStep)
             {
-                if (step <= 0
+                if (bounceStep <= 0
                     || Mathf.Approximately(delta.sqrMagnitude, 0f))
                 {
                     return Vector3.zero;
@@ -911,7 +920,7 @@ namespace Oculus.Interaction.Locomotion
                 //check if we collided against a wall
                 if (MoveCapsuleCollides(capsuleBase, capsuleTop, radius, delta, out moveHit))
                 {
-                    (delta, extraDelta) = DecomposeDelta(capsuleBase, capsuleTop, radius, delta, moveHit.Value);
+                    (delta, extraDelta) = DecomposeDelta(delta, moveHit.Value);
                 }
 
                 capsuleBase += delta;
@@ -924,37 +933,32 @@ namespace Oculus.Interaction.Locomotion
                     //early exit if the hitpoint is already too high
                     && moveHit.Value.point.y - (capsuleBase.y - radius - _skinWidth) <= _maxStep)
                 {
-                    Vector3 stepMovement = extraDelta;
-                    bool stepClimbed = ClimbStep(capsuleBase, capsuleTop, radius, stepMovement,
+                    bool stepClimbed = ClimbStep(capsuleBase, capsuleTop, radius, extraDelta,
                         out Vector3 climbDelta, out stepHit);
                     if (stepClimbed)
                     {
-                        delta = climbDelta;
                         if (stepHit.HasValue)
                         {
-                            (_, extraDelta) = DecomposeDelta(capsuleBase, capsuleTop, radius, stepMovement, stepHit.Value);
+                            (_, extraDelta) = DecomposeDelta(extraDelta, stepHit.Value);
+                            extraDelta = SlideDelta(extraDelta, originalFlatDelta, stepHit.Value);
                         }
                         else
                         {
                             extraDelta = Vector3.zero;
                         }
 
-                        capsuleBase += delta;
-                        capsuleTop += delta;
-                        accumulatedDelta += delta;
+                        capsuleBase += climbDelta;
+                        capsuleTop += climbDelta;
+                        accumulatedDelta += climbDelta;
                     }
                 }
 
-                if (stepHit.HasValue)
-                {
-                    extraDelta = SlideDelta(extraDelta, originalFlatDelta, stepHit.Value);
-                }
-                else if (moveHit.HasValue)
+                if (moveHit.HasValue && !stepHit.HasValue)
                 {
                     extraDelta = SlideDelta(extraDelta, originalFlatDelta, moveHit.Value);
                 }
 
-                return accumulatedDelta + ReboundRecursive(capsuleBase, capsuleTop, radius, extraDelta, originalFlatDelta, step - 1);
+                return accumulatedDelta + ReboundRecursive(capsuleBase, capsuleTop, radius, extraDelta, originalFlatDelta, bounceStep - 1);
             }
         }
 
@@ -963,12 +967,32 @@ namespace Oculus.Interaction.Locomotion
             stepHit = null;
             climbDelta = Vector3.zero;
 
-            //first we move the capsule forward but with the base floating the _maxStep amount
-            Vector3 capsuleMaxStepBase = capsuleBase + Vector3.up * Mathf.Min(_maxStep, capsuleTop.y - capsuleBase.y);
-            if (MoveCapsuleCollides(capsuleMaxStepBase, capsuleTop, radius, delta, out RaycastHit? hit))
+            float baseOffset = Mathf.Min(_maxStep, capsuleTop.y - capsuleBase.y);
+            float topOffset = Mathf.Max(0f, _maxStep - baseOffset);
+            Vector3 capsuleMaxStepBase = capsuleBase + Vector3.up * baseOffset;
+            Vector3 capsuleMaxStepTop = capsuleTop + Vector3.up * topOffset;
+
+            //then move the capsule forward but with the base floating the _maxStep amount
+            if (MoveCapsuleCollides(capsuleMaxStepBase, capsuleMaxStepTop, radius, delta, out RaycastHit? hit))
             {
                 stepHit = hit;
-                (delta, _) = DecomposeDelta(capsuleBase, capsuleTop, radius, delta, hit.Value);
+                //check if we hit one of the caps
+                //if so, correct the surface normal in case it is a corner
+                Vector3 capsuleDir = capsuleTop - capsuleBase;
+                if (Mathf.Approximately(capsuleDir.sqrMagnitude, 0f)
+                    || Mathf.Abs(Vector3.Dot(hit.Value.normal, capsuleDir.normalized)) > _cornerHitEpsilon)
+                {
+                    Vector3 rayDir = -hit.Value.normal;
+                    Ray cornerRay = new Ray(hit.Value.point - rayDir * hit.Value.distance, rayDir);
+                    if (hit.Value.collider.Raycast(cornerRay, out RaycastHit capHit, hit.Value.distance + _cornerHitEpsilon))
+                    {
+                        //replace only hit, not stephit, for correcting the delta
+                        //but not overriding the capsule normal
+                        hit = capHit;
+                    }
+                }
+
+                (delta, _) = DecomposeDelta(delta, hit.Value);
             }
 
             //then we try to grow the base back to its original height to check for the ground
@@ -979,13 +1003,21 @@ namespace Oculus.Interaction.Locomotion
             {
                 bool hitBase = RaycastSphere(stepDownHit.point, Vector3.up,
                     capsuleMaxStepBase + delta, radius + _skinWidth,
-                    out float verticalDelta);
+                    out float verticalDistance);
 
                 if (hitBase
                     && stepDownHit.point.y - (capsuleBase.y - radius) <= _maxStep
                     && IsFlat(stepDownHit.normal))
                 {
-                    delta.y = Mathf.Max(delta.y, _maxStep - verticalDelta);
+                    delta.y = Mathf.Max(delta.y, baseOffset - verticalDistance);
+                    //now that we know the size of the step, we must also check that the capsule
+                    //can move up that amount before going forward
+                    Vector3 stepUp = Vector3.up * delta.y;
+                    if (MoveCapsuleCollides(capsuleBase, capsuleTop, radius, stepUp, out _))
+                    {
+                        return false;
+                    }
+
                     climbDelta = delta;
                     return true;
                 }
@@ -1002,7 +1034,7 @@ namespace Oculus.Interaction.Locomotion
             float radius = _capsule.radius;
             if (MoveCapsuleCollides(capsuleBase, capsuleTop, radius, delta, out RaycastHit? hit))
             {
-                (delta, _) = DecomposeDelta(capsuleBase, capsuleTop, radius, delta, hit.Value);
+                (delta, _) = DecomposeDelta(delta, hit.Value);
                 movement = delta;
                 return true;
             }
@@ -1012,21 +1044,25 @@ namespace Oculus.Interaction.Locomotion
 
         private bool MoveCapsuleCollides(Vector3 capsuleBase, Vector3 capsuleTop, float radius, Vector3 delta, out RaycastHit? moveHit)
         {
-            float magnitude = delta.sqrMagnitude < _skinWidth * _skinWidth ? _skinWidth : delta.magnitude;
+            float sqrMagnitude = delta.sqrMagnitude;
+            if (Mathf.Approximately(sqrMagnitude, 0f))
+            {
+                moveHit = null;
+                return false;
+            }
+
+            float magnitude = sqrMagnitude < _skinWidth * _skinWidth ? _skinWidth : Mathf.Sqrt(sqrMagnitude);
             bool collided = Physics.CapsuleCast(capsuleBase, capsuleTop, radius, delta.normalized,
                        out RaycastHit hit, magnitude, _layerMask.value, QueryTriggerInteraction.Ignore);
             moveHit = collided ? hit : null;
             return collided;
         }
 
-        private (Vector3, Vector3) DecomposeDelta(Vector3 capsuleBase, Vector3 capsuleTop, float radius, Vector3 delta, RaycastHit hit)
+        private (Vector3, Vector3) DecomposeDelta(Vector3 delta, RaycastHit hit)
         {
-            Vector3 freeDelta = Vector3.zero;
-            if (hit.distance > _skinWidth
-                && RaycastCapsule(hit.point, -delta.normalized, capsuleBase, capsuleTop, radius, out float distance))
-            {
-                freeDelta = delta.normalized * Mathf.Max(0f, distance - _skinWidth);
-            }
+            Vector3 deltaDir = delta.normalized;
+            float projectedSkin = Mathf.Max(0f, Vector3.Dot(deltaDir, -hit.normal)) * _skinWidth;
+            Vector3 freeDelta = deltaDir * Mathf.Max(0f, hit.distance - projectedSkin);
             Vector3 remainingDelta = delta - freeDelta;
             return (freeDelta, remainingDelta);
         }
@@ -1041,17 +1077,17 @@ namespace Oculus.Interaction.Locomotion
                 hitNormal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
             }
 
-            Vector3 flatRemainingDelta = Vector3.ProjectOnPlane(delta, Vector3.up);
-            Vector3 verticalRemainingDelta = Vector3.up * delta.y;
-
-            flatRemainingDelta = Vector3.ProjectOnPlane(flatRemainingDelta, hitNormal);
-            verticalRemainingDelta = Vector3.ProjectOnPlane(verticalRemainingDelta, hit.normal);
-            if (Vector3.Dot(flatRemainingDelta, originalFlatDelta) <= 0)
+            Vector3 flatDelta = Vector3.ProjectOnPlane(delta, Vector3.up);
+            flatDelta = Vector3.ProjectOnPlane(flatDelta, hitNormal);
+            if (Vector3.Dot(flatDelta, originalFlatDelta) <= 0)
             {
-                flatRemainingDelta = Vector3.zero;
+                flatDelta = Vector3.zero;
             }
 
-            return flatRemainingDelta + verticalRemainingDelta;
+            Vector3 verticalDelta = Vector3.up * delta.y;
+            verticalDelta = Vector3.ProjectOnPlane(verticalDelta, hit.normal);
+
+            return flatDelta + verticalDelta;
         }
 
         private bool IsFlat(Vector3 groundNormal)
@@ -1205,78 +1241,6 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Capsule Physics
-
-        private static bool RaycastCapsule(Vector3 origin, Vector3 direction, Vector3 start, Vector3 end, float radius, out float distance)
-        {
-            distance = float.PositiveInfinity;
-            bool hit = false;
-
-            if (RaycastCylinder(origin, direction, start, end, radius, out distance))
-            {
-                hit = true;
-            }
-            if (RaycastSphere(origin, direction, start, radius, out float distanceSphere1))
-            {
-                distance = Math.Min(distance, distanceSphere1);
-                hit = true;
-            }
-            if (RaycastSphere(origin, direction, end, radius, out float distanceSphere2))
-            {
-                distance = Math.Min(distance, distanceSphere2);
-                hit = true;
-            }
-
-            return hit;
-        }
-
-        private static bool RaycastCylinder(Vector3 origin, Vector3 direction, Vector3 start, Vector3 end, float radius,
-            out float distance)
-        {
-            distance = float.PositiveInfinity;
-            Vector3 d = end - start;
-            Vector3 m = origin - start;
-            Vector3 n = origin - end;
-            float md = Vector3.Dot(m, d);
-            float nd = Vector3.Dot(n, d);
-            float dd = Vector3.Dot(d, d);
-
-            if (md < 0f && md + nd < 0f)
-            {
-                return false;
-            }
-            if (md > dd && md + nd > dd)
-            {
-                return false;
-            }
-
-            Vector3 dirCrossD = Vector3.Cross(direction, d);
-            Vector3 mCrossD = Vector3.Cross(m, d);
-            float a = Vector3.Dot(dirCrossD, dirCrossD);
-            float b = 2f * Vector3.Dot(dirCrossD, mCrossD);
-            float c = Vector3.Dot(mCrossD, mCrossD) - radius * radius * dd;
-
-            if (Mathf.Approximately(a, 0f))
-            {
-                if (c > 0f)
-                {
-                    return false;
-                }
-                distance = 0f;
-                return true;
-            }
-
-            float discriminant = b * b - 4f * a * c;
-            if (discriminant < 0f)
-            {
-                return false;
-            }
-
-            float sqrtDiscriminant = (float)Math.Sqrt(discriminant);
-            float distance1 = (-b - sqrtDiscriminant) / (2f * a);
-            float distance2 = (-b + sqrtDiscriminant) / (2f * a);
-            distance = distance1 < distance2 ? distance1 : distance2;
-            return true;
-        }
 
         private static bool RaycastSphere(Vector3 origin, Vector3 direction, Vector3 sphereCenter, float radius, out float distance)
         {

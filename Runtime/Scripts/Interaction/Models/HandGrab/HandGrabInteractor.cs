@@ -139,7 +139,9 @@ namespace Oculus.Interaction.HandGrab
         /// Determines how the object will move when thrown.
         /// </summary>
         [Tooltip("Determines how the object will move when thrown.")]
+#pragma warning disable CS0618 // Type or member is obsolete
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
+#pragma warning restore CS0618 // Type or member is obsolete
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         private UnityEngine.Object _velocityCalculator;
 
@@ -267,7 +269,9 @@ namespace Oculus.Interaction.HandGrab
         {
             base.Awake();
             Hand = _hand as IHand;
+#pragma warning disable CS0618 // Type or member is obsolete
             VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
+#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4847726162497472;
         }
 
@@ -288,10 +292,12 @@ namespace Oculus.Interaction.HandGrab
 
             this.AssertField(_handGrabApi, nameof(_handGrabApi));
             this.AssertField(Hand, nameof(Hand));
+#pragma warning disable CS0618 // Type or member is obsolete
             if (_velocityCalculator != null)
             {
                 this.AssertField(VelocityCalculator, nameof(VelocityCalculator));
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             this.EndStart(ref _started);
         }
@@ -406,11 +412,13 @@ namespace Oculus.Interaction.HandGrab
             this.Movement = null;
             _currentGrabType = GrabTypeFlags.None;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (VelocityCalculator != null)
             {
                 ReleaseVelocityInformation velocity = VelocityCalculator.CalculateThrowVelocity(interactable.transform);
                 interactable.ApplyVelocities(velocity.LinearVelocity, velocity.AngularVelocity);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected override void HandlePointerEventRaised(PointerEvent evt)

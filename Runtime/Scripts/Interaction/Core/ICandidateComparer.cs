@@ -21,11 +21,39 @@
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// By default, InteractorGroups are prioritized in list-order (first = highest priority). An <cref="ICandidateComparer" /> can prioritize <cref="IInteractor" />s in a different order based on their CandidateProperties.
-    /// For instance, for those IInteractors whose CandidateProperties can be cast to an ICandidatePosition, a CandidatePositionComparer can prioritize IInteractors by their candidates’ position as measured by a distance to a common location.
+    /// Defines a comparison mechanism for prioritizing interactors based on their candidate properties within an InteractorGroup.
+    /// This interface enables custom sorting logic for determining which interactor should take precedence when multiple
+    /// interactors are competing for interaction with the same target.
     /// </summary>
+    /// <remarks>
+    /// This interface is crucial for:
+    /// <list type="bullet">
+    /// <item><description>Implementing distance-based priority systems for interactors</description></item>
+    /// <item><description>Creating custom sorting logic for interaction candidates</description></item>
+    /// <item><description>Managing complex multi-interactor scenarios</description></item>
+    /// </list>
+    /// For implementation examples, see <see cref="Oculus.Interaction.CandidatePositionComparer"/>.
+    /// </remarks>
     public interface ICandidateComparer
     {
+        /// <summary>
+        /// Compares two candidate objects to determine their relative priority.
+        /// </summary>
+        /// <param name="a">The first candidate object to compare</param>
+        /// <param name="b">The second candidate object to compare</param>
+        /// <returns>
+        /// A negative value if a should be prioritized over b,
+        /// zero if they have equal priority,
+        /// or a positive value if b should be prioritized over a
+        /// </returns>
+        /// <remarks>
+        /// The implementation should be consistent with the standard comparison contract:
+        /// <list type="bullet">
+        /// <item><description>If Compare(x,y) returns negative, then Compare(y,x) should return positive</description></item>
+        /// <item><description>If Compare(x,y) returns zero, then Compare(y,x) should return zero</description></item>
+        /// <item><description>If Compare(x,y) returns positive, then Compare(y,x) should return negative</description></item>
+        /// </list>
+        /// </remarks>
         int Compare(object a, object b);
     }
 }

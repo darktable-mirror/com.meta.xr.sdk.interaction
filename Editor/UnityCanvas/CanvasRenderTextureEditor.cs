@@ -224,7 +224,9 @@ namespace Oculus.Interaction.UnityCanvas.Editor
 
         private bool AutoFixAnyCamerasRenderingTargetLayers()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var cameras = FindObjectsOfType<Camera>();
+#pragma warning restore CS0618 // Type or member is obsolete
             foreach (var camera in cameras)
             {
                 //Ignore the special camera we create to render to the overlay
@@ -244,7 +246,9 @@ namespace Oculus.Interaction.UnityCanvas.Editor
 
         private void AutoFixRemoveRenderingMaskFromCameras()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var cameras = FindObjectsOfType<Camera>();
+#pragma warning restore CS0618 // Type or member is obsolete
             foreach (var camera in cameras)
             {
                 Undo.RecordObject(camera, "Set Camera Culling Mask");

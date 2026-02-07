@@ -103,7 +103,7 @@ namespace Oculus.Interaction.Utils
 
                 if (curve.length > 0)
                 {
-                    if (curve.keys[0].time != min)
+                    if (curve.keys[0].time > min)
                     {
                         curve.AddKey(new Keyframe(min, minValue));
                     }
@@ -126,81 +126,85 @@ namespace Oculus.Interaction.Utils
             }
         }
 
-        public static AnimationClip Mirror(AnimationClip clip, string leftPrefix, string rightPrefix, bool skipRoot)
+        public static AnimationClip Mirror(AnimationClip clip,
+            IList<Transform> joints, Transform root, HandFingerJointFlags maskHandJointIds,
+            Handedness fromHandedness, string leftPrefix, string rightPrefix, bool includePosition)
         {
-            string basePrefix;
-            string mirrorPrefix;
-            if (TryGetClipHandedness(clip, leftPrefix, rightPrefix, out Handedness handedness))
-            {
-                basePrefix = handedness == Handedness.Left ? leftPrefix : rightPrefix;
-                mirrorPrefix = handedness == Handedness.Left ? rightPrefix : leftPrefix;
-            }
-            else
-            {
-                Debug.LogError("Could not identify the handedness of the clip." +
-                    "Ensure there is an AnimationClip linked and that it matches the handedness prefixes");
-                return null;
-            }
-
-
             AnimationClip mirrorClip = new AnimationClip();
             mirrorClip.frameRate = clip.frameRate;
+
+            string fromPrefix = fromHandedness == Handedness.Left ? leftPrefix : rightPrefix;
+            string toPrefix = fromHandedness == Handedness.Left ? rightPrefix : leftPrefix;
+            var fromHandSpace = fromHandedness == Handedness.Left ?
+                HandMirroring.LeftHandSpace : HandMirroring.RightHandSpace;
+            var toHandSpace = fromHandedness == Handedness.Left ?
+               HandMirroring.RightHandSpace : HandMirroring.LeftHandSpace;
 
             EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(clip);
             foreach (EditorCurveBinding curveBinding in curveBindings)
             {
-                if (!skipRoot && curveBinding.path == "")
-                {
-                    continue;
-                }
-
-                string mirrorPath = curveBinding.path.Replace(basePrefix, mirrorPrefix);
+                string path = curveBinding.path;
+                string mirrorPath = path.Replace(fromPrefix, toPrefix);
                 AnimationCurve curve = AnimationUtility.GetEditorCurve(clip, curveBinding);
                 mirrorClip.SetCurve(mirrorPath, curveBinding.type, curveBinding.propertyName, curve);
             }
 
-            if (skipRoot)
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandEnd; jointId++)
             {
-                return mirrorClip;
+                if (((int)maskHandJointIds & (1 << (int)jointId)) == 0)
+                {
+                    continue;
+                }
+
+                string path = GetGameObjectPath(joints[(int)jointId], root);
+                JointRecord mirroredRecord = new JointRecord(jointId, path);
+
+                EditorCurveBinding bindingEulerX = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{localEulerKey}x"));
+                EditorCurveBinding bindingEulerY = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{localEulerKey}y"));
+                EditorCurveBinding bindingEulerZ = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{localEulerKey}z"));
+
+                AnimationCurve curveEulerX = AnimationUtility.GetEditorCurve(clip, bindingEulerX);
+                AnimationCurve curveEulerY = AnimationUtility.GetEditorCurve(clip, bindingEulerY);
+                AnimationCurve curveEulerZ = AnimationUtility.GetEditorCurve(clip, bindingEulerZ);
+
+                AnimationCurve curvePositionX = null;
+                AnimationCurve curvePositionY = null;
+                AnimationCurve curvePositionZ = null;
+                if (includePosition)
+                {
+                    EditorCurveBinding bindingPositionX = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{positionKey}x"));
+                    EditorCurveBinding bindingPositionY = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{positionKey}y"));
+                    EditorCurveBinding bindingPositionZ = curveBindings.First(cb => cb.path == path && cb.propertyName.StartsWith($"{positionKey}z"));
+                    curvePositionX = AnimationUtility.GetEditorCurve(clip, bindingPositionX);
+                    curvePositionY = AnimationUtility.GetEditorCurve(clip, bindingPositionY);
+                    curvePositionZ = AnimationUtility.GetEditorCurve(clip, bindingPositionZ);
+                }
+
+                for (float time = 0; time <= clip.length; time += 1f / clip.frameRate)
+                {
+                    Quaternion rotation = Quaternion.Euler(
+                            curveEulerX.Evaluate(time),
+                            curveEulerY.Evaluate(time),
+                            curveEulerZ.Evaluate(time));
+                    Quaternion rotationMirrored = HandMirroring.TransformRotation(rotation,
+                        fromHandSpace, toHandSpace);
+
+                    Vector3 positionMirrored = Vector3.zero;
+                    if (includePosition)
+                    {
+                        Vector3 position = new Vector3(
+                            curvePositionX.Evaluate(time),
+                            curvePositionY.Evaluate(time),
+                            curvePositionZ.Evaluate(time));
+                        positionMirrored = HandMirroring.TransformPosition(position,
+                            fromHandSpace, toHandSpace);
+                    }
+
+                    Pose mirroredPose = new Pose(positionMirrored, rotationMirrored);
+                    mirroredRecord.RecordPose(time, mirroredPose);
+                }
+                WriteAnimationCurves(ref mirrorClip, mirroredRecord, includePosition);
             }
-
-            EditorCurveBinding bindingEulerX = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{localEulerKey}x"));
-            EditorCurveBinding bindingEulerY = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{localEulerKey}y"));
-            EditorCurveBinding bindingEulerZ = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{localEulerKey}z"));
-
-            EditorCurveBinding bindingPositionX = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{positionKey}x"));
-            EditorCurveBinding bindingPositionY = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{positionKey}y"));
-            EditorCurveBinding bindingPositionZ = curveBindings.First(cb => cb.path == "" && cb.propertyName.StartsWith($"{positionKey}z"));
-
-            AnimationCurve curveEulerX = AnimationUtility.GetEditorCurve(clip, bindingEulerX);
-            AnimationCurve curveEulerY = AnimationUtility.GetEditorCurve(clip, bindingEulerY);
-            AnimationCurve curveEulerZ = AnimationUtility.GetEditorCurve(clip, bindingEulerZ);
-
-            AnimationCurve curvePositionX = AnimationUtility.GetEditorCurve(clip, bindingPositionX);
-            AnimationCurve curvePositionY = AnimationUtility.GetEditorCurve(clip, bindingPositionY);
-            AnimationCurve curvePositionZ = AnimationUtility.GetEditorCurve(clip, bindingPositionZ);
-
-            Quaternion rotationOffset = Quaternion.Euler(180f, 0f, 0f);
-
-            JointRecord rootMirroredRecord = new JointRecord(HandJointId.Invalid, "");
-
-            for (float time = 0; time <= clip.length; time += 1f / clip.frameRate)
-            {
-                Quaternion rotation =
-                    rotationOffset *
-                    Quaternion.Euler(
-                        curveEulerX.Evaluate(time),
-                        curveEulerY.Evaluate(time),
-                        curveEulerZ.Evaluate(time));
-                Vector3 position = new Vector3(
-                        curvePositionX.Evaluate(time),
-                        curvePositionY.Evaluate(time),
-                        curvePositionZ.Evaluate(time));
-
-                rootMirroredRecord.RecordPose(time, new Pose(position, rotation));
-            }
-
-            WriteAnimationCurves(ref mirrorClip, rootMirroredRecord, true);
 
             return mirrorClip;
         }

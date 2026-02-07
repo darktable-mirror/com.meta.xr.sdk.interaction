@@ -67,6 +67,7 @@ namespace Oculus.Interaction
         private Tween _tween;
         private bool _outsideReleaseDist = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         /// <summary>
         /// Determines how the object will move when thrown.
         /// </summary>
@@ -76,6 +77,7 @@ namespace Oculus.Interaction
         private UnityEngine.Object _velocityCalculator;
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private GrabInteractable _selectedInteractableOverride;
         private bool _isSelectionOverriden = false;
@@ -84,7 +86,9 @@ namespace Oculus.Interaction
         {
             base.Awake();
             Selector = _selector as ISelector;
+#pragma warning disable CS0618 // Type or member is obsolete
             VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
+#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4772616249746f72;
         }
 
@@ -115,10 +119,12 @@ namespace Oculus.Interaction
                 _grabTarget = _grabCenter;
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (_velocityCalculator != null)
             {
                 this.AssertField(VelocityCalculator, nameof(VelocityCalculator));
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             _tween = new Tween(Pose.identity);
 
@@ -217,10 +223,12 @@ namespace Oculus.Interaction
         {
             base.InteractableUnselected(interactable);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             ReleaseVelocityInformation throwVelocity = VelocityCalculator != null ?
                 VelocityCalculator.CalculateThrowVelocity(interactable.transform) :
                 new ReleaseVelocityInformation(Vector3.zero, Vector3.zero, Vector3.zero);
             interactable.ApplyVelocities(throwVelocity.LinearVelocity, throwVelocity.AngularVelocity);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected override void HandlePointerEventRaised(PointerEvent evt)

@@ -75,6 +75,11 @@ namespace Oculus.Interaction
                 },
             };
 
+        [SerializeField]
+        [Tooltip("If enabled, breaks the \"grab point\" when scale is constrained so that reversing the scale motion " +
+            "immediately scales rather than waiting for the grabs to \"catch up\" to the original grab point.")]
+        private bool _resetScaleResponsivenessOnConstraintOvershoot = false;
+
         private IGrabbable _grabbable;
         private Pose _grabDeltaInLocalSpace;
         private TransformerUtils.PositionConstraints _relativePositionConstraints;
@@ -85,7 +90,7 @@ namespace Oculus.Interaction
 
         private GrabPointDelta[] _deltas;
 
-        private struct GrabPointDelta
+        internal struct GrabPointDelta
         {
             private const float _epsilon = 0.000001f;
 
@@ -145,16 +150,12 @@ namespace Oculus.Interaction
         public void BeginTransform()
         {
             int count = _grabbable.GrabPoints.Count;
-            Vector3 centroid = GetCentroid(_grabbable.GrabPoints);
 
             //rent space only while using
             _deltas = ArrayPool<GrabPointDelta>.Shared.Rent(count);
 
-            for (int i = 0; i < count; i++)
-            {
-                Vector3 centroidOffset = GetCentroidOffset(_grabbable.GrabPoints[i], centroid);
-                _deltas[i] = new GrabPointDelta(centroidOffset, _grabbable.GrabPoints[i].rotation);
-            }
+            InitializeDeltas(count, _grabbable.GrabPoints, ref _deltas);
+            Vector3 centroid = GetCentroid(_grabbable.GrabPoints);
 
             Transform targetTransform = _grabbable.Transform;
             _grabDeltaInLocalSpace = new Pose(
@@ -173,12 +174,16 @@ namespace Oculus.Interaction
             int count = _grabbable.GrabPoints.Count;
             Transform targetTransform = _grabbable.Transform;
 
-            Vector3 localPosition = UpdateTransformerPointData(_grabbable.GrabPoints);
+            Vector3 localPosition = UpdateTransformerPointData(_grabbable.GrabPoints, ref _deltas);
 
-            _lastScale = count <= 1 ? targetTransform.localScale : UpdateScale(count) * _lastScale;
+            _lastScale = count <= 1 ? targetTransform.localScale : UpdateScale(count, _deltas) * _lastScale;
             targetTransform.localScale = TransformerUtils.GetConstrainedTransformScale(_lastScale, _relativeScaleConstraints);
+            if (_resetScaleResponsivenessOnConstraintOvershoot)
+            {
+                _lastScale = targetTransform.localScale;
+            }
 
-            _lastRotation = UpdateRotation(count) * _lastRotation;
+            _lastRotation = UpdateRotation(count, _deltas) * _lastRotation;
             Quaternion rotation = _lastRotation * _grabDeltaInLocalSpace.rotation;
             targetTransform.rotation = TransformerUtils.GetConstrainedTransformRotation(rotation, _rotationConstraints, targetTransform.parent);
 
@@ -197,18 +202,28 @@ namespace Oculus.Interaction
             _deltas = null;
         }
 
-        private Vector3 UpdateTransformerPointData(List<Pose> poses)
+        internal static void InitializeDeltas(int count, List<Pose> poses, ref GrabPointDelta[] deltas)
+        {
+            Vector3 centroid = GetCentroid(poses);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 centroidOffset = GetCentroidOffset(poses[i], centroid);
+                deltas[i] = new GrabPointDelta(centroidOffset, poses[i].rotation);
+            }
+        }
+
+        internal static Vector3 UpdateTransformerPointData(List<Pose> poses, ref GrabPointDelta[] deltas)
         {
             Vector3 centroid = GetCentroid(poses);
             for (int i = 0; i < poses.Count; i++)
             {
                 Vector3 centroidOffset = GetCentroidOffset(poses[i], centroid);
-                _deltas[i].UpdateData(centroidOffset, poses[i].rotation);
+                deltas[i].UpdateData(centroidOffset, poses[i].rotation);
             }
             return centroid;
         }
 
-        private Vector3 GetCentroid(List<Pose> poses)
+        internal static Vector3 GetCentroid(List<Pose> poses)
         {
             int count = poses.Count;
             Vector3 sumPosition = Vector3.zero;
@@ -221,13 +236,13 @@ namespace Oculus.Interaction
             return sumPosition / count;
         }
 
-        private Vector3 GetCentroidOffset(Pose pose, Vector3 centre)
+        internal static Vector3 GetCentroidOffset(Pose pose, Vector3 centre)
         {
             Vector3 centroidOffset = centre - pose.position;
             return centroidOffset;
         }
 
-        private Quaternion UpdateRotation(int count)
+        internal static Quaternion UpdateRotation(int count, GrabPointDelta[] deltas)
         {
             Quaternion combinedRotation = Quaternion.identity;
 
@@ -235,7 +250,7 @@ namespace Oculus.Interaction
             float fraction = 1f / count;
             for (int i = 0; i < count; i++)
             {
-                GrabPointDelta data = _deltas[i];
+                GrabPointDelta data = deltas[i];
 
                 //overall delta rotation since last update
                 Quaternion rotDelta = data.Rotation * Quaternion.Inverse(data.PrevRotation);
@@ -259,12 +274,12 @@ namespace Oculus.Interaction
             return combinedRotation;
         }
 
-        private float UpdateScale(int count)
+        internal static float UpdateScale(int count, GrabPointDelta[] deltas)
         {
             float scaleDelta = 0f;
             for (int i = 0; i < count; i++)
             {
-                GrabPointDelta data = _deltas[i];
+                GrabPointDelta data = deltas[i];
                 if (data.IsValidAxis())
                 {
                     float factor = Mathf.Sqrt(data.CentroidOffset.sqrMagnitude / data.PrevCentroidOffset.sqrMagnitude);

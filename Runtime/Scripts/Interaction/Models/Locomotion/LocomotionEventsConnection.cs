@@ -31,7 +31,7 @@ namespace Oculus.Interaction.Locomotion
     /// forwarded.
     /// </summary>
     public class LocomotionEventsConnection : MonoBehaviour
-        , ILocomotionEventHandler
+        , ILocomotionEventHandler, ILocomotionEventBroadcaster
     {
         [SerializeField, Interface(typeof(ILocomotionEventBroadcaster))]
         [Optional(OptionalAttribute.Flag.DontHide)]
@@ -43,6 +43,8 @@ namespace Oculus.Interaction.Locomotion
         private ILocomotionEventHandler Handler { get; set; }
 
         private bool _started;
+
+        public event Action<LocomotionEvent> WhenLocomotionPerformed = delegate { };
 
         public event Action<LocomotionEvent, Pose> WhenLocomotionEventHandled
         {
@@ -94,7 +96,11 @@ namespace Oculus.Interaction.Locomotion
 
         public void HandleLocomotionEvent(LocomotionEvent locomotionEvent)
         {
-            Handler.HandleLocomotionEvent(locomotionEvent);
+            if (_started && this.isActiveAndEnabled)
+            {
+                WhenLocomotionPerformed.Invoke(locomotionEvent);
+                Handler.HandleLocomotionEvent(locomotionEvent);
+            }
         }
 
         #region Inject

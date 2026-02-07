@@ -37,11 +37,39 @@ namespace Oculus.Interaction.PoseDetection
         }
     }
 
+    /// <summary>
+    /// Provides tracking and calculation of joint position and rotation deltas between frames for hand tracking.
+    /// This interface enables monitoring of joint movement and rotation changes, which is essential for gesture and motion detection.
+    /// See <see cref="Oculus.Interaction.PoseDetection.JointDeltaProvider"/> for an example implementation.
+    /// </summary>
     public interface IJointDeltaProvider
     {
+        /// <summary>
+        /// Retrieves the position delta between the current frame and previous frame for a specified joint.
+        /// </summary>
+        /// <param name="joint">The <see cref="HandJointId"/> to query</param>
+        /// <param name="delta">The world-space position difference between frames</param>
+        /// <returns>True if valid delta data is available, false otherwise</returns>
         bool GetPositionDelta(HandJointId joint, out Vector3 delta);
+
+        /// <summary>
+        /// Retrieves the rotation delta between the current frame and previous frame for a specified joint.
+        /// </summary>
+        /// <param name="joint">The <see cref="HandJointId"/> to query</param>
+        /// <param name="delta">The world-space rotation difference between frames</param>
+        /// <returns>True if valid delta data is available, false otherwise</returns>
         bool GetRotationDelta(HandJointId joint, out Quaternion delta);
+
+        /// <summary>
+        /// Registers a configuration for tracking specific hand joints in a Joint Delta Provider.
+        /// </summary>
+        /// <param name="config">The <see cref="JointDeltaConfig"/> specifying which joints to track</param>
         void RegisterConfig(JointDeltaConfig config);
+
+        /// <summary>
+        /// Unregisters an existing joint tracking configuration from a Joint Delta Provider.
+        /// </summary>
+        /// <param name="config">The <see cref="JointDeltaConfig"/> to remove from tracking</param>
         void UnRegisterConfig(JointDeltaConfig config);
     }
 

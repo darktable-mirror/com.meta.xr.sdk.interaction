@@ -21,42 +21,71 @@
 #nullable enable
 using UnityEditor;
 using UnityEngine;
-using Oculus.Interaction.Locomotion;
 using Oculus.Interaction.Editor.QuickActions;
 using Unity.XR.CoreUtils;
 
 namespace Oculus.Interaction.Editor.UnityXR.QuickActions
 {
-    internal class UnityXRComprehensiveRigWizard
+    internal class UnityXRComprehensiveRigWizard : QuickActionsWizard
     {
         private const string MENU_NAME_ADD_NEW_RIG = QuickActionsWizard.MENU_FOLDER +
             "Add UnityXR Interaction Rig";
 
-        public static readonly Template UnityXRCameraRigInteraction =
+        public static readonly Template UnityXRCameraRig =
             new Template(
-                "UnityXRCameraRigInteraction",
-                "ce61dc20b15eeff4e9712e79d49d16ad");
+                "UnityXRCameraRig",
+                "f9f107e8ecae49048bda9d4fd7e1d1ec");
 
-        [MenuItem(MENU_NAME_ADD_NEW_RIG, priority = MenuOrder.COMPREHENSIVE_RIG_NEW)]
-        public static GameObject CreateNewRig()
+        public static readonly Template UnityXRInteractionComprehensive =
+            new Template(
+                "UnityXRInteractionComprehensive",
+                "5c149baf016750b42ac7e9cdbc905b96");
+
+        [SerializeField]
+        [Tooltip("The Interaction Rig will be added under this UnityXRCameraRig and reference its hands, controllers and hmd.")]
+        [WizardDependency(Category = Category.Required,
+            FindMethod = nameof(AssignExistingCameraRig),
+            FixMethod = nameof(CreateMissingCameraRig))]
+        private XROrigin _cameraRig;
+
+        [MenuItem(MENU_NAME_ADD_NEW_RIG, priority = 100)]
+        internal static void OpenWizard()
         {
-            GameObject createdRig = Templates.CreateFromTemplate(
-                null, UnityXRCameraRigInteraction, asPrefab: true);
-            Selection.activeObject = createdRig;
-
-            return createdRig;
+            ShowWindow<UnityXRComprehensiveRigWizard>(null);
         }
 
-        [MenuItem(MENU_NAME_ADD_NEW_RIG, true)]
-        public static bool ValidateCreateNewRig()
+        protected override void Create()
         {
-            // If no Camera Rig exists, add the UnityXRCameraRigInteraction prefab
-            return FindExistingRig() == null;
+            CreateInteractionRig();
         }
 
-        private static XROrigin? FindExistingRig()
+        internal GameObject CreateInteractionRig()
+        {
+            GameObject interactionRig = Templates.CreateFromTemplate(
+                _cameraRig.transform, UnityXRInteractionComprehensive, asPrefab: true);
+
+            UnityObjectAddedBroadcaster.HandleObjectWasAdded(interactionRig);
+            Selection.activeObject = interactionRig;
+            return interactionRig;
+        }
+
+        internal void AssignExistingCameraRig()
+        {
+            _cameraRig = Object.FindObjectOfType<XROrigin>();
+        }
+
+        public static XROrigin FindExistingCameraRig()
         {
             return Object.FindObjectOfType<XROrigin>();
+        }
+
+        internal void CreateMissingCameraRig()
+        {
+            GameObject cameraRig = Templates.CreateFromTemplate(
+                null, UnityXRCameraRig, asPrefab: true);
+
+            cameraRig.TryGetComponent(out _cameraRig);
+            AssignExistingCameraRig();
         }
     }
 }

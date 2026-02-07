@@ -44,7 +44,7 @@ namespace Oculus.Interaction.Locomotion
         /// Locomotor to which apply the height offset if seated
         /// </summary>
         [SerializeField]
-        private CapsuleLocomotionHandler _locomotor;
+        private FirstPersonLocomotor _locomotor;
         /// <summary>
         /// Amount of height to apply if the user is seated
         /// </summary>
@@ -112,7 +112,7 @@ namespace Oculus.Interaction.Locomotion
 
         #region Injects
 
-        public void InjectAllSeatedMode(Toggle seated, Toggle standing, CapsuleLocomotionHandler locomotor)
+        public void InjectAllSeatedMode(Toggle seated, Toggle standing, FirstPersonLocomotor locomotor)
         {
             InjectSeated(seated);
             InjectStanding(standing);
@@ -129,7 +129,7 @@ namespace Oculus.Interaction.Locomotion
             _standing = standing;
         }
 
-        public void InjectLocomotor(CapsuleLocomotionHandler locomotor)
+        public void InjectLocomotor(FirstPersonLocomotor locomotor)
         {
             _locomotor = locomotor;
         }

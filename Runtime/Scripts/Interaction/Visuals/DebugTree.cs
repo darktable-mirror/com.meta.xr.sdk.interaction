@@ -23,10 +23,31 @@ using System.Linq;
 
 namespace Oculus.Interaction.DebugTree
 {
+    /// <summary>
+    /// Interface indicating the inheriting type can be represented as a node in a tree-like structure for debugging
+    /// and other development purposes.
+    /// </summary>
+    /// <remarks>
+    /// This type is explicitly intended for use alongside <see cref="DebugTree{TLeaf}"/>; for a canonical usage example,
+    /// see <see cref="PoseDetection.Debug.ActiveStateDebugTree"/>.
+    /// </remarks>
+    /// <typeparam name="TLeaf"></typeparam>
     public interface ITreeNode<TLeaf>
         where TLeaf : class
     {
+        /// <summary>
+        /// The value "contained" in this node, which the containing <see cref="DebugTree{TLeaf}"/> makes available for
+        /// debugging and development purposes.
+        /// </summary>
+        /// <remarks>
+        /// For example, for <see cref="PoseDetection.Debug.ActiveStateDebugTree"/>, this value is an individual
+        /// <see cref="IActiveState"/>.
+        /// </remarks>
         TLeaf Value { get; }
+
+        /// <summary>
+        /// The children of this node in the <see cref="DebugTree{TLeaf}"/>.
+        /// </summary>
         IEnumerable<ITreeNode<TLeaf>> Children { get; }
     }
 

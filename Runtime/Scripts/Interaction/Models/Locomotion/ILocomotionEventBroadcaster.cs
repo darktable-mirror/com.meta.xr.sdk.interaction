@@ -22,8 +22,19 @@ using System;
 
 namespace Oculus.Interaction.Locomotion
 {
+    /// <summary>
+    /// Broadcasts the Interaction SDK's locomotion events to registered listeners.
+    /// This interface enables components to notify the system about locomotion actions
+    /// such as teleportation, continuous movement, or snap turning.
+    /// See <see cref="Oculus.Interaction.Locomotion.TeleportInteractor"/> and <see cref="Oculus.Interaction.Locomotion.TurnerEventBroadcaster"/> for example implementations.
+    /// </summary>
     public interface ILocomotionEventBroadcaster
     {
+        /// <summary>
+        /// Event that fires when a locomotion action is performed.
+        /// Subscribers can react to different types of <see cref="LocomotionEvent"/>s.
+        /// to update their position, orientation, or state accordingly.
+        /// </summary>
         event Action<LocomotionEvent> WhenLocomotionPerformed;
     }
 }

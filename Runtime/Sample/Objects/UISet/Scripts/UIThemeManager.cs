@@ -117,7 +117,7 @@ namespace Oculus.Interaction
                     // Apply the accent color
                     image.color = selectedTheme.primaryButton.normal;
                 }
-                else if (image.CompareTag("QDSUISharedThemeColor") || image.CompareTag("QDSUIPrimaryButton") || image.CompareTag("QDSUIDestructiveButton") || image.CompareTag("QDSUIBorderlessButton") || image.CompareTag("QDSUIToggleBorderlessButton"))
+                else if (image.CompareTag("QDSUISharedThemeColor") || image.CompareTag("QDSUIDestructiveButton") || image.CompareTag("QDSUIBorderlessButton") || image.CompareTag("QDSUIToggleBorderlessButton"))
                 {
                     // Same color scheme for both themes, No changes. Or apply any future theme adjustments here.
                 }
@@ -145,6 +145,22 @@ namespace Oculus.Interaction
                 {
                     image.color = selectedTheme.backplateColor;
                 }
+
+                if (selectedTheme.ThemeVersion == 2)
+                {
+                    // v2 visual design, optional: Apply the gradient material to the backplate
+                    if (image.CompareTag("QDSUIBackplateGradient"))
+                    {
+                        image.color = selectedTheme.backplateColor;
+                        image.material = selectedTheme.backplateGradientMaterial;
+                    }
+
+                    // v2 visual design, handle inverted colors on images
+                    if (image.CompareTag("QDSUITextInvertedColor"))
+                    {
+                        image.color = selectedTheme.textPrimaryInvertedColor;
+                    }
+                }
             }
 
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
@@ -160,7 +176,7 @@ namespace Oculus.Interaction
             {
                 text.font = selectedTheme.textFontMedium; // Set the font
 
-                if (text.CompareTag("QDSUISharedThemeColor") || text.CompareTag("QDSUIPrimaryButton") || text.CompareTag("QDSUIDestructiveButton"))
+                if (text.CompareTag("QDSUISharedThemeColor") || text.CompareTag("QDSUIDestructiveButton"))
                 {
                     // Same color scheme for both themes, No changes. Or apply any future theme adjustments here.
                 }
@@ -170,7 +186,22 @@ namespace Oculus.Interaction
                 }
                 else
                 {
+                    // Apply the primary text color as default
                     text.color = selectedTheme.textPrimaryColor;
+                }
+
+                // v2 visual design, handle inverted text colors on buttons
+                if (selectedTheme.ThemeVersion == 2)
+                {
+                    if (text.CompareTag("QDSUITextInvertedColor"))
+                    {
+                        text.color = selectedTheme.textPrimaryInvertedColor;
+                    }
+
+                    if (text.CompareTag("QDSUITextSecondaryInvertedColor"))
+                    {
+                        text.color = selectedTheme.textSecondaryInvertedColor;
+                    }
                 }
             }
         }

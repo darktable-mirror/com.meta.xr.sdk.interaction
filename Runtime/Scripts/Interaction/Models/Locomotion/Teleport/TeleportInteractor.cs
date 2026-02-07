@@ -194,7 +194,9 @@ namespace Oculus.Interaction.Locomotion
             base.Awake();
             TeleportArc = _teleportArc as IPolyline;
             Selector = _selector as ISelector;
+#pragma warning disable CS0618 // Type or member is obsolete
             Hmd = _hmd as IHmd;
+#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4c6f636f6d6f7469;
         }
 
@@ -215,12 +217,14 @@ namespace Oculus.Interaction.Locomotion
                 GameObject gameObject = new GameObject("Default CandidateComputer");
                 var defaultCandidateComputer = gameObject.AddComponent<TeleportCandidateComputer>();
                 defaultCandidateComputer.EqualDistanceThreshold = _equalDistanceThreshold;
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (Hmd != null)
                 {
                     HmdOffset hmdOffset = gameObject.AddComponent<HmdOffset>();
                     hmdOffset.InjectAllHmdOffset(Hmd);
                     defaultCandidateComputer.BlockCheckOrigin = gameObject.transform;
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
                 _computeCandidate = defaultCandidateComputer.ComputeCandidate;
             }
 

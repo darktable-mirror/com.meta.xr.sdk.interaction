@@ -105,27 +105,24 @@ namespace Oculus.Interaction.Editor.QuickActions
             base.InitializeFieldsExtra();
 
             // If any selected objects contains a child Controller
-            if (_controller = GetBaseComponent<Controller>(Target.transform, false, false))
-            {
-                _interactorGroup = _controller.GetComponentInChildren<InteractorGroup>();
-            }
-            else if (_interactorGroup = Target.GetComponentInParent<InteractorGroup>())
+            _controller = GetBaseComponent<Controller>(Target.transform, false, false);
+            if (_controller == null)
             {
                 _controller = GetBaseComponent<Controller>(Target.transform, false, true);
-            }
-            else
-            {
-                _controller = GetBaseComponent<Controller>(Target.transform, false, true);
-                _interactorGroup = _controller?.GetComponentInChildren<InteractorGroup>();
             }
 
-            if (_interactorGroup != null)
+            if (_controller != null)
+            {
+                if (TryFindInteractorsGroup(_controller, out _interactorGroup, out Transform holder)
+                    && _transform == null)
+                {
+                    _transform = holder;
+                }
+            }
+
+            if (_interactorGroup != null && _transform == null)
             {
                 _transform = _interactorGroup.transform;
-            }
-            else if (_controller != null)
-            {
-                _transform = FindInteractorsTransform(_controller.transform);
             }
 
             if (_transform != null)
@@ -161,7 +158,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 !_transform.IsChildOf(_controller.transform))
             {
                 messages = messages.Append(new MessageData(MessageType.Warning,
-                $"It recommended to add interactors under their associated Controller."));
+                    $"It recommended to add interactors under their associated Controller."));
             }
             return messages;
         }

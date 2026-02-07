@@ -53,9 +53,11 @@ namespace Oculus.Interaction.Editor
         {
             foreach (var targetGroup in targetGroups)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup, out string[] defines);
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup,
                     defines.Union(new[] { symbol }).ToArray());
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -64,7 +66,9 @@ namespace Oculus.Interaction.Editor
             bool result = true;
             foreach (var targetGroup in targetGroups)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup, out string[] defines);
+#pragma warning restore CS0618 // Type or member is obsolete
                 result &= defines.Contains(symbol);
             }
             return result;
@@ -232,7 +236,8 @@ namespace Oculus.Interaction.Editor
 
         private static void ShowUpgradeWindowInternal()
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode ||
+            if (Application.isBatchMode ||
+                EditorApplication.isPlayingOrWillChangePlaymode ||
                 !OpenXRUpgrade.UpgradeAvailable ||
                 EditorPrefs.GetBool(KEY_DONTASK, false) ||
                 SessionState.GetBool(KEY_ASKLATER, false))

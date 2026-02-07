@@ -24,7 +24,9 @@ using System;
 namespace Oculus.Interaction.Body.Input
 {
     /// <summary>
-    /// The primary interface through which Body data is accessed. Components consuming body data should prefer to do so through this interface rather than the concrete Body.
+    /// The primary interface through which Body data is accessed. Components consuming body data (such as
+    /// <see cref="PoseDetection.PoseFromBody"/>) should prefer to do so through this interface rather than
+    /// the concrete <see cref="Body"/> or alternative implementations.
     /// </summary>
     public interface IBody
     {
@@ -84,6 +86,9 @@ namespace Oculus.Interaction.Body.Input
         /// Returns false if the skeleton is not yet initialized, or there is no valid
         /// tracking data. Scale is not applied.
         /// </summary>
+        /// <param name="bodyJointId">The <see cref="BodyJointId"/> for which to retrieve the pose</param>
+        /// <param name="pose">Output parameter to be populated with the poise of <paramref name="bodyJointId"/></param>
+        /// <returns>True if <paramref name="pose"/> is populated with valid tracking data, false otherwise</returns>
         bool GetJointPoseFromRoot(BodyJointId bodyJointId, out Pose pose);
 
         /// <summary>

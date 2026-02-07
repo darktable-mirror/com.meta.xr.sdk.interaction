@@ -12,13 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeCustomBrandExample2
   m_EditorClassIdentifier: 
-  _themeVersion: 1
+  _themeVersion: 2
   backplateColor: {r: 0.13919537, g: 0.49850795, b: 0.6509434, a: 1}
+  backplateGradientMaterial: {fileID: 2100000, guid: 80ed8b4728ea41d4482d3c5528a2660f,
+    type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
-  sectionPlateColor: {r: 0.09380558, g: 0.36582115, b: 0.4811321, a: 1}
+  sectionPlateColor: {r: 0.2013171, g: 0.5738697, b: 0.735849, a: 1}
   tooltipColor: {r: 0.09411766, g: 0.3647059, b: 0.48235297, a: 1}
   textPrimaryColor: {r: 0.94509804, g: 0.95686275, b: 0.96862745, a: 1}
   textSecondaryColor: {r: 0.8396226, g: 0.8396226, b: 0.8396226, a: 1}
+  textPrimaryInvertedColor: {r: 0, g: 0, b: 0, a: 1}
+  textSecondaryInvertedColor: {r: 0, g: 0, b: 0, a: 0.69803923}
   primaryButton:
     normal: {r: 0.3058824, g: 0.7958224, b: 0.8392157, a: 1}
     highlighted: {r: 0.31764707, g: 0.86666673, b: 0.75294125, a: 1}

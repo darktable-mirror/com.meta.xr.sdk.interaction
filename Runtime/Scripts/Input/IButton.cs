@@ -22,8 +22,19 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// An interface designating that implementing types represent Boolean input measurements. Such measurements can be
+    /// used to encapsulate button input states (such as from <see cref="ControllerInput.PrimaryButton"/>), in contrast
+    /// to triggers, thumbsticks and other higher-dimensional input modalities.
+    /// </summary>
     public interface IButton
     {
+        /// <summary>
+        /// Returns the most recent measured value of the IButton; for example, a type representing a
+        /// <see cref="ControllerInput.Primary2DAxisClick"/> might return true if the underlying thumbstick
+        /// is being pressed and false otherwise.
+        /// </summary>
+        /// <returns>The most recent measured value of the IButton</returns>
         bool Value();
     }
 }

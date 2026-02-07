@@ -20,8 +20,21 @@
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Interface indicating that the implementing type is a valid source of <see cref="HandSkeleton"/>s, addressable by
+    /// <see cref="Handedness"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is almost exclusively by <see cref="DataSource{TData}"/>s, upon which downstream types depend rather than
+    /// depending directly on IHandSkeletonProvider.
+    /// </remarks>
     public interface IHandSkeletonProvider
     {
+        /// <summary>
+        /// Retrieves the current <see cref="HandSkeleton"/> for a single hand, addressed by <see cref="Handedness"/>.
+        /// </summary>
+        /// <param name="handedness">Which hand's skeleton to retrieve</param>
+        /// <returns>The requested <see cref="HandSkeleton"/></returns>
         HandSkeleton this[Handedness handedness] { get; }
     }
 }

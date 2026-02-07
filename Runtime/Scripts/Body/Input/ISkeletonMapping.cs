@@ -25,19 +25,23 @@ namespace Oculus.Interaction.Body.Input
     /// <summary>
     /// Represents the different joint sets and parent/child relationships found in different skeletons.
     /// </summary>
+    /// <remarks>
+    /// An ISkeletonMapping encapsulates and characterizes the relationships among the of a skeleton; in essense,
+    /// it describes the <see cref="BodyJointId"/> hierarchy within the skeleton.
+    /// </remarks>
     public interface ISkeletonMapping
     {
         /// <summary>
-        /// The set of <see cref="BodyJointId"/>s supported by this skeleton
+        /// The set of <see cref="BodyJointId"/>s supported by this skeleton.
         /// </summary>
         IEnumerableHashSet<BodyJointId> Joints { get; }
 
         /// <summary>
-        /// Get the parent joint for a given body joint
+        /// Get the parent joint for a given body joint.
         /// </summary>
-        /// <param name="jointId">The joint to fetch the parent for</param>
-        /// <param name="parent">The parent joint</param>
-        /// <returns>True if parent could be retrieved</returns>
+        /// <param name="jointId">The <see cref="BodyJointId"/> to fetch the parent for</param>
+        /// <param name="parent">The parent joint of the requested <paramref name="jointId"/></param>
+        /// <returns>True if parent could be retrieved (i.e., if <paramref name="jointId"/> has a parent joint), false otherwise</returns>
         bool TryGetParentJointId(BodyJointId jointId, out BodyJointId parent);
     }
 }

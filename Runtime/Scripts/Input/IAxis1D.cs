@@ -22,8 +22,20 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// An interface designating that implementing types represent one-dimensional measurements or "axes."
+    /// Such measurements can be used to encapsulate trigger input states (such as from
+    /// <see cref="ControllerInput.Trigger"/>), in contrast to thumbsticks and other higher-dimensional
+    /// input modalities.
+    /// </summary>
     public interface IAxis1D
     {
+        /// <summary>
+        /// Returns the most recent measured value of the IAxis1D; for example, a type representing a
+        /// <see cref="ControllerInput.Trigger"/> might return a value between 0 and 1 depending on the
+        /// degree to which the trigger is being depressed.
+        /// </summary>
+        /// <returns>The most recent measured value of the IAxis1D</returns>
         float Value();
     }
 }

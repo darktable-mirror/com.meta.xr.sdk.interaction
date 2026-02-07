@@ -22,9 +22,31 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// Defines threshold configurations for feature state transitions in pose and gesture detection systems.
+    /// This interface provides a generic approach to defining boundaries between different states of a feature,
+    /// such as finger poses or transform orientations.
+    /// </summary>
+    /// <typeparam name="TFeature">The type of feature being monitored (e.g., TransformFeature, FingerFeature)</typeparam>
+    /// <typeparam name="TFeatureState">The type representing possible states of the feature</typeparam>
+    /// <remarks>
+    /// Used in conjunction with <see cref="Oculus.Interaction.PoseDetection.TransformFeatureStateThresholds"/> and
+    /// <see cref="Oculus.Interaction.PoseDetection.FingerFeatureStateThresholds"/> to define when features should transition between states.
+    /// The thresholds use a midpoint and width system to prevent rapid state flickering at transition boundaries.
+    /// </remarks>
     public interface IFeatureStateThresholds<TFeature, TFeatureState>
     {
+        /// <summary>
+        /// Gets the specific feature type that these thresholds apply to.
+        /// </summary>
+        /// <value>The feature identifier (e.g., WristUp, PalmDown for TransformFeature)</value>
         TFeature Feature { get; }
+
+        /// <summary>
+        /// Gets the collection of state thresholds that define the boundaries between different feature states.
+        /// Each threshold defines when a feature should transition between two states.
+        /// </summary>
+        /// <value>A read-only list of <see cref="IFeatureStateThreshold"/> thresholds</value>
         IReadOnlyList<IFeatureStateThreshold<TFeatureState>> Thresholds { get; }
     }
 }

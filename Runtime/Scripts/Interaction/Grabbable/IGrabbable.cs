@@ -23,10 +23,22 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// This Interface is used to define the attributes of a grabbable object and makes it selectable.
+    /// This should be added when you need to define where the object is being grabbed so you can
+    /// apply the correct transformations to the object.
+    /// </summary>
     public interface IGrabbable
     {
+        /// <summary>
+        /// A Collection of grab points as <see cref="Pose">s. Used to calculate user applied transfomations
+        /// </summary>
         List<Pose> GrabPoints { get; }
 
+        /// <summary>
+        /// The transform that should be used when applying transformations to the Object.
+        /// Can be the transform of the object itself or another specified transform
+        /// </summary>
         Transform Transform { get; }
     }
 }

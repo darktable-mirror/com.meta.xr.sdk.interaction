@@ -24,27 +24,40 @@ using Oculus.Interaction.Body.Input;
 
 namespace Oculus.Interaction.Body.PoseDetection
 {
+    /// <summary>
+    /// Encapsulates the pose of a body as a collection of joint poses together constituting a fully-posed skeleton.
+    /// </summary>
+    /// <remarks>
+    /// IBodyPoses can be generated from live data (using <see cref="PoseFromBody"/>, for example) or stored/cached off
+    /// as a reference for comparison (using <see cref="BodyPoseComparerActiveState"/>, for example).
+    /// </remarks>
     public interface IBodyPose
     {
         /// <summary>
-        /// Called each time the body pose is updated with new data
+        /// Event indicating that the data in this IBodyPose has been updated.
         /// </summary>
+        /// <remarks>
+        /// Observing instances can hook into this event to run their logic only when new data is available (rather
+        /// than polling).
+        /// </remarks>
         event Action WhenBodyPoseUpdated;
 
         /// <summary>
-        /// The mapping of the skeleton
+        /// The mapping of the skeleton, which characterizes which <see cref="BodyJointId"/>s are populated by
+        /// in this body pose and the structure/parentage among them.
         /// </summary>
         ISkeletonMapping SkeletonMapping { get; }
 
         /// <summary>
-        /// Attempts to return the pose of the requested body joint,
-        /// in local space relative to its parent joint.
+        /// Attempts to return the pose of the requested body joint, in local space relative to its parent
+        /// joint (i.e., the <see cref="BodyJointId"/> retrievable from
+        /// <see cref="ISkeletonMapping.TryGetParentJointId(BodyJointId, out BodyJointId)"/>).
         /// </summary>
         bool GetJointPoseLocal(BodyJointId bodyJointId, out Pose pose);
 
         /// <summary>
         /// Attempts to return the pose of the requested body joint relative
-        /// to the root joint <see cref="BodyJointId.Body_Root"/>.
+        /// to the root joint (<see cref="BodyJointId.Body_Root"/>).
         /// </summary>
         bool GetJointPoseFromRoot(BodyJointId bodyJointId, out Pose pose);
     }

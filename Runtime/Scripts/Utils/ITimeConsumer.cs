@@ -26,12 +26,14 @@ namespace Oculus.Interaction
     /// A general interface for replacing the global time provider used
     /// in an object. Grouping classes that use this pattern under this
     /// interface allows changing multiple objects easily.
+    /// See <see cref="Oculus.Interaction.Grabbable"/> for an example implementation.
     /// </summary>
     public interface ITimeConsumer
     {
         /// <summary>
-        /// Sets a function that returns the current time in seconds
+        /// Sets a custom function that provides the current time in seconds.
         /// </summary>
+        /// <param name="timeProvider">A delegate that returns the current time in seconds.</param>
         void SetTimeProvider(Func<float> timeProvider);
     }
 
@@ -39,12 +41,14 @@ namespace Oculus.Interaction
     /// A general interface for replacing the delta time provider used
     /// in an object. Grouping classes that use this pattern under this
     /// interface allows changing multiple objects easily.
+    /// See <see cref="Oculus.Interaction.Locomotion.FirstPersonLocomotor"/> for an example implementation.
     /// </summary>
     public interface IDeltaTimeConsumer
     {
         /// <summary>
-        /// Sets a function that returns the last delta time in seconds
+        /// Sets a custom function that returns the last delta time in seconds.
         /// </summary>
+        /// <param name="deltaTimeProvider"> A delegate that returns the time elapsed since the last frame.</param>
         void SetDeltaTimeProvider(Func<float> deltaTimeProvider);
     }
 }

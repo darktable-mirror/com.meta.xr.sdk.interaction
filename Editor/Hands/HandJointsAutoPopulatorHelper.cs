@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEditor;
 using UnityEngine;
 
 namespace Oculus.Interaction.Hands.Editor
@@ -43,37 +44,36 @@ namespace Oculus.Interaction.Hands.Editor
             { HandFinger.Pinky, $"{_b}(pinky|little){_b}" },
         };
 
-        public static void InitializeCollection<T>(IList<T> joints)
+        public static void DisplayJoints(SerializedProperty jointsProperty)
         {
-            int count = (int)HandJointId.HandEnd - (int)HandJointId.HandStart;
-            if (joints.Count < count)
+            EditorGUILayout.LabelField("Joints", EditorStyles.boldLabel);
+            for (int i = (int)HandJointId.HandStart; i < (int)HandJointId.HandEnd; ++i)
             {
-                for (int i = joints.Count; i < count; ++i)
-                {
-                    joints.Add(default);
-                }
-            }
-            else if (joints.Count > count)
-            {
-                for (int i = joints.Count; i > count; --i)
-                {
-                    joints.RemoveAt(joints.Count - 1);
-                }
+                SerializedProperty joint = jointsProperty.GetArrayElementAtIndex(i);
+                string jointName = ((HandJointId)i).ToString();
+                joint.objectReferenceValue = (Transform)EditorGUILayout.ObjectField(jointName,
+                    joint.objectReferenceValue, typeof(Transform), true);
             }
         }
 
-        public static void AutoMapJoints(IList<Transform> joints, Transform rootTransform)
+        public static void InitializeCollection(SerializedProperty jointsProperty)
+        {
+            int count = (int)HandJointId.HandEnd - (int)HandJointId.HandStart;
+            jointsProperty.arraySize = count;
+        }
+
+        public static void AutoMapJoints(SerializedProperty jointsProperty, Transform rootTransform)
         {
             Transform fingersOrigin = FindFingersOrigin(rootTransform);
 
             //wire the fingers hierarchy, from tip to base
-            WireFingers(joints, fingersOrigin);
+            WireFingers(jointsProperty, fingersOrigin);
 
             //wire the remaining stubs of the hand's base
-            WireStubs(fingersOrigin, joints);
+            WireStubs(jointsProperty, fingersOrigin);
         }
 
-        private static void WireFingers(IList<Transform> joints, Transform rootTransform)
+        private static void WireFingers(SerializedProperty jointsProperty, Transform rootTransform)
         {
             for (HandFinger finger = HandFinger.Thumb; finger <= HandFinger.Pinky; finger++)
             {
@@ -83,7 +83,9 @@ namespace Oculus.Interaction.Hands.Editor
                 for (int i = fingerJoints.Length - 1; i >= 0; --i)
                 {
                     HandJointId jointID = fingerJoints[i];
-                    joints[(int)jointID] = transform;
+                    jointsProperty.GetArrayElementAtIndex((int)jointID).objectReferenceValue = transform;
+
+
                     transform = transform.parent;
                     if (transform == rootTransform)
                     {
@@ -93,14 +95,14 @@ namespace Oculus.Interaction.Hands.Editor
             }
         }
 
-        private static void WireStubs(Transform rootTransform, IList<Transform> joints)
+        private static void WireStubs(SerializedProperty jointsProperty, Transform rootTransform)
         {
             HandJointId thumbBase = HandJointUtils.FingerToJointList[(int)HandFinger.Thumb][0];
             HandJointId thumbParent = HandJointUtils.JointParentList[(int)thumbBase];
             HandJointId[] stubIds = HandJointUtils.JointChildrenList[(int)thumbParent];
 
             //wire the real wrist of the hand
-            joints[(int)thumbParent] = rootTransform;
+            jointsProperty.GetArrayElementAtIndex((int)thumbParent).objectReferenceValue = rootTransform;
 
             foreach (HandJointId stubId in stubIds)
             {
@@ -113,7 +115,7 @@ namespace Oculus.Interaction.Hands.Editor
                 HandFingerJointFlags jointAsFlag = (HandFingerJointFlags)(1 << (int)stubId);
                 string jointName = ToRegexCase(Enum.GetName(typeof(HandFingerJointFlags), jointAsFlag));
                 Transform transform = rootTransform.FindMostSimilarNamedChild(jointName);
-                joints[(int)stubId] = transform;
+                jointsProperty.GetArrayElementAtIndex((int)stubId).objectReferenceValue = transform;
             }
         }
 

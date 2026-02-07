@@ -148,18 +148,55 @@ namespace Oculus.Interaction.PoseDetection
         }
     }
 
+    /// <summary>
+    /// Provides state tracking and transition management for transform-based features in the Interaction SDK.
+    /// This provider interprets transform values and quantizes them into discrete states while implementing
+    /// hysteresis to prevent rapid state fluctuations.
+    /// See <see cref="Oculus.Interaction.PoseDetection.TransformFeatureStateProvider"/> and <see cref="Oculus.Interaction.TransformFeatureStateProviderRef"/> for example implementations.
+    /// </summary>
     public interface ITransformFeatureStateProvider
     {
+        /// <summary>
+        /// Checks if the specified feature is currently in the given state.
+        /// </summary>
+        /// <param name="config">The <see cref="TransformConfig"/> to use for the check</param>
+        /// <param name="feature">The <see cref="TransformFeature"/> to check</param>
+        /// <param name="mode">The <see cref="FeatureStateActiveMode"/> to use when checking the feature state</param>
+        /// <param name="stateId">The ID of the state to compare against</param>
+        /// <returns><c>true</c> if the feature is in the specified state; otherwise, <c>false</c></returns>
         bool IsStateActive(TransformConfig config, TransformFeature feature,
             FeatureStateActiveMode mode, string stateId);
 
+        /// <summary>
+        /// Retrieves the current state of a specified transform feature.
+        /// </summary>
+        /// <param name="config">The <see cref="TransformConfig"/> to use for the query</param>
+        /// <param name="transformFeature">The <see cref="TransformFeature"/> to query</param>
+        /// <param name="currentState">The current state of the transform feature</param>
+        /// <returns><c>true</c> if the current state was successfully retrieved; otherwise, <c>false</c></returns>
         bool GetCurrentState(TransformConfig config, TransformFeature transformFeature,
             out string currentState);
 
+        /// <summary>
+        /// Registers a transform configuration with the state provider.
+        /// </summary>
+        /// <param name="transformConfig">The <see cref="TransformConfig"/> to register</param>
         void RegisterConfig(TransformConfig transformConfig);
 
+        /// <summary>
+        /// Unregisters a previously registered transform configuration from the state provider.
+        /// </summary>
+        /// <param name="transformConfig">The <see cref="TransformConfig"/> to unregister</param>
         void UnRegisterConfig(TransformConfig transformConfig);
 
+        /// <summary>
+        /// Retrieves the feature vector and wrist position for a specified transform feature.
+        /// </summary>
+        /// <param name="config">The <see cref="TransformConfig"/> to use for the query</param>
+        /// <param name="transformFeature">The <see cref="TransformFeature"/> to query</param>
+        /// <param name="isHandVector"><c>true</c> if the feature vector is a hand vector; otherwise, <c>false</c></param>
+        /// <param name="featureVec">The feature vector</param>
+        /// <param name="wristPos">The wrist position</param>
         void GetFeatureVectorAndWristPos(TransformConfig config,
             TransformFeature transformFeature, bool isHandVector, ref Vector3? featureVec,
             ref Vector3? wristPos);

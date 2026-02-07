@@ -543,8 +543,25 @@ namespace Oculus.Interaction.Input.Compatibility.OpenXR
         IReadOnlyHandSkeletonJointList Joints { get; }
     }
 
+    /// <summary>
+    /// Curiously-recurring generic interface indicating that the implementing type is capable of copying data from other instances of the
+    /// same type.
+    /// </summary>
+    /// <remarks>
+    /// Because the curiously-recurring pattern requires the concrete type to be known in order to express the interface (i.e.,
+    /// ICopyFrom<Foo> cannot be written without knowledge of the type Foo), this interface is only used within other generic types where
+    /// <typeparamref name="TSelfType"/> is in turn generic. For a canonical example, see <see cref="DataModifier{TData}"/>.
+    /// </remarks>
+    /// <typeparam name="TSelfType"></typeparam>
     public interface ICopyFrom<in TSelfType>
     {
+        /// <summary>
+        /// Copies data from <paramref name="source"/> to the current ICopyFrom instance.
+        /// </summary>
+        /// <remarks>
+        /// For a canonical example, see <see cref="HmdDataAsset"/>.
+        /// </remarks>
+        /// <param name="source"></param>
         void CopyFrom(TSelfType source);
     }
 

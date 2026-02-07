@@ -554,7 +554,9 @@ namespace Oculus.Interaction
             private void LoadThrowVelocities()
             {
                 _ransacVelocity.GetVelocities(out Vector3 velocity, out Vector3 torque);
+#pragma warning disable CS0618 // Type or member is obsolete
                 _rigidbody.velocity = velocity;
+#pragma warning restore CS0618 // Type or member is obsolete
                 _rigidbody.angularVelocity = torque;
             }
         }

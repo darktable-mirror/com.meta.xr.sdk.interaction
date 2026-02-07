@@ -29,12 +29,16 @@ namespace Oculus.Interaction
     /// </summary>
     public class UITheme : ScriptableObject
     {
-        private const int CurrentThemeVersion = 1;
+        private const int CurrentThemeVersion = 2;
         [SerializeField]
         [HideInInspector]
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private int _themeVersion = CurrentThemeVersion;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
+        public int ThemeVersion { get { return _themeVersion; } }
 
         public Color backplateColor;
+        public Material backplateGradientMaterial;
         public Color buttonPlateColor;
         public Color sectionPlateColor;
         public Color tooltipColor;
@@ -42,6 +46,8 @@ namespace Oculus.Interaction
         [Header("Shared")]
         public Color textPrimaryColor;
         public Color textSecondaryColor;
+        public Color textPrimaryInvertedColor;
+        public Color textSecondaryInvertedColor;
 
         [Serializable]
         public struct ElementColors

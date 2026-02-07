@@ -58,7 +58,9 @@ namespace Oculus.Interaction.Body.PoseDetection
         public event Action WhenBodyPoseUpdated = delegate { };
 
         [SerializeField, HideInInspector]
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private int _serializedVersion;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
 
         [SerializeField, HideInInspector]
         private List<JointData> _jointData = new List<JointData>();

@@ -51,6 +51,11 @@ namespace Oculus.Interaction.Editor.QuickActions
                 {
                     names.Add(("Add To Controllers", DeviceTypes.Controllers));
                 }
+                if ((SupportedTypes & DeviceTypes.ControllerDrivenHands) != 0
+                    && InteractorUtils.CanAddControllerHandInteractorsToRig())
+                {
+                    names.Add(("Add To Controllers Driven Hands", DeviceTypes.ControllerDrivenHands));
+                }
                 return names;
             }
 
@@ -366,6 +371,8 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// </summary>
         protected GameObject Target { get; private set; }
 
+        protected bool Targetless { get; private set; } = false;
+
         /// <summary>
         /// Shared messages between Wizard types
         /// </summary>
@@ -403,6 +410,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             T wizard = ShouldDraw ? GetWindow<T>() : CreateInstance<T>();
 
             wizard.Target = target;
+            wizard.Targetless = target == null;
             wizard.titleContent =
                 new GUIContent(wizard.GetWindowTitle());
             wizard.minSize = new Vector2(480, 320);
@@ -472,9 +480,9 @@ namespace Oculus.Interaction.Editor.QuickActions
                 .Select(fi => new WizardSetting(fi)).ToArray();
         }
 
-        internal void OnGUI()
+        internal virtual void OnGUI()
         {
-            if (Target == null)
+            if (Target == null && !Targetless)
             {
                 Debug.LogError("Target object was destroyed.");
                 Close();
@@ -504,7 +512,10 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             EditorGUILayout.Space();
 
-            DrawTargetField();
+            if (!Targetless)
+            {
+                DrawTargetField();
+            }
 
             EditorGUILayout.Space();
 

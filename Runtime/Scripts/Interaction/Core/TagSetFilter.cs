@@ -109,6 +109,44 @@ namespace Oculus.Interaction
             return true;
         }
 
+        /// <summary>
+        /// Checks whether the required tag set contains the specified <paramref name="tag"/>.
+        /// </summary>
+        /// <param name="tag">The string to check for within the required tag set</param>
+        /// <returns>True if the required set contains <paramref name="tag"/>, false otherwise</returns>
+        public bool ContainsRequireTag(string tag) => _requireTagSet.Contains(tag);
+
+        /// <summary>
+        /// Adds a new string to the required tag set.
+        /// </summary>
+        /// <param name="tag">The string to be added as a new tag in the required set</param>
+        public void AddRequireTag(string tag) => _requireTagSet.Add(tag);
+
+        /// <summary>
+        /// Removes a string from the required tag set.
+        /// </summary>
+        /// <param name="tag">The string to be removed as a tag from the required set</param>
+        public void RemoveRequireTag(string tag) => _requireTagSet.Remove(tag);
+
+        /// <summary>
+        /// Checks whether the excluded tag set contains the specified <paramref name="tag"/>.
+        /// </summary>
+        /// <param name="tag">The string to check for within the excluded tag set</param>
+        /// <returns>True if the excluded set contains <paramref name="tag"/>, false otherwise</returns>
+        public bool ContainsExcludeTag(string tag) => _excludeTagSet.Contains(tag);
+
+        /// <summary>
+        /// Adds a new string to the excluded tag set.
+        /// </summary>
+        /// <param name="tag">The string to be added as a new tag in the excluded set</param>
+        public void AddExcludeTag(string tag) => _excludeTagSet.Add(tag);
+
+        /// <summary>
+        /// Removes a string from the excluded tag set.
+        /// </summary>
+        /// <param name="tag">The string to be removed as a tag from the excluded set</param>
+        public void RemoveExcludeTag(string tag) => _excludeTagSet.Remove(tag);
+
         #region Inject
 
         /// <summary>

@@ -47,6 +47,18 @@ namespace Oculus.Interaction.PoseDetection
         /// associated transform to be considered acceptable for recognition.
         /// </summary>
         public List<TransformFeatureConfig> Values => _values;
+
+        /// <summary>
+        /// Factory for TransformFeatureConfigLists, allowing them to be constructed from runtime-generated
+        /// configurations.
+        /// </summary>
+        /// <param name="values">The <see cref="TransformFeatureConfig"/>s constituent to this list</param>
+        public static TransformFeatureConfigList Create(List<TransformFeatureConfig> values)
+        {
+            TransformFeatureConfigList list = new();
+            list._values = values;
+            return list;
+        }
     }
 
     /// <summary>

@@ -39,11 +39,18 @@ namespace Oculus.Interaction.Utils
     public class ControllerDrivenHandAnimatorWizard : EditorWindow
     {
         [SerializeField]
+        [Tooltip("Joint poses will be recorded from this hand visual")]
         private HandVisual _handVisual;
         [SerializeField]
+        [Tooltip("Assets subfolder used to store the animations. Will be created if missing")]
         private string _folder = "GeneratedAnimations";
         [SerializeField]
+        [Tooltip("Name for the generated Animation Controller")]
         private string _controllerName = "HandController";
+        [SerializeField]
+        [Tooltip("If true, local Position will be included in the animations. " +
+            "If false just the rotation will be recorded.")]
+        private bool _recordPosition = true;
 
         [SerializeField]
         private AnimationClip _handFist;
@@ -67,12 +74,14 @@ namespace Oculus.Interaction.Utils
         [SerializeField]
         private AvatarMask _thumbMask;
 
-        [SerializeField]
+        [SerializeField, Optional]
+        [Tooltip("Sub-string in the transform names indicating that this is a Left Hand transform." +
+            "This is used to determine the handedness when mirroring.")]
         private string _handLeftPrefix = "_l_";
-        [SerializeField]
+        [SerializeField, Optional]
+        [Tooltip("Sub-string in the transform names indicating that this is a Right Hand transform" +
+            "This is used to determine the handedness when mirroring.")]
         private string _handRightPrefix = "_r_";
-
-        private Transform Root => _handVisual.Joints[0].parent;
 
         private GUIStyle _richTextStyle;
         private Vector2 _scrollPos = Vector2.zero;
@@ -103,11 +112,11 @@ namespace Oculus.Interaction.Utils
         private const string PINCH_PARAM = "Pinch";
         private const string INDEXSLIDE_PARAM = "IndexSlide";
 
-        [MenuItem("Meta/Interaction/Controller Driven Hand Animator Generator")]
+        [MenuItem("Meta/Interaction/Controller Driven Hand Animator Recorder")]
         private static void CreateWizard()
         {
             ControllerDrivenHandAnimatorWizard window = EditorWindow.GetWindow<ControllerDrivenHandAnimatorWizard>();
-            window.titleContent = new GUIContent("Controller Driven Hand Animator Generator");
+            window.titleContent = new GUIContent("Controller Driven Hand Animator Recorder");
             window.Show();
         }
 
@@ -129,6 +138,7 @@ namespace Oculus.Interaction.Utils
             HandAnimationUtils.GenerateObjectField(ref _handVisual, "Hand Visual");
             _folder = EditorGUILayout.TextField("Assets sub-folder", _folder);
             _controllerName = EditorGUILayout.TextField("Animator name", _controllerName);
+            _recordPosition = EditorGUILayout.Toggle("Record position", _recordPosition);
 
             GUILayout.Space(20);
             GUILayout.Label("<b>2</b> Record the HandVisual poses in <b>Play Mode</b> or directly assign the animation clips to use for the different animator states.", _richTextStyle);
@@ -248,11 +258,11 @@ namespace Oculus.Interaction.Utils
             for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandEnd; ++jointId)
             {
                 Transform jointTransform = _handVisual.GetTransformByHandJointId(jointId);
-                string path = GetGameObjectPath(jointTransform, Root);
+                string path = HandAnimationUtils.GetGameObjectPath(jointTransform, _handVisual.Root);
                 JointRecord record = new JointRecord(jointId, path);
                 Pose pose = jointTransform.GetPose(Space.Self);
                 record.RecordPose(0f, pose);
-                HandAnimationUtils.WriteAnimationCurves(ref clip, record, false);
+                HandAnimationUtils.WriteAnimationCurves(ref clip, record, _recordPosition);
             }
 
             HandAnimationUtils.StoreAsset(clip, _folder, $"{title}.anim");
@@ -267,7 +277,7 @@ namespace Oculus.Interaction.Utils
             foreach (var maskJoints in maskData)
             {
                 Transform jointTransform = _handVisual.Joints[(int)maskJoints];
-                string localPath = GetGameObjectPath(jointTransform, Root);
+                string localPath = HandAnimationUtils.GetGameObjectPath(jointTransform, _handVisual.Root);
                 paths.Add(localPath);
             }
 
@@ -284,8 +294,17 @@ namespace Oculus.Interaction.Utils
 
         private AnimationClip GenerateMirrorClipAsset(AnimationClip originalClip)
         {
+            if (!HandAnimationUtils.TryGetClipHandedness(originalClip, _handLeftPrefix, _handRightPrefix,
+                    out Handedness fromHandedness))
+            {
+                string rootName = _handVisual.Root.name;
+                fromHandedness = rootName.ToLower().Contains("left") ? Handedness.Left : Handedness.Right;
+            }
+
             AnimationClip mirrorClip = HandAnimationUtils.Mirror(originalClip,
-                _handLeftPrefix, _handRightPrefix, true);
+                _handVisual.Joints, _handVisual.Root, HandFingerJointFlags.All,
+                fromHandedness, _handLeftPrefix, _handRightPrefix, _recordPosition);
+
             HandAnimationUtils.StoreAsset(mirrorClip, _folder, $"{originalClip.name}_mirror.anim");
             return mirrorClip;
         }
@@ -389,8 +408,6 @@ namespace Oculus.Interaction.Utils
             blendTree.AddChild(clips.handFist, new Vector2(1f, 0f));
             blendTree.AddChild(clips.handFist, new Vector2(1f, 1f));
 
-
-
             animator.layers[layerIndex].stateMachine.defaultState = flexState;
         }
 
@@ -422,18 +439,6 @@ namespace Oculus.Interaction.Utils
             string targetFolder = Path.Combine("Assets", _folder);
             HandAnimationUtils.CreateFolder(targetFolder);
             string path = Path.Combine(targetFolder, $"{_controllerName}{prefix}.controller");
-            return path;
-        }
-
-        private static string GetGameObjectPath(Transform transform, Transform root)
-        {
-            string path = transform.name;
-            while (transform.parent != null
-                && transform.parent != root)
-            {
-                transform = transform.parent;
-                path = $"{transform.name}/{path}";
-            }
             return path;
         }
 

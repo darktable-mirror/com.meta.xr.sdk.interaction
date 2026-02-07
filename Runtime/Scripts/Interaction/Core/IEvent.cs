@@ -20,8 +20,17 @@
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Defines the base interface for all <see cref="Oculus.Interaction.PointerEvent"/>'s in the Interaction SDK. This interface provides
+    /// a generic way to pass any interaction-specific data through the interaction event pipeline.
+    /// See <see cref="IPointable"/> and <see cref="IPointableElement"/> for examples of how events are propogated through the interaction system.
+    /// </summary>
     public interface IEvent
     {
+        /// <summary>
+        /// Gets the data associated with this event. The data type varies depending on the specific
+        /// event implementation and can be cast to the appropriate type by the event handler.
+        /// </summary>
         object Data { get; }
     }
 }

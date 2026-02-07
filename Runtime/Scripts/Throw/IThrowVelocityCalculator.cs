@@ -24,12 +24,20 @@ using UnityEngine;
 namespace Oculus.Interaction.Throw
 {
     /// <summary>
-    /// Interface for velocity calculator used to make throwing
-    /// possible.
+    /// Defines the core functionality for calculating throw velocities in the Interaction SDK.
+    /// This interface provides the essential method for computing release velocities of thrown objects.
     /// </summary>
+    /// <remarks>
+    /// Note: This interface is marked as obsolete. Use <see cref="Oculus.Interaction.Grabbable"/> instead.
+    /// </remarks>
     [Obsolete("Use " + nameof(Grabbable) + " instead")]
     public interface IThrowVelocityCalculator
     {
+        /// <summary>
+        /// Calculates the release velocity for a thrown object based on its transform and recent motion history.
+        /// </summary>
+        /// <param name="objectThrown">The transform of the object being thrown.</param>
+        /// <returns>Velocity information containing linear velocity, angular velocity, and origin point of the throw.</returns>
         ReleaseVelocityInformation CalculateThrowVelocity(Transform objectThrown);
     }
 }

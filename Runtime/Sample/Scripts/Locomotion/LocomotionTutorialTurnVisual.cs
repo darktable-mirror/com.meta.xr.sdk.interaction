@@ -62,7 +62,9 @@ namespace Oculus.Interaction.Samples
         [SerializeField]
         private float _maxAngle = 45f;
         [SerializeField]
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private float _railGap = 0.005f;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
         [SerializeField]
         private float _squeezeLength = 5f;
 

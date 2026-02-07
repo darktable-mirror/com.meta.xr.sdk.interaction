@@ -170,7 +170,7 @@ namespace Oculus.Interaction
             if (_rayInteractor.State == InteractorState.Select)
             {
                 _selectObject.SetActive(true);
-                _renderer.material.SetFloat(_shaderRadialGradientScale, 0.25f);
+                _renderer.material.SetFloat(_shaderRadialGradientScale, 0.7f);
                 _renderer.material.SetFloat(_shaderRadialGradientIntensity, 1f);
                 _renderer.material.SetFloat(_shaderRadialGradientBackgroundOpacity, 1f);
                 _renderer.material.SetColor(_shaderOutlineColor, _outlineColor);
@@ -180,10 +180,10 @@ namespace Oculus.Interaction
                 _selectObject.SetActive(false);
                 var mappedPinchStrength = Hand.GetFingerPinchStrength(HandFinger.Index);
                 var radialScale = 1f - mappedPinchStrength;
-                radialScale = Mathf.Max(radialScale, .11f);
+                radialScale = Mathf.Max(radialScale, .7f);
                 _renderer.material.SetFloat(_shaderRadialGradientScale, radialScale);
                 _renderer.material.SetFloat(_shaderRadialGradientIntensity, mappedPinchStrength);
-                _renderer.material.SetFloat(_shaderRadialGradientBackgroundOpacity, Mathf.Lerp(0.3f, 0.7f, mappedPinchStrength));
+                _renderer.material.SetFloat(_shaderRadialGradientBackgroundOpacity, Mathf.Lerp(0.7f, 1.0f, mappedPinchStrength));
                 _renderer.material.SetColor(_shaderOutlineColor, _outlineColor);
             }
         }

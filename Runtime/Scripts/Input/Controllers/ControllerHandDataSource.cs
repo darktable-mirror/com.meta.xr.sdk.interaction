@@ -18,7 +18,9 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.Input
 {
@@ -29,11 +31,21 @@ namespace Oculus.Interaction.Input
 
         [SerializeField]
         private Transform _root;
+
+        [SerializeField]
+        private Transform _openXRRoot;
+
         public Transform Root
         {
+#if ISDK_OPENXR_HAND
+            get => _openXRRoot;
+            set => _openXRRoot = value;
+#else
             get => _root;
             set => _root = value;
+#endif
         }
+
         [SerializeField]
         private bool _rootIsLocal = true;
         public bool RootIsLocal
@@ -43,7 +55,21 @@ namespace Oculus.Interaction.Input
         }
 
         [SerializeField]
-        private Transform[] _bones;
+        [FormerlySerializedAs("_bones")]
+        [FormerlySerializedAs("_joints")]
+        private Transform[] _jointTransforms;
+
+        [SerializeField]
+        private Transform[] _openXRJointTransforms;
+
+        public Transform[] Joints
+        {
+#if ISDK_OPENXR_HAND
+            get => _openXRJointTransforms;
+#else
+            get => _jointTransforms;
+#endif
+        }
 
         private HandDataSourceConfig _config;
         private readonly HandDataAsset _handDataAsset = new HandDataAsset();
@@ -62,32 +88,41 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        protected virtual void Awake()
+        {
 #if ISDK_OPENXR_HAND
-        private static readonly HandMirroring.HandSpace _openXRRootLeft = new HandMirroring.HandSpace(
-            Vector3.forward, Vector3.up, Vector3.right);
-        private static readonly HandMirroring.HandSpace _openXRRootRight = new HandMirroring.HandSpace(
-            Vector3.forward, Vector3.up, Vector3.left);
-        private static readonly HandMirroring.HandSpace _ovrRootLeft = new HandMirroring.HandSpace(
-            Vector3.left, Vector3.down, Vector3.forward);
-        private static readonly HandMirroring.HandSpace _ovrRootRight = new HandMirroring.HandSpace(
-            Vector3.right, Vector3.up, Vector3.forward);
-        private static readonly HandMirroring.HandsSpace openXRRootHands = new HandMirroring.HandsSpace(
-            _openXRRootLeft, _openXRRootRight);
-        private static readonly HandMirroring.HandsSpace ovrRootHands = new HandMirroring.HandsSpace(
-            _ovrRootLeft, _ovrRootRight);
-        private Quaternion[] _ovrJointRotations = new Quaternion[Compatibility.OVR.Constants.NUM_HAND_JOINTS];
+            if (_root != null)
+            {
+                _root.gameObject.SetActive(false);
+            }
+            if (_openXRRoot != null)
+            {
+                _openXRRoot.gameObject.SetActive(true);
+            }
+#else
+            if (_root != null)
+            {
+                _root.gameObject.SetActive(true);
+            }
+            if (_openXRRoot != null)
+            {
+                _openXRRoot.gameObject.SetActive(false);
+            }
 #endif
+        }
 
         protected override void Start()
         {
             this.BeginStart(ref _started, () => base.Start());
-
-            this.AssertAspect(_controllerSource, nameof(_controllerSource));
-            this.AssertAspect(_root, nameof(_root));
-            this.AssertCollectionField(_bones, nameof(_bones));
-
+            this.AssertField(_controllerSource, nameof(_controllerSource));
+#if ISDK_OPENXR_HAND
+            this.AssertCollectionField(_openXRJointTransforms, nameof(_openXRJointTransforms));
+            this.AssertField(_openXRRoot, nameof(_openXRRoot));
+#else
+            this.AssertCollectionField(_jointTransforms, nameof(_jointTransforms));
+            this.AssertField(_root, nameof(_root));
+#endif
             UpdateConfig();
-
             this.EndStart(ref _started);
         }
 
@@ -97,14 +132,7 @@ namespace Oculus.Interaction.Input
 
             Config.Handedness = controllerConfig.Handedness;
             Config.TrackingToWorldTransformer = controllerConfig.TrackingToWorldTransformer;
-
-#if ISDK_OPENXR_HAND
-            Config.HandSkeleton = Config.Handedness == Handedness.Left ?
-                HandSkeleton.DefaultLeftSkeleton :
-                HandSkeleton.DefaultRightSkeleton;
-#else
-            Config.HandSkeleton = HandSkeleton.FromJoints(_bones);
-#endif
+            Config.HandSkeleton = HandSkeleton.FromJoints(Joints);
         }
 
         protected override void UpdateData()
@@ -161,54 +189,27 @@ namespace Oculus.Interaction.Input
             _handDataAsset.PointerPoseOrigin = PoseOrigin.FilteredTrackedPose;
             _handDataAsset.PointerPose = controllerData.PointerPose;
 
+            for (int i = 0; i < Joints.Length; i++)
+            {
+#pragma warning disable 0618
+                _handDataAsset.Joints[i] = Joints[i].localRotation;
+#pragma warning restore 0618
 #if ISDK_OPENXR_HAND
-
-            // Populate ovr rotations from bone transforms
-            for (int i = 0; i < Compatibility.OVR.Constants.NUM_HAND_JOINTS; i++)
-            {
-                _ovrJointRotations[i] = _bones[i].localRotation;
-            }
-
-            // Set wrist poses to identity
-            _handDataAsset.JointPoses[(int)HandJointId.HandWristRoot] = Pose.identity;
-            _ovrJointRotations[(int)Compatibility.OVR.HandJointId.HandWristRoot] = Quaternion.identity;
-
-            // Translate ovr rotations to OpenXR joint poses
-            HandTranslationUtils.OVRHandRotationsToOpenXRPoses(_ovrJointRotations, _config.Handedness,
-                ref _handDataAsset.JointPoses);
-
-#pragma warning disable 0618
-            // Populate legacy Joints array
-            HandJointUtils.WristJointPosesToLocalRotations(_handDataAsset.JointPoses, ref _handDataAsset.Joints);
-#pragma warning restore 0618
-#else
-            for (int i = 0; i < _bones.Length; i++)
-            {
-#pragma warning disable 0618
-                _handDataAsset.Joints[i] = _bones[i].localRotation;
-#pragma warning restore 0618
-            }
+                _handDataAsset.JointPoses[i] = PoseUtils.Delta(Root, Joints[i]);
 #endif
+            }
 
             if (_rootIsLocal)
             {
-                Pose offset = _root.GetPose(Space.Self);
-#if ISDK_OPENXR_HAND
-                Handedness transformHandedness = Config.Handedness;
-                HandMirroring.HandSpace fromHand = ovrRootHands[transformHandedness];
-                HandMirroring.HandSpace toHand = openXRRootHands[transformHandedness];
-                Vector3 forward = HandMirroring.TransformPosition(offset.rotation * Vector3.forward, fromHand, toHand);
-                Vector3 up = HandMirroring.TransformPosition(offset.rotation * Vector3.up, fromHand, toHand);
-                offset.rotation = Quaternion.LookRotation(forward, up);
-#endif
+                Pose offset = Root.GetPose(Space.Self);
                 Pose controllerPose = controllerData.RootPose;
                 PoseUtils.Multiply(controllerPose, offset, ref _handDataAsset.Root);
-                _handDataAsset.HandScale = _root.localScale.x;
+                _handDataAsset.HandScale = Root.localScale.x;
             }
             else
             {
-                _handDataAsset.Root = _root.GetPose(Space.World);
-                _handDataAsset.HandScale = _root.lossyScale.x;
+                _handDataAsset.Root = Root.GetPose(Space.World);
+                _handDataAsset.HandScale = Root.lossyScale.x;
             }
 
             _handDataAsset.RootPoseOrigin = PoseOrigin.FilteredTrackedPose;
@@ -217,11 +218,11 @@ namespace Oculus.Interaction.Input
         #region Inject
 
         public void InjectAllControllerHandDataSource(UpdateModeFlags updateMode, IDataSource updateAfter,
-            DataSource<ControllerDataAsset> controllerSource, Transform[] bones)
+            DataSource<ControllerDataAsset> controllerSource, Transform[] jointTransforms)
         {
             base.InjectAllDataSource(updateMode, updateAfter);
             InjectControllerSource(controllerSource);
-            InjectBones(bones);
+            InjectJointTransforms(jointTransforms);
         }
 
         public void InjectControllerSource(DataSource<ControllerDataAsset> controllerSource)
@@ -229,11 +230,20 @@ namespace Oculus.Interaction.Input
             _controllerSource = controllerSource;
         }
 
-        public void InjectBones(Transform[] bones)
+        [Obsolete("Use " + nameof(InjectJointTransforms) + " instead")]
+        public void InjectBones(Transform[] joints)
         {
-            _bones = bones;
+            InjectJointTransforms(joints);
         }
 
+        public void InjectJointTransforms(Transform[] jointTransforms)
+        {
+#if ISDK_OPENXR_HAND
+            _openXRJointTransforms = jointTransforms;
+#else
+            _jointTransforms = jointTransforms;
+#endif
+        }
         #endregion
     }
 }

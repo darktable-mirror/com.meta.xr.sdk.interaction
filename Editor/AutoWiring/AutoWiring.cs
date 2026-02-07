@@ -115,7 +115,7 @@ namespace Oculus.Interaction.Editor
             return false;
         }
 
-        private static FieldInfo FindField(string fieldName, Type type)
+        public static FieldInfo FindField(string fieldName, Type type)
         {
             if (type == null)
             {

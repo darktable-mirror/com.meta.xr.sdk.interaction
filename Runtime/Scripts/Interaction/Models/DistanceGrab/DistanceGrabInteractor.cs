@@ -53,6 +53,7 @@ namespace Oculus.Interaction
         [SerializeField, Optional]
         private Transform _grabTarget;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         /// <summary>
         /// Determines how the object will move when thrown.
         /// </summary>
@@ -62,6 +63,7 @@ namespace Oculus.Interaction
         private UnityEngine.Object _velocityCalculator;
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [SerializeField]
         private DistantCandidateComputer<DistanceGrabInteractor, DistanceGrabInteractable> _distantCandidateComputer
@@ -91,7 +93,9 @@ namespace Oculus.Interaction
         {
             base.Awake();
             Selector = _selector as ISelector;
+#pragma warning disable CS0618 // Type or member is obsolete
             VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
+#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4469737447726162;
         }
 
@@ -111,10 +115,12 @@ namespace Oculus.Interaction
                 _grabTarget = _grabCenter;
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (_velocityCalculator != null)
             {
                 this.AssertField(VelocityCalculator, nameof(VelocityCalculator));
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             this.EndStart(ref _started);
         }
 
@@ -171,10 +177,12 @@ namespace Oculus.Interaction
             base.InteractableUnselected(interactable);
             _movement = null;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             ReleaseVelocityInformation throwVelocity = VelocityCalculator != null ?
                 VelocityCalculator.CalculateThrowVelocity(interactable.transform) :
                 new ReleaseVelocityInformation(Vector3.zero, Vector3.zero, Vector3.zero);
             interactable.ApplyVelocities(throwVelocity.LinearVelocity, throwVelocity.AngularVelocity);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void HandleOtherPointerEventRaised(PointerEvent evt)

@@ -21,6 +21,7 @@
 using Oculus.Interaction.GrabAPI;
 using Oculus.Interaction.Input;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace Oculus.Interaction

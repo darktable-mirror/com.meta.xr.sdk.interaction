@@ -32,7 +32,16 @@ namespace Oculus.Interaction.Editor
             base.OnInspectorGUI();
 
             UITheme selectedTheme = (UITheme)target;
-            if (GUILayout.Button("Save Theme Updates"))
+
+            // Save Theme File button
+            GUILayout.Space(20);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+            buttonStyle.fontSize = 20;
+            buttonStyle.fontStyle = FontStyle.Bold;
+            buttonStyle.alignment = TextAnchor.MiddleCenter;
+            GUI.backgroundColor = Color.green;
+            GUIContent buttonContent = new GUIContent("Save Theme File", "Click to save the current theme file and update the animation clips.");
+            if (GUILayout.Button(buttonContent, buttonStyle, GUILayout.ExpandWidth(true), GUILayout.Height(60)))
             {
                 UpdateAnimationClips(selectedTheme);
             }

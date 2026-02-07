@@ -21,6 +21,7 @@
 using Oculus.Interaction.Input;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Oculus.Interaction
 {
@@ -72,7 +73,9 @@ namespace Oculus.Interaction
             "transform for this component will match the legacy hand skeleton joint orientation " +
             "rather than the current OpenXR joint orientation.")]
         [SerializeField]
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         private bool _useLegacyOrientation = false;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
 
         #endregion OpenXR Fields
 
@@ -101,6 +104,7 @@ namespace Oculus.Interaction
 
         #region OpenXR Fields
 
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         [Header("Freeze rotations")]
         [SerializeField]
         private bool _freezeRotationX = false;
@@ -110,6 +114,7 @@ namespace Oculus.Interaction
 
         [SerializeField]
         private bool _freezeRotationZ = false;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
 
         #endregion OpenXR Fields
 

@@ -195,7 +195,9 @@ namespace Oculus.Interaction.PoseDetection.Editor
             return height;
         }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
         public override bool CanCacheInspectorGUI(SerializedProperty property)
+#pragma warning restore CS0672 // Member overrides obsolete member
         {
             return true;
         }

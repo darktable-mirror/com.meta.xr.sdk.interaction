@@ -148,7 +148,9 @@ namespace Oculus.Interaction
                 Pose brokenInitialPose = _brokenBodiesInitialPoses[i];
 
                 // Reset
+#pragma warning disable CS0618 // Type or member is obsolete
                 brokenBody.velocity = Vector3.zero;
+#pragma warning restore CS0618 // Type or member is obsolete
                 brokenBody.angularVelocity = Vector3.zero;
                 brokenBody.transform.localPosition = brokenInitialPose.position;
                 brokenBody.transform.localRotation = brokenInitialPose.rotation;

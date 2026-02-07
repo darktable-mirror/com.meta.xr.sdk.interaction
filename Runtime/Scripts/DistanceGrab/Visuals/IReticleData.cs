@@ -22,8 +22,23 @@ using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Interface for data instances pertaining to reticles --- visual indications of interactor targeting, such as a
+    /// pointer highlight to be drawn at the end of a raycast for a <see cref="RayInteractor"/> --- which need to
+    /// process the positions of raycast hits in order to position themselves correctly.
+    /// </summary>
     public interface IReticleData
     {
+        /// <summary>
+        /// Tells this IReticleData the position of the most recent hit point; the IReticleData should use this hit
+        /// point as the basis for its rendering.
+        /// </summary>
+        /// <param name="hitPoint">The most recent position relative to which the reticle should render</param>
+        /// <returns>
+        /// A potentially modified hit point, depending on whether the specific IReticleData implementation chooses
+        /// to render elsewhere from the specified <paramref name="hitPoint"/> (see
+        /// <see cref="ReticleDataTeleport.ProcessHitPoint(Vector3)"/> for an example).
+        /// </returns>
         Vector3 ProcessHitPoint(Vector3 hitPoint);
     }
 }

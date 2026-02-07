@@ -216,7 +216,9 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [CustomEditor(typeof(OneGrabFreeTransformer), false, isFallback = true), CanEditMultipleObjects]
+#pragma warning restore CS0618 // Type or member is obsolete
     public class OneGrabFreeTransformerEditorFallback : SimplifiedEditor { }
 }
 
@@ -240,7 +242,9 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [CustomEditor(typeof(TwoGrabFreeTransformer), false, isFallback = true), CanEditMultipleObjects]
+#pragma warning restore CS0618 // Type or member is obsolete
     public class TwoGrabFreeTransformerEditorFallback : SimplifiedEditor { }
 }
 
@@ -672,7 +676,9 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [CustomEditor(typeof(PhysicsGrabbable), false, isFallback = true), CanEditMultipleObjects]
+#pragma warning restore CS0618 // Type or member is obsolete
     public class PhysicsGrabbableEditorFallback : SimplifiedEditor { }
 }
 
@@ -792,7 +798,9 @@ namespace Oculus.Interaction.Throw.Editor.Generated
 
 namespace Oculus.Interaction.Throw.Editor.Generated
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [CustomEditor(typeof(StandardVelocityCalculator), false, isFallback = true), CanEditMultipleObjects]
+#pragma warning restore CS0618 // Type or member is obsolete
     public class StandardVelocityCalculatorEditorFallback : SimplifiedEditor { }
 }
 

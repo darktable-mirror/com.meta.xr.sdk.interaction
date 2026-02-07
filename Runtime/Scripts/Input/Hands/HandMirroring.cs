@@ -82,10 +82,10 @@ namespace Oculus.Interaction.Input
             }
         }
 
-        private static readonly HandSpace _leftHandSpace = new HandSpace(
+        public static readonly HandSpace LeftHandSpace = new HandSpace(
             Constants.LeftDistal, Constants.LeftDorsal, Constants.LeftThumbSide);
 
-        private static readonly HandSpace _rightHandSpace = new HandSpace(
+        public static readonly HandSpace RightHandSpace = new HandSpace(
             Constants.RightDistal, Constants.RightDorsal, Constants.RightThumbSide);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Oculus.Interaction.Input
         /// <returns>The transformed position</returns>
         public static Vector3 Mirror(in Vector3 position)
         {
-            return TransformPosition(position, _leftHandSpace, _rightHandSpace);
+            return TransformPosition(position, LeftHandSpace, RightHandSpace);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Oculus.Interaction.Input
         /// <returns>The transformed rotation</returns>
         public static Quaternion Mirror(in Quaternion rotation)
         {
-            return TransformRotation(rotation, _leftHandSpace, _rightHandSpace);
+            return TransformRotation(rotation, LeftHandSpace, RightHandSpace);
         }
 
         /// <summary>
@@ -134,10 +134,10 @@ namespace Oculus.Interaction.Input
         /// <returns>The reflected rotation</returns>
         public static Quaternion Reflect(in Quaternion rotation, Vector3 normal)
         {
-            Vector3 reflectedDistal = Vector3.Reflect(rotation * _rightHandSpace.distal, normal);
-            Vector3 reflectedDorsal = Vector3.Reflect(rotation * _rightHandSpace.dorsal, normal);
+            Vector3 reflectedDistal = Vector3.Reflect(rotation * RightHandSpace.distal, normal);
+            Vector3 reflectedDorsal = Vector3.Reflect(rotation * RightHandSpace.dorsal, normal);
             Quaternion reflectedOrientation = Quaternion.LookRotation(reflectedDistal, reflectedDorsal)
-                * Quaternion.Inverse(_leftHandSpace.rotation);
+                * Quaternion.Inverse(LeftHandSpace.rotation);
 
             return reflectedOrientation;
         }

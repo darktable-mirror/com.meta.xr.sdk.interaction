@@ -12,37 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeQuest_Dark
   m_EditorClassIdentifier: 
-  _themeVersion: 1
-  backplateColor: {r: 0.10980392, g: 0.16862746, b: 0.2, a: 1}
-  buttonPlateColor: {r: 1, g: 1, b: 1, a: 0.039215688}
-  sectionPlateColor: {r: 0.1137255, g: 0.14509805, b: 0.19607845, a: 1}
-  tooltipColor: {r: 0, g: 0, b: 0, a: 1}
-  textPrimaryColor: {r: 0.94509804, g: 0.95686275, b: 0.96862745, a: 1}
-  textSecondaryColor: {r: 0.6901961, g: 0.7019608, b: 0.72156864, a: 1}
+  _themeVersion: 2
+  backplateColor: {r: 0, g: 0, b: 0, a: 1}
+  backplateGradientMaterial: {fileID: 2100000, guid: 28ed54c87b1e69c4f9268fd670606ddb,
+    type: 2}
+  buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.039215688}
+  sectionPlateColor: {r: 0, g: 0, b: 0, a: 0.2}
+  tooltipColor: {r: 0.10062885, g: 0.10062885, b: 0.10062885, a: 1}
+  textPrimaryColor: {r: 1, g: 1, b: 1, a: 0.9019608}
+  textSecondaryColor: {r: 1, g: 1, b: 1, a: 0.69803923}
+  textPrimaryInvertedColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+  textSecondaryInvertedColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.69803923}
   primaryButton:
-    normal: {r: 0, g: 0.3921569, b: 0.87843144, a: 1}
-    highlighted: {r: 0.098039225, g: 0.45098042, b: 0.89019614, a: 1}
-    pressed: {r: 0.20000002, g: 0.5137255, b: 0.90196085, a: 1}
-    selected: {r: 0, g: 0.3921569, b: 0.87843144, a: 1}
-    disabled: {r: 0.09019608, g: 0.24705884, b: 0.46274513, a: 1}
+    normal: {r: 1, g: 1, b: 1, a: 0.9019608}
+    highlighted: {r: 1, g: 1, b: 1, a: 0.8}
+    pressed: {r: 1, g: 1, b: 1, a: 0.69803923}
+    selected: {r: 1, g: 1, b: 1, a: 0.69803923}
+    disabled: {r: 1, g: 1, b: 1, a: 0.101960786}
   secondaryButton:
-    normal: {r: 0.21960786, g: 0.2509804, b: 0.3137255, a: 1}
-    highlighted: {r: 0.3019608, g: 0.32941177, b: 0.38431376, a: 1}
-    pressed: {r: 0.31764707, g: 0.34509805, b: 0.39607847, a: 1}
-    selected: {r: 0.21960786, g: 0.2509804, b: 0.3137255, a: 1}
-    disabled: {r: 0.17254902, g: 0.20000002, b: 0.2627451, a: 1}
+    normal: {r: 0.29411766, g: 0.29411766, b: 0.29411766, a: 1}
+    highlighted: {r: 0.3647059, g: 0.3647059, b: 0.3647059, a: 1}
+    pressed: {r: 0.43529415, g: 0.43529415, b: 0.43529415, a: 1}
+    selected: {r: 0.43529415, g: 0.43529415, b: 0.43529415, a: 1}
+    disabled: {r: 0.26666668, g: 0.26666668, b: 0.26666668, a: 1}
   borderlessButton:
-    normal: {r: 0.14117648, g: 0.17254902, b: 0.23529413, a: 0}
-    highlighted: {r: 0.227451, g: 0.25490198, b: 0.30588236, a: 1}
-    pressed: {r: 0.31764707, g: 0.34509805, b: 0.3803922, a: 1}
-    selected: {r: 0.14117648, g: 0.17254902, b: 0.23529413, a: 1}
-    disabled: {r: 0.15294118, g: 0.18431373, b: 0.227451, a: 0}
+    normal: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
+    highlighted: {r: 0.32941177, g: 0.32941177, b: 0.32941177, a: 1}
+    pressed: {r: 0.4039216, g: 0.4039216, b: 0.4039216, a: 1}
+    selected: {r: 0.4039216, g: 0.4039216, b: 0.4039216, a: 1}
+    disabled: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
   destructiveButton:
-    normal: {r: 0.6666667, g: 0.039215688, b: 0.11764707, a: 1}
-    highlighted: {r: 0.69803923, g: 0.13333334, b: 0.20392159, a: 1}
-    pressed: {r: 0.73333335, g: 0.23137257, b: 0.29411766, a: 1}
-    selected: {r: 0.6666667, g: 0.039215688, b: 0.11764707, a: 1}
-    disabled: {r: 0.3254902, g: 0.12941177, b: 0.18823531, a: 1}
+    normal: {r: 0.8666667, g: 0.08235294, b: 0.20784314, a: 0.9019608}
+    highlighted: {r: 0.8666667, g: 0.08235294, b: 0.20784314, a: 0.8}
+    pressed: {r: 0.8666667, g: 0.08235294, b: 0.20784314, a: 0.69803923}
+    selected: {r: 0.8666667, g: 0.08235294, b: 0.20784314, a: 0.69803923}
+    disabled: {r: 0.8666667, g: 0.08235294, b: 0.20784314, a: 0.101960786}
   textFontBold: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   textFontMedium: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   textFontRegular: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -30,7 +30,7 @@ using UnityEngine;
 /// </summary>
 public class InteractableObjectLabel : MonoBehaviour
 {
-    [Tooltip("The positions of this transoforms are used to check if the user is facing the object")]
+    [Tooltip("The positions of these transforms are used to check if the user is facing the object")]
     public List<Transform> viewTargets;
     [Tooltip("The possible positions for the label, the component always selected the one that has the highest y position component")]
     public List<Transform> labelPositions;

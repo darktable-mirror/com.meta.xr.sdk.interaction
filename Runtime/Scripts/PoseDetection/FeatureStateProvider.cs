@@ -63,16 +63,13 @@ namespace Oculus.Interaction.PoseDetection
     }
 
     /// <summary>
-    /// A helper class that keeps track of the current state of features, quantized into
-    /// corresponding FeatureStates.
+    /// A generic provider that manages feature states through state collections in <see cref="FingerFeatureStateDictionary"/> and <see cref="TransformFeatureStateCollection"/>,
+    /// supporting the high-level providers <see cref="FingerFeatureStateProvider"/> and <see cref="TransformFeatureStateProvider"/>.
+    /// This provider implements hysteresis-based state management with time-based validation to ensure
+    /// stable and reliable feature state detection.
     /// </summary>
-    /// <typeparam name="TFeature">
-    /// An enum containing all features that can be tracked.
-    /// </typeparam>
-    /// <typeparam name="TFeatureState">
-    /// An enum of all the possible states of each member of the <see cref="TFeature"/> param.
-    /// The name of each member of this enum must be prefixed with one of the values of TFeature.
-    /// </typeparam>
+    /// <typeparam name="TFeature">An enum containing all trackable features</typeparam>
+    /// <typeparam name="TFeatureState">An enum of all possible states for each feature</typeparam>
     public class FeatureStateProvider<TFeature, TFeatureState>
         where TFeature : unmanaged, Enum
         where TFeatureState : IEquatable<TFeatureState>
@@ -113,6 +110,12 @@ namespace Oculus.Interaction.PoseDetection
 
         #endregion
 
+        /// <summary>
+        /// Initializes the provider with value reading, feature mapping, and time tracking functions.
+        /// </summary>
+        /// <param name="valueReader">Function that reads the current value of a feature</param>
+        /// <param name="featureToInt">Function that maps feature enum values to integer indices</param>
+        /// <param name="timeProvider">Function that provides the current time value</param>
         public FeatureStateProvider(Func<TFeature, float?> valueReader,
             Func<TFeature, int> featureToInt,
             Func<float> timeProvider)
@@ -122,6 +125,10 @@ namespace Oculus.Interaction.PoseDetection
             _timeProvider = timeProvider;
         }
 
+        /// <summary>
+        /// Initializes the threshold configuration for all features.
+        /// </summary>
+        /// <param name="featureThresholds">Configuration defining state transition thresholds</param>
         public void InitializeThresholds(IFeatureThresholds<TFeature, TFeatureState> featureThresholds)
         {
             _featureThresholds = featureThresholds;
@@ -187,6 +194,11 @@ namespace Oculus.Interaction.PoseDetection
             return ref _featureToThresholds[EnumToInt(feature)];
         }
 
+        /// <summary>
+        /// Gets the current state of a specified feature, calculating and potentially updating it based on the latest feature value.
+        /// </summary>
+        /// <param name="feature">The feature to query</param>
+        /// <returns>The current state of the specified feature, which may or may not have changed this frame.</returns>
         public TFeatureState GetCurrentFeatureState(TFeature feature)
         {
             Assert.IsNotNull(_featureToThresholds, "Must call InitializeThresholds() before querying state");

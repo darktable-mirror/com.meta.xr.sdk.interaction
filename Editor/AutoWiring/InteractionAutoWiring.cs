@@ -74,6 +74,21 @@ namespace Oculus.Interaction.Editor
             );
 
             AutoWiring.Register(
+                typeof(ShapeRecognizerActiveState),
+                new[] {
+                    new ComponentWiringStrategyConfig("_hand", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors
+                        }),
+                    new ComponentWiringStrategyConfig("_fingerFeatureStateProvider", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors,
+                            FieldWiringStrategies.WireFieldToNearestComponent
+                        })
+                }
+            );
+
+            AutoWiring.Register(
                 typeof(TransformFeatureStateProvider),
                 new[] {
                     new ComponentWiringStrategyConfig("_hand", new FieldWiringStrategy[]
@@ -82,7 +97,9 @@ namespace Oculus.Interaction.Editor
                         }),
                     new ComponentWiringStrategyConfig("_trackingToWorldTransformer", new FieldWiringStrategy[]
                         {
-                            FieldWiringStrategies.WireFieldToAncestors
+                            FieldWiringStrategies.WireFieldToAncestors,
+                            FieldWiringStrategies.WireFieldToNearestComponent
+
                         }),
                     new ComponentWiringStrategyConfig("_hmd", new FieldWiringStrategy[]
                         {
@@ -99,6 +116,17 @@ namespace Oculus.Interaction.Editor
                         {
                             FieldWiringStrategies.WireFieldToAncestors
                         }),
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(TransformTrackingToWorldTransformer),
+                new[] {
+                    new ComponentWiringStrategyConfig("TrackingSpace", new FieldWiringStrategy[]
+                        {
+                            (monoBehaviour, field, targetType) =>
+                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace")
+                        })
                 }
             );
 
@@ -173,7 +201,23 @@ namespace Oculus.Interaction.Editor
             );
 
             AutoWiring.Register(
-                typeof(CapsuleLocomotionHandler),
+                typeof(FirstPersonLocomotor),
+                new[] {
+                    new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/..")
+                        }),
+                    new ComponentWiringStrategyConfig("_playerEyes", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                        })
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(FlyingLocomotor),
                 new[] {
                     new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
                         {

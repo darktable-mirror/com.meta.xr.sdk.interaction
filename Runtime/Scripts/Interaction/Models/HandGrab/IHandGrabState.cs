@@ -37,16 +37,43 @@ namespace Oculus.Interaction.HandGrab
     }
 
     /// <summary>
-    /// Interface for interactors that allow aligning to an object.
-    /// Contains information to drive the HandGrabVisual moving
-    /// the fingers and wrist.
+    /// Interface for interactors that allow aligning to an object. Contains information to drive the <see cref="HandGrabStateVisual"/>,
+    /// moving the fingers and wrist of the rendered hand to emulate the real pose of the tracked hand as closely as possible while
+    /// still representing a grab.
     /// </summary>
     public interface IHandGrabState
     {
+        /// <summary>
+        /// Property indicating whether or not the hand associated with this IHandGrabState instance is grabbing.
+        /// </summary>
+        /// <remarks>
+        /// Certain <see cref="HandGrabStateVisual"/> features can apply even when the hand is not grabbing; for example, for a
+        /// target with <see cref="HandGrabTarget.HandAlignment"/> set to <see cref="HandAlignType.AttractOnHover"/>, the
+        /// <see cref="HandGrabStateVisual"/> can apply behavior even without grabbing.
+        /// </remarks>
         bool IsGrabbing { get; }
+
+        /// <summary>
+        /// Value indicating the degree to which the fingers of the <see cref="HandGrabStateVisual"/> should conform to the grab
+        /// pose versus the tracked pose.
+        /// </summary>
         float FingersStrength { get; }
+
+        /// <summary>
+        /// Value indicating the degree to which the wrist of the <see cref="HandGrabStateVisual"/> should conform to the grab
+        /// pose versus the tracked pose.
+        /// </summary>
         float WristStrength { get; }
+
+        /// <summary>
+        /// Pose of the grab point relative to the wrist joint; used by <see cref="HandGrabInteraction"/> to calculate the
+        /// position in world space from which <see cref="PointerEvent"/>s (among other outputs) should be generated.
+        /// </summary>
         Pose WristToGrabPoseOffset { get; }
+
+        /// <summary>
+        /// The <see cref="HandGrabTarget"/> associated with this specific IHandGrabState instance.
+        /// </summary>
         HandGrabTarget HandGrabTarget { get; }
 
         /// <summary>

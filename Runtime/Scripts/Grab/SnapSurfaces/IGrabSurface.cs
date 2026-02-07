@@ -24,10 +24,12 @@ using UnityEngine;
 namespace Oculus.Interaction.Grab.GrabSurfaces
 {
     /// <summary>
-    /// This interface defines the method needed to use grab surfaces. They allow finding the
-    /// nearest poses at the surface to a given set of parameters as well as duplicating and
-    /// mirroring the surface.
+    /// This interface defines the methods needed to use grab surfaces, such as finding the nearest poses at
+    /// the surface to a given set of parameters and duplicating and mirroring the surface.
     /// </summary>
+    /// <remarks>
+    /// For a canonical example of an implementation of this interface, see <see cref="ColliderGrabSurface"/>.
+    /// </remarks>
     public interface IGrabSurface
     {
 
@@ -66,9 +68,14 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
             Transform relativeTo);
 
         /// <summary>
-        /// Method for mirroring a Pose around the surface.
-        /// Different surfaces will prefer mirroring along different axis.
+        /// Method for mirroring a Pose around the surface. Different surfaces will prefer mirroring
+        /// along different axes.
         /// </summary>
+        /// <remarks>
+        /// For example, <see cref="BoxGrabSurface"/> mirrors along its "left-right" axis, whereas
+        /// <see cref="BezierGrabSurface"/> does not support mirroring and simply returns the
+        /// provided <paramref name="gripPose"/>.
+        /// </remarks>
         /// <param name="gripPose">The Pose to be mirrored.</param>
         /// <param name="relativeTo">Reference transform to mirror the pose around</param>
         /// <returns>A new pose mirrored at this surface.</returns>

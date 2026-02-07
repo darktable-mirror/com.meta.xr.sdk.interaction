@@ -23,45 +23,76 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A SnapPoseDelegate can be used to provide custom snap pose logic
-    /// given a set of elements that are either being tracked or are snapped.
+    /// Provides custom snap pose logic for handling tracked and snapped elements in the Interaction SDK.
+    /// This interface enables implementing classes to define precise snapping behavior for objects
+    /// as they move between tracking and snapped states.
     /// </summary>
+    /// <remarks>
+    /// The snap pose delegate manages the lifecycle of tracked and snapped elements through distinct states:
+    /// - Tracking: When an element is being actively followed but not yet snapped
+    /// - Snapped: When an element has been locked to a specific pose
+    /// - Movement: Handling pose updates for tracked elements
+    /// See <see cref="Oculus.Interaction.SurfaceSnapPoseDelegate"/> and <see cref="Oculus.Interaction.SequentialSlotsProvider"/> for example implementations.
+    /// </remarks>
     public interface ISnapPoseDelegate
     {
         /// <summary>
-        /// Indicates that a new element is tracking.
+        /// Begins tracking a new element at the specified pose. This initiates the tracking state
+        /// for an element before it potentially snaps to a final position.
         /// </summary>
-        /// <param name="id">The element id to track.</param>
-        /// <param name="pose">The pose of the element.</param>
+        /// <param name="id">Unique identifier for the element to track</param>
+        /// <param name="pose">Initial pose of the element in world space</param>
+        /// <remarks>
+        /// This method should be called when an element first becomes eligible for snapping,
+        /// typically when it enters a snap zone or grab volume.
+        /// </remarks>
         void TrackElement(int id, Pose p);
+
         /// <summary>
-        /// Indicates that an element is no longer being tracked.
+        /// Stops tracking an element, removing it from the tracking system. This should be called
+        /// when an element is no longer eligible for snapping or needs to be released.
         /// </summary>
-        /// <param name="id">The element id to stop tracking.</param>
+        /// <param name="id">Unique identifier of the element to stop tracking</param>
         void UntrackElement(int id);
+
         /// <summary>
-        /// Indicates that the tracked element should snap.
+        /// Transitions an element from being tracked to being snapped at a specific pose.
+        /// This locks the element to the specified position and rotation.
         /// </summary>
-        /// <param name="id">The element id to snap.</param>
-        /// <param name="pose">The pose of the element.</param>
+        /// <param name="id">Unique identifier of the element to snap</param>
+        /// <param name="pose">Target pose where the element should snap to</param>
+        /// <remarks>
+        /// The snap pose may be different from the current tracked pose, allowing for
+        /// smooth transitions to predefined positions.
+        /// </remarks>
         void SnapElement(int id, Pose pose);
+
         /// <summary>
-        /// Indicates that the element should no longer snap.
+        /// Releases an element from its snapped state. This returns the element
+        /// to a tracked state or releases it completely.
         /// </summary>
-        /// <param name="id">The element id to stop snapping.</param>
+        /// <param name="id">Unique identifier of the element to unsnap</param>
         void UnsnapElement(int id);
+
         /// <summary>
-        /// Indicates that a tracked element pose has updated.
+        /// Updates the pose of a tracked element. This should be called continuously while
+        /// an element is being tracked to update its position and rotation.
         /// </summary>
-        /// <param name="id">The element id.</param>
-        /// <param name="pose">The new element pose.</param>
+        /// <param name="id">Unique identifier of the element to update</param>
+        /// <param name="pose">New pose for the tracked element</param>
         void MoveTrackedElement(int id, Pose p);
+
         /// <summary>
-        /// The target snap pose for a queried element id.
+        /// Determines the target snap pose for a given element, if one exists.
         /// </summary>
-        /// <param name="id">The element id.</param>
-        /// <param name="pose">The target pose.</param>
-        /// <returns>True if the element has a pose to snap to.</returns>
+        /// <param name="id">Unique identifier of the element to check</param>
+        /// <param name="pose">Current pose of the element</param>
+        /// <param name="result">The calculated snap pose if available</param>
+        /// <returns>True if a valid snap pose exists for the element, false otherwise</returns>
+        /// <remarks>
+        /// This method is used to preview or validate potential snap positions
+        /// before actually performing the snap operation.
+        /// </remarks>
         bool SnapPoseForElement(int id, Pose pose, out Pose result);
     }
 }

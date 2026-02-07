@@ -331,7 +331,21 @@ namespace Oculus.Interaction.Utils
 
         private void Mirror(AnimationClip clip)
         {
-            AnimationClip mirrorClip = HandAnimationUtils.Mirror(clip, _handLeftPrefix, _handRightPrefix, false);
+            if (!HandAnimationUtils.TryGetClipHandedness(clip, _handLeftPrefix, _handRightPrefix,
+                    out Handedness fromHandedness))
+            {
+                fromHandedness = _handVisual.Root.name.ToLower().Contains("left") ? Handedness.Left : Handedness.Right;
+            }
+
+            HandFingerJointFlags jointIdMask = HandFingerJointFlags.None;
+            foreach (var handjointID in IncludedJointIds())
+            {
+                jointIdMask |= (HandFingerJointFlags)(1 << (int)handjointID);
+            }
+
+            AnimationClip mirrorClip = HandAnimationUtils.Mirror(clip,
+                _handVisual.Joints, _handVisual.Root, jointIdMask,
+                fromHandedness, _handLeftPrefix, _handRightPrefix, _includeJointPosition);
             HandAnimationUtils.Compress(ref mirrorClip, _slopeRotationThreshold, _slopePositionThreshold);
             HandAnimationUtils.StoreAsset(mirrorClip, _folder, $"{clip.name}_mirror.anim");
         }
@@ -379,8 +393,13 @@ namespace Oculus.Interaction.Utils
                     _handLeftPrefix, _handRightPrefix,
                     out Handedness handedness))
                 {
-                    DestroyGhost();
-                    return;
+                    handedness = _handVisual.Root.name.ToLower().Contains("left") ?
+                        Handedness.Left : Handedness.Right;
+                    if (_animationClip.name.Contains("mirror"))
+                    {
+                        handedness = handedness == Handedness.Left ? Handedness.Right : Handedness.Left;
+                    }
+
                 }
 
                 if (_ghostHandedness != handedness)
@@ -398,7 +417,6 @@ namespace Oculus.Interaction.Utils
             {
                 return;
             }
-
 
             float time = normalizedTime * _animationClip.length;
             GameObject root = _handGhost.Root.gameObject;

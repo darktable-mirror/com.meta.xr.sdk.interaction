@@ -22,6 +22,8 @@ using Oculus.Interaction.DistanceReticles;
 using Oculus.Interaction.Input;
 using Oculus.Interaction.Locomotion;
 using Oculus.Interaction.Surfaces;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -64,9 +66,22 @@ namespace Oculus.Interaction.Editor.QuickActions
         [SerializeField]
         [DeviceType, WizardSetting]
         [InspectorName("Add Interactor(s)")]
-        [Tooltip("The Controller interactors required for the new interactable " +
+        [Tooltip("The interactors required for the new interactable " +
             "will be added, if not already present.")]
         private DeviceTypes _deviceTypes = DeviceTypes.All;
+
+        [SerializeField]
+        [WizardSetting]
+        [ConditionalHide(nameof(_hasOVRPackage), true,
+            ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
+        [InspectorName("Use MicroGestures")]
+        [Tooltip("If new Hand Teleport Interactors are needed, they will" +
+            "use OVR Microgestures.")]
+        [BooleanDropdown(True = "Use OVR Microgestures", False = "Use L gesture")]
+        private bool _useMicrogestures = true;
+
+        [SerializeField, HideInInspector]
+        private bool _hasOVRPackage = false;
 
         [SerializeField, Interface(typeof(ILocomotionEventHandler))]
         [Tooltip("The Locomotor receives events from the Interactor and effectively " +
@@ -112,7 +127,6 @@ namespace Oculus.Interaction.Editor.QuickActions
         private string _walkableAreaName = "Walkable";
 
         [SerializeField]
-
         [Tooltip("Physics Layer(s) only: The physics layer(s) the teleport arc can query.")]
         [WizardSetting]
         [ConditionalHide(nameof(_interactableType), TeleportInteractableType.PhysicsLayer,
@@ -186,7 +200,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             _locomotor = GameObject.FindAnyObjectByType<PlayerLocomotor>();
             if (_locomotor == null)
             {
-                _locomotor = GameObject.FindAnyObjectByType<CapsuleLocomotionHandler>();
+                _locomotor = GameObject.FindAnyObjectByType<FirstPersonLocomotor>();
             }
         }
 
@@ -330,34 +344,70 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             if ((_deviceTypes & DeviceTypes.Controllers) != 0)
             {
-                AddControllerInteractors();
+                AddDefaultInteractors(DeviceTypes.Controllers);
+            }
+            if ((_deviceTypes & DeviceTypes.ControllerDrivenHands) != 0)
+            {
+                AddDefaultInteractors(DeviceTypes.ControllerDrivenHands);
             }
             if ((_deviceTypes & DeviceTypes.Hands) != 0)
             {
-                AddHandInteractors();
-            }
-        }
-
-        private void AddControllerInteractors()
-        {
-            var interactors = InteractorUtils.AddInteractorsToRig(
-                InteractorTypes.Teleport, DeviceTypes.Controllers);
-
-            foreach (var interactor in interactors)
-            {
-                if (interactor.TryGetComponent(out LocomotionEventsConnection locomotionEventconnection))
+                if (HasOVRPackage() && _useMicrogestures)
                 {
-                    locomotionEventconnection.InjectHandler(Locomotor);
+                    AddMicrogestureInteractors();
                 }
-                UnityObjectAddedBroadcaster.HandleObjectWasAdded(interactor);
+                else
+                {
+                    AddDefaultInteractors(DeviceTypes.Hands);
+                }
             }
         }
 
-        private void AddHandInteractors()
+        protected override void InitializeFieldsExtra()
+        {
+            base.InitializeFieldsExtra();
+            _useMicrogestures = _hasOVRPackage = HasOVRPackage();
+        }
+
+        private bool HasOVRPackage()
+        {
+            string packageName = "com.meta.xr.sdk.interaction.ovr";
+            var packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+            bool found = packages.Any(pi => pi.name == packageName);
+
+            return found;
+        }
+
+        private void AddMicrogestureInteractors()
+        {
+            List<GameObject> newInteractors = new List<GameObject>();
+            if (InteractorUtils.CanAddHandInteractorsToRig())
+            {
+                foreach (Hand hand in InteractorUtils.GetHands())
+                {
+                    if (InteractorUtils.TryFindInteractorsGroup(hand, out InteractorGroup group, out Transform holder)
+                        && !InteractorUtils.GetExistingHandInteractors(holder).HasFlag(InteractorTypes.Teleport))
+                    {
+                        InteractorTemplate template = Templates.MicrogestureTeleportInteractor;
+                        GameObject interactors = InteractorUtils.AddInteractor(template,
+                                InteractorUtils.GetHmd(), holder, group);
+                        interactors.GetComponent<HandRef>().InjectHand(hand);
+                        newInteractors.Add(interactors);
+                    }
+                }
+            }
+            InjectLocomotionHandler(newInteractors);
+        }
+
+        private void AddDefaultInteractors(DeviceTypes deviceTypes)
         {
             var interactors = InteractorUtils.AddInteractorsToRig(
-                InteractorTypes.Teleport, DeviceTypes.Hands);
+                InteractorTypes.Teleport, deviceTypes);
+            InjectLocomotionHandler(interactors);
+        }
 
+        private void InjectLocomotionHandler(IEnumerable<GameObject> interactors)
+        {
             foreach (var interactor in interactors)
             {
                 if (interactor.TryGetComponent(out LocomotionEventsConnection locomotionEventconnection))

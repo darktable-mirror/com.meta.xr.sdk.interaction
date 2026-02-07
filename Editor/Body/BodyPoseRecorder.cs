@@ -85,7 +85,9 @@ namespace Oculus.Interaction.Body.Editor
         private void Initialize()
         {
             _targetAsset = null;
+#pragma warning disable CS0618 // Type or member is obsolete
             _body = FindObjectOfType<Input.Body>();
+#pragma warning restore CS0618 // Type or member is obsolete
             _serializedEditor = new SerializedObject(this);
             _richTextStyle = EditorGUIUtility.GetBuiltinSkin(
                 EditorGUIUtility.isProSkin ?

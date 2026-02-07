@@ -19,11 +19,9 @@
  */
 
 #if USE_OPENXR
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Oculus.Interaction.Input;
-using Unity.XR.CoreUtils;
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
@@ -31,7 +29,6 @@ using UnityEngine.XR;
 
 namespace Oculus.Interaction.UnityXR
 {
-
     public class FromUnityXRControllerDataSource : DataSource<ControllerDataAsset>
     {
         [Header("Shared Configuration")]
@@ -216,7 +213,6 @@ namespace Oculus.Interaction.UnityXR
               Quaternion.AngleAxis(90, Vector3.forward));
         private static readonly Quaternion OpenXRToOVRRightRotTipInverted = Quaternion.Inverse(
             Quaternion.AngleAxis(180, Vector3.right) * Quaternion.AngleAxis(-90, Vector3.forward));
-        private static readonly Quaternion WristFixupRotation = new Quaternion(0.0f, 1.0f, 0.0f, 0.0f);
 
         private static readonly Func<int> DefaultFrameCountProvider = () => Time.frameCount;
         private Func<int> _frameCountProvider = DefaultFrameCountProvider;

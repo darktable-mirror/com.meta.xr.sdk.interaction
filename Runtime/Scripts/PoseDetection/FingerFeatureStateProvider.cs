@@ -50,12 +50,41 @@ namespace Oculus.Interaction.PoseDetection
     }
 
     /// <summary>
-    /// Provides the finger states of the tracked hands and contains the state transition thresholds for each finger.
+    /// Defines an interface for tracking and managing finger states.
+    /// This interface provides methods to query current finger states, check state transitions,
+    /// and access raw feature values for hand tracking.
     /// </summary>
+    /// <remarks>
+    /// Common implementations include <see cref="Oculus.Interaction.PoseDetection.FingerFeatureStateProvider"/> which uses
+    /// <see cref="Oculus.Interaction.PoseDetection.FingerFeatureStateThresholds"/> to quantize continuous finger movements into discrete states.
+    /// </remarks>
     public interface IFingerFeatureStateProvider
     {
+        /// <summary>
+        /// Retrieves the current state of a specific finger feature.
+        /// </summary>
+        /// <param name="finger">The <see cref="HandFinger"/> to query.</param>
+        /// <param name="fingerFeature">The specific <see cref="FingerFeature"/> to check (e.g., curl, flexion).</param>
+        /// <param name="currentState">The current state identifier if available.</param>
+        /// <returns>True if a valid state was retrieved, false otherwise.</returns>
         bool GetCurrentState(HandFinger finger, FingerFeature fingerFeature, out string currentState);
+
+        /// <summary>
+        /// Checks if a specific state is active for a given finger and feature.
+        /// </summary>
+        /// <param name="finger">The <see cref="HandFinger"/> to check.</param>
+        /// <param name="feature">The <see cref="FingerFeature"/> to evaluate.</param>
+        /// <param name="mode">The mode of state evaluation (Is/IsNot).</param>
+        /// <param name="stateId">The state identifier to compare against.</param>
+        /// <returns>True if the state condition is met, false otherwise.</returns>
         bool IsStateActive(HandFinger finger, FingerFeature feature, FeatureStateActiveMode mode, string stateId);
+
+        /// <summary>
+        /// Gets the raw feature value for a specific finger and feature type.
+        /// </summary>
+        /// <param name="finger">The <see cref="HandFinger"/> to measure.</param>
+        /// <param name="fingerFeature">The <see cref="FingerFeature"/> to measure.</param>
+        /// <returns>The feature value if available, null otherwise.</returns>
         float? GetFeatureValue(HandFinger finger, FingerFeature fingerFeature);
     }
 

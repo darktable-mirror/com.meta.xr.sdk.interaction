@@ -54,7 +54,9 @@ namespace Oculus.Interaction.Samples
         private Quaternion _initialRotation;
         private Vector3 _initialScale;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private TwoGrabFreeTransformer[] _freeTransformers;
+#pragma warning restore CS0618 // Type or member is obsolete
         private Rigidbody _rigidBody;
         private int _sleepCountDown;
 
@@ -63,7 +65,9 @@ namespace Oculus.Interaction.Samples
             _initialPosition = transform.position;
             _initialRotation = transform.rotation;
             _initialScale = transform.localScale;
+#pragma warning disable CS0618 // Type or member is obsolete
             _freeTransformers = GetComponents<TwoGrabFreeTransformer>();
+#pragma warning restore CS0618 // Type or member is obsolete
             _rigidBody = GetComponent<Rigidbody>();
         }
 
@@ -94,7 +98,9 @@ namespace Oculus.Interaction.Samples
 
             if (_rigidBody)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 _rigidBody.velocity = Vector3.zero;
+#pragma warning restore CS0618 // Type or member is obsolete
                 _rigidBody.angularVelocity = Vector3.zero;
 
                 if (!_rigidBody.isKinematic && _sleepFrames > 0)

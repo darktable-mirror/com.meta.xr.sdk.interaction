@@ -20,11 +20,38 @@
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// Defines the threshold boundaries for transitioning between two feature states in pose and gesture detection.
+    /// This interface provides a hysteresis-based state transition system to prevent rapid state flickering.
+    /// </summary>
+    /// <remarks>
+    /// As seen in <see cref="Oculus.Interaction.PoseDetection.TransformFeatureStateThreshold"/>, this interface implements a midpoint-width
+    /// threshold system where:
+    /// - The midpoint defines the primary transition point
+    /// - The width creates a buffer zone to prevent rapid state changes
+    /// </remarks>
     public interface IFeatureStateThreshold<TFeatureState>
     {
+        /// <summary>
+        /// Gets the threshold value below which the feature will transition to the first state.
+        /// This creates the lower boundary of the hysteresis band.
+        /// </summary>
         float ToFirstWhenBelow { get; }
+
+        /// <summary>
+        /// Gets the threshold value above which the feature will transition to the second state.
+        /// This creates the upper boundary of the hysteresis band.
+        /// </summary>
         float ToSecondWhenAbove { get; }
+
+        /// <summary>
+        /// Retrieves the initial <see cref="TFeatureState"/> in the transition pair that represents the starting point of the transition process.
+        /// </summary>
         TFeatureState FirstState { get; }
+
+        /// <summary>
+        /// Retrieves the secondary <see cref="TFeatureState"/> in the transition pair that represents the ending point of the transition process.
+        /// </summary>
         TFeatureState SecondState { get; }
     }
 }

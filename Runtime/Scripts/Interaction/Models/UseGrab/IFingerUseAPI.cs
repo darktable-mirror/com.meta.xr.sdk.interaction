@@ -22,8 +22,19 @@ using Oculus.Interaction.Input;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// The IFingerUseAPI interface provides the user with methods and functions revolving around the <see cref="HandFinger"/> and their usage.
+    /// An implementation of this API will map a <see cref="HandFinger"/> to a user's input. (such as a controller 1D axis, or a pinch gesture)
+    /// and then return a normalized value of that input to signify the strength of the action.
+    /// </summary>
     public interface IFingerUseAPI
     {
+        /// <summary>
+        /// Calculates and returns the precision at which a <see cref="HandFinger"/> is being used by the user.
+        /// An example being how much the the user is pressing the <see cref="HandFinger.Index"/> Input on their controller.
+        /// </summary>
+        /// <param name="finger">The strength at which the <see cref="HandFigner"/> inputs are being used</param>
+        /// <returns>The precision in which the given <see cref="HandFinger"/> is being used</returns>
         float GetFingerUseStrength(HandFinger finger);
     }
 }

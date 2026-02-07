@@ -105,27 +105,24 @@ namespace Oculus.Interaction.Editor.QuickActions
             base.InitializeFieldsExtra();
 
             // If any selected objects contains a child Hand
-            if (_hand = GetBaseComponent<Hand>(Target.transform, false, false))
-            {
-                _interactorGroup = _hand.GetComponentInChildren<InteractorGroup>();
-            }
-            else if (_interactorGroup = Target.GetComponentInParent<InteractorGroup>())
+            _hand = GetBaseComponent<Hand>(Target.transform, false, false);
+            if (_hand == null)
             {
                 _hand = GetBaseComponent<Hand>(Target.transform, false, true);
-            }
-            else
-            {
-                _hand = GetBaseComponent<Hand>(Target.transform, false, true);
-                _interactorGroup = _hand?.GetComponentInChildren<InteractorGroup>();
             }
 
-            if (_interactorGroup != null)
+            if (_interactorGroup == null && _hand != null)
+            {
+                if (TryFindInteractorsGroup(_hand, out _interactorGroup, out Transform holder)
+                    && _transform == null)
+                {
+                    _transform = holder;
+                }
+            }
+
+            if (_interactorGroup != null && _transform == null)
             {
                 _transform = _interactorGroup.transform;
-            }
-            else if (_hand != null)
-            {
-                _transform = FindInteractorsTransform(_hand.transform);
             }
 
             if (_transform != null)

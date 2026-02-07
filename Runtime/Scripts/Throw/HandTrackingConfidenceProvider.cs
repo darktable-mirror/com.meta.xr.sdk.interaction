@@ -63,8 +63,8 @@ namespace Oculus.Interaction
         {
             this.BeginStart(ref _started);
 
-            this.AssertAspect(Interactor, nameof(_interactor));
-            this.AssertAspect(Hand, nameof(_hand));
+            this.AssertField(Interactor, nameof(_interactor));
+            this.AssertField(Hand, nameof(_hand));
 
             this.EndStart(ref _started);
         }

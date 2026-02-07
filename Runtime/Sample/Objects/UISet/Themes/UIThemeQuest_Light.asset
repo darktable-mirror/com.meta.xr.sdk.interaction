@@ -12,25 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeQuest_Light
   m_EditorClassIdentifier: 
-  _themeVersion: 1
-  backplateColor: {r: 0.87058824, g: 0.8901961, b: 0.9137255, a: 1}
+  _themeVersion: 2
+  backplateColor: {r: 1, g: 1, b: 1, a: 1}
+  backplateGradientMaterial: {fileID: 2100000, guid: 3f1a8ea57450bd749a74467129ec5145,
+    type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
-  sectionPlateColor: {r: 0.8117648, g: 0.81568635, b: 0.85098046, a: 1}
-  tooltipColor: {r: 1, g: 1, b: 1, a: 1}
-  textPrimaryColor: {r: 0.10980392, g: 0.16862746, b: 0.2, a: 1}
-  textSecondaryColor: {r: 0.24313726, g: 0.24313726, b: 0.25490198, a: 1}
+  sectionPlateColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.07058824}
+  tooltipColor: {r: 0.9058824, g: 0.9058824, b: 0.9058824, a: 1}
+  textPrimaryColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+  textSecondaryColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.69803923}
+  textPrimaryInvertedColor: {r: 1, g: 1, b: 1, a: 0.9019608}
+  textSecondaryInvertedColor: {r: 1, g: 1, b: 1, a: 0.69803923}
   primaryButton:
-    normal: {r: 0, g: 0.3921569, b: 0.87843144, a: 1}
-    highlighted: {r: 0, g: 0.3529412, b: 0.79215693, a: 1}
-    pressed: {r: 0, g: 0.3137255, b: 0.7019608, a: 1}
-    selected: {r: 0, g: 0.3921569, b: 0.87843144, a: 1}
-    disabled: {r: 0.5137255, g: 0.6509804, b: 0.86666673, a: 1}
+    normal: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.9019608}
+    highlighted: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.8}
+    pressed: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.69803923}
+    selected: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.69803923}
+    disabled: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.101960786}
   secondaryButton:
-    normal: {r: 0.7490196, g: 0.75294125, b: 0.81568635, a: 1}
-    highlighted: {r: 0.6392157, g: 0.64705884, b: 0.7019608, a: 1}
-    pressed: {r: 0.49483803, g: 0.50031495, b: 0.5660378, a: 1}
-    selected: {r: 0.7490196, g: 0.75294125, b: 0.81568635, a: 1}
-    disabled: {r: 0.77647066, g: 0.7803922, b: 0.83921576, a: 1}
+    normal: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.07058824}
+    highlighted: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.16862746}
+    pressed: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.27058825}
+    selected: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.27058825}
+    disabled: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 0.019607844}
   borderlessButton:
     normal: {r: 0.78823537, g: 0.79215693, b: 0.85098046, a: 0}
     highlighted: {r: 0.7137255, g: 0.7176471, b: 0.76470596, a: 1}

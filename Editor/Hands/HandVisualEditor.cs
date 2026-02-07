@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-using Oculus.Interaction.Input;
+using Oculus.Interaction.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -26,19 +26,20 @@ using UnityEngine;
 namespace Oculus.Interaction.Hands.Editor
 {
     [CustomEditor(typeof(HandVisual))]
-    public class HandVisualEditor : UnityEditor.Editor
+    public class HandVisualEditor : SimplifiedEditor
     {
-        private SerializedProperty _handProperty;
         private SerializedProperty _rootProperty;
+        private SerializedProperty _jointsProperty;
 
-        private IHand Hand => _handProperty.objectReferenceValue as IHand;
-
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            _handProperty = serializedObject.FindProperty("_hand");
+            base.OnEnable();
+
 #if ISDK_OPENXR_HAND
+            _jointsProperty = serializedObject.FindProperty("_openXRJointTransforms");
             _rootProperty = serializedObject.FindProperty("_openXRRoot");
 #else
+            _jointsProperty = serializedObject.FindProperty("_jointTransforms");
             _rootProperty = serializedObject.FindProperty("_root");
 #endif
         }
@@ -49,12 +50,7 @@ namespace Oculus.Interaction.Hands.Editor
             serializedObject.ApplyModifiedProperties();
 
             HandVisual visual = (HandVisual)target;
-            InitializeSkeleton(visual);
-
-            if (Hand == null)
-            {
-                return;
-            }
+            HandJointsAutoPopulatorHelper.InitializeCollection(_jointsProperty);
 
             if (GUILayout.Button("Auto Map Joints"))
             {
@@ -63,34 +59,18 @@ namespace Oculus.Interaction.Hands.Editor
                 EditorSceneManager.MarkSceneDirty(visual.gameObject.scene);
             }
 
-            EditorGUILayout.LabelField("Joints", EditorStyles.boldLabel);
-            for (int i = (int)HandJointId.HandStart; i < (int)HandJointId.HandEnd; ++i)
-            {
-                string jointName = ((HandJointId)i).ToString();
-                visual.Joints[i] = (Transform)EditorGUILayout.ObjectField(jointName,
-                    visual.Joints[i], typeof(Transform), true);
-            }
-        }
-
-        private void InitializeSkeleton(HandVisual visual)
-        {
-            HandJointsAutoPopulatorHelper.InitializeCollection(visual.Joints);
+            HandJointsAutoPopulatorHelper.DisplayJoints(_jointsProperty);
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void AutoMapJoints(HandVisual visual)
         {
-            if (Hand == null)
-            {
-                InitializeSkeleton(visual);
-                return;
-            }
-
             Transform rootTransform = visual.transform;
             if (_rootProperty.objectReferenceValue is Transform customRoot)
             {
                 rootTransform = customRoot;
             }
-            HandJointsAutoPopulatorHelper.AutoMapJoints(visual.Joints, rootTransform);
+            HandJointsAutoPopulatorHelper.AutoMapJoints(_jointsProperty, rootTransform);
         }
     }
 }

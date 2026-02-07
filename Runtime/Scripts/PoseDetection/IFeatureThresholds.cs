@@ -22,14 +22,36 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.PoseDetection
 {
+    /// <summary>
+    /// Provides a collection of feature state thresholds and timing parameters for state transitions
+    /// in pose and gesture detection systems. This interface manages multiple feature state configurations
+    /// and ensures proper timing for state changes.
+    /// </summary>
+    /// <remarks>
+    /// This interface is implemented by components that need to track multiple feature states
+    /// and manage their transition timing. It works in conjunction with <see cref="Oculus.Interaction.PoseDetection.IFeatureStateThresholds{TFeature, TFeatureState}"/>
+    /// to provide comprehensive state management. See <see cref="FingerFeatureStateThresholds"/> and <see cref="TransformFeatureStateThresholds"/> for example implementations.
+    /// </remarks>
     public interface IFeatureThresholds<TFeature, TFeatureState>
     {
+        /// <summary>
+        /// Gets the collection of feature state threshold configurations for all monitored features.
+        /// </summary>
+        /// <returns>
+        /// A read-only list of <see cref="IFeatureStateThresholds"/> configurations that define when and how
+        /// features transition between states.
+        /// </returns>
         IReadOnlyList<IFeatureStateThresholds<TFeature, TFeatureState>>
             FeatureStateThresholds
         {
             get;
         }
 
+        /// <summary>
+        /// Gets the minimum time (in seconds) that a feature must maintain a state before
+        /// a transition is recognized. This helps prevent rapid state flickering.
+        /// </summary>
+        /// <value>The minimum duration in seconds required for state validation</value>
         double MinTimeInState { get; }
     }
 }

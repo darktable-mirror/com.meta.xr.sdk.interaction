@@ -184,7 +184,7 @@ namespace Oculus.Interaction
 
             var selection = _rayInteractor.State == InteractorState.Select;
 
-            _renderer.material.SetFloat(_shaderRadialGradientScale, selection ? 0.2f : 0.101f);
+            _renderer.material.SetFloat(_shaderRadialGradientScale, selection ? 0.12f : 0.2f);
             _renderer.material.SetFloat(_shaderRadialGradientIntensity, 1f);
             _renderer.material.SetFloat(_shaderRadialGradientBackgroundOpacity, 1f);
             _renderer.material.SetColor(_shaderInnerColor, selection ? _selectColor : _hoverColor);

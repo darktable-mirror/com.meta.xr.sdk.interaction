@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-using Oculus.Interaction.Input;
 using UnityEngine;
 
 

@@ -164,7 +164,9 @@ namespace Oculus.Interaction
 
         private static float GetObjectVelocity(AudioPhysics target)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             return target._rigidbody.velocity.sqrMagnitude;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void PlaySoundOnAudioTrigger(AudioTrigger audioTrigger)

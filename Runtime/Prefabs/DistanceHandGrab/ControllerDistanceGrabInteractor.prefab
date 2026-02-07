@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8995890139442703521}
   m_RootOrder: 2
@@ -72,6 +73,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8995890139442703521}
   m_RootOrder: 1
@@ -103,6 +105,7 @@ GameObject:
   - component: {fileID: 5979516266493034131}
   - component: {fileID: 5943188474685031015}
   - component: {fileID: 4801568212808619093}
+  - component: {fileID: 2390724745027721251}
   m_Layer: 0
   m_Name: ControllerDistanceGrabInteractor
   m_TagString: Untagged
@@ -120,6 +123,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1206506702454368318}
   - {fileID: 1227667518545386625}
@@ -154,6 +158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _activeState: {fileID: 5979516266493034131}
   _interactableFilters: []
+  _candidateTiebreaker: {fileID: 0}
   _maxIterationsPerFrame: 3
   _data: {fileID: 0}
   _selector: {fileID: 5021159392599816142}
@@ -184,6 +189,22 @@ MonoBehaviour:
   _gameObjects: []
   _monoBehaviours:
   - {fileID: 5943188474685031015}
+--- !u!114 &2390724745027721251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5665378001225409506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7d153c984a90a6488110013f4cfd9c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactors:
+  - {fileID: 5943188474685031015}
+  _interactorHierarchies: []
+  _controller: {fileID: 5979516266493034131}
 --- !u!1 &7254063189717335593
 GameObject:
   m_ObjectHideFlags: 0
@@ -211,6 +232,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8995890139442703521}
   m_RootOrder: 0

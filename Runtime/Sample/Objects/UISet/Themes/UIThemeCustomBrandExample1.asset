@@ -12,21 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeCustomBrandExample1
   m_EditorClassIdentifier: 
-  _themeVersion: 1
-  backplateColor: {r: 1, g: 0.45461288, b: 0, a: 1}
+  _themeVersion: 2
+  backplateColor: {r: 1, g: 0.5273903, b: 0.040880322, a: 1}
+  backplateGradientMaterial: {fileID: 2100000, guid: 80ed8b4728ea41d4482d3c5528a2660f,
+    type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
-  sectionPlateColor: {r: 0.754717, g: 0.43129343, b: 0.16138594, a: 1}
+  sectionPlateColor: {r: 0.7490196, g: 0.35686275, b: 0.03137255, a: 1}
   tooltipColor: {r: 0.4528302, g: 0.25047818, b: 0.079743646, a: 1}
   textPrimaryColor: {r: 0.94509804, g: 0.95686275, b: 0.96862745, a: 1}
   textSecondaryColor: {r: 0.6901961, g: 0.7019608, b: 0.72156864, a: 1}
+  textPrimaryInvertedColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  textSecondaryInvertedColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.69803923}
   primaryButton:
-    normal: {r: 0.4039216, g: 0.32156864, b: 0.26666668, a: 1}
+    normal: {r: 0.9433962, g: 0.7372137, b: 0.53103113, a: 1}
     highlighted: {r: 0.5568628, g: 0.4784314, b: 0.42352945, a: 1}
     pressed: {r: 0.74509805, g: 0.6666667, b: 0.60784316, a: 1}
     selected: {r: 0.4039216, g: 0.32156864, b: 0.26666668, a: 1}
     disabled: {r: 0.8000001, g: 0.7607844, b: 0.7294118, a: 1}
   secondaryButton:
-    normal: {r: 0.7254902, g: 0.3803922, b: 0.1137255, a: 1}
+    normal: {r: 0.7484276, g: 0.35713902, b: 0.030595962, a: 1}
     highlighted: {r: 0.8000001, g: 0.48627454, b: 0.2392157, a: 1}
     pressed: {r: 0.8588236, g: 0.6431373, b: 0.47450984, a: 1}
     selected: {r: 0.7254902, g: 0.3803922, b: 0.1137255, a: 1}

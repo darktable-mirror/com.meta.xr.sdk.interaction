@@ -46,6 +46,9 @@ namespace Oculus.Interaction.Locomotion
         [SerializeField]
         private TurnerEventBroadcaster[] _handTurners;
 
+        [SerializeField]
+        private TurnLocomotionBroadcaster[] _locomotionTurners;
+
         protected bool _started = false;
 
         protected void Start()
@@ -54,8 +57,9 @@ namespace Oculus.Interaction.Locomotion
             this.AssertField(_slider, nameof(_slider));
             this.AssertField(_snapTurnToggle, nameof(_snapTurnToggle));
             this.AssertField(_smoothTurnToggle, nameof(_smoothTurnToggle));
-            this.AssertCollectionField(_snapTurnSteps, nameof(_snapTurnSteps));
-            this.AssertCollectionField(_smoothTurnSteps, nameof(_smoothTurnSteps));
+            this.AssertCollectionItems(_snapTurnSteps, nameof(_snapTurnSteps));
+            this.AssertCollectionItems(_smoothTurnSteps, nameof(_smoothTurnSteps));
+            this.AssertCollectionItems(_locomotionTurners, nameof(_locomotionTurners));
             this.AssertIsTrue(_slider.minValue == 0 && _slider.maxValue == _snapTurnSteps.Length - 1,
                 whyItFailed: "The slider does not contains the same number of entries as the Turn Options.");
             this.AssertIsTrue(_smoothTurnSteps.Length == _snapTurnSteps.Length,
@@ -97,6 +101,11 @@ namespace Oculus.Interaction.Locomotion
                 turn.SmoothTurnCurve = smoothTurn;
             }
             foreach (var turn in _handTurners)
+            {
+                turn.SnapTurnDegrees = snapTurn;
+                turn.SmoothTurnCurve = smoothTurn;
+            }
+            foreach (var turn in _controllerTurners)
             {
                 turn.SnapTurnDegrees = snapTurn;
                 turn.SmoothTurnCurve = smoothTurn;

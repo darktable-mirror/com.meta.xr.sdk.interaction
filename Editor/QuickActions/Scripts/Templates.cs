@@ -19,11 +19,10 @@
  */
 
 using System;
-using UnityEngine;
-using UnityEditor;
-using Oculus.Interaction.HandGrab;
 using System.Collections.Generic;
-
+using UnityEditor;
+using UnityEngine;
+using InputModality = Oculus.Interaction.Editor.QuickActions.InteractorTemplate.InputModality;
 using Object = UnityEngine.Object;
 
 namespace Oculus.Interaction.Editor.QuickActions
@@ -47,6 +46,30 @@ namespace Oculus.Interaction.Editor.QuickActions
         {
             DisplayName = displayName;
             AssetGUID = assetGUID;
+        }
+    }
+
+    internal class InteractorTemplate : Template
+    {
+        /// <summary>
+        /// Indicates the prefered inputs for this
+        /// interactor
+        /// </summary>
+        internal enum InputModality
+        {
+            Hand,
+            Controller,
+            HandAndNoController,
+            ControllerAndNoHand,
+            HandAndController,
+            Any
+        }
+
+        public readonly InputModality Modality;
+
+        public InteractorTemplate(string displayName, string assetGUID, InputModality modality = InputModality.Any) : base(displayName, assetGUID)
+        {
+            Modality = modality;
         }
     }
 
@@ -110,57 +133,73 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         #region Interactors
 
-        public static readonly Template HandGrabInteractor =
-            new Template(
+        public static readonly InteractorTemplate HandGrabInteractor =
+            new InteractorTemplate(
                 "HandGrabInteractor",
-                "f0a90b2d303e7744fa8c9d3c6e2418a4");
+                "f0a90b2d303e7744fa8c9d3c6e2418a4",
+                InputModality.Hand);
 
-        public static readonly Template HandPokeInteractor =
-            new Template(
+        public static readonly InteractorTemplate HandPokeInteractor =
+            new InteractorTemplate(
                 "PokeInteractor",
-                "abe5a2b766edc96438786a6785a2f74b");
+                "abe5a2b766edc96438786a6785a2f74b",
+                InputModality.Hand);
 
-        public static readonly Template HandRayInteractor =
-            new Template(
+        public static readonly InteractorTemplate HandRayInteractor =
+            new InteractorTemplate(
                 "RayInteractor",
-                "a6df867c95b07224498cb3ea2d410ce5");
+                "a6df867c95b07224498cb3ea2d410ce5",
+                InputModality.HandAndNoController);
 
-        public static readonly Template DistanceHandGrabInteractor =
-            new Template(
+        public static readonly InteractorTemplate DistanceHandGrabInteractor =
+            new InteractorTemplate(
                 "DistanceHandGrabInteractor",
-                "7ea5ce61c81c5ba40a697e2642e80c83");
+                "7ea5ce61c81c5ba40a697e2642e80c83",
+                InputModality.Hand);
 
-        public static readonly Template HandTeleportInteractor =
-            new Template(
+        public static readonly InteractorTemplate HandTeleportInteractor =
+            new InteractorTemplate(
                 "HandTeleportInteractorGroup",
-                "1b3597a7837cb3545b4a4f6e30856067");
+                "1b3597a7837cb3545b4a4f6e30856067",
+                InputModality.HandAndNoController);
 
-        public static readonly Template ControllerPokeInteractor =
-            new Template(
+        public static readonly InteractorTemplate MicrogestureTeleportInteractor =
+            new InteractorTemplate(
+                "MicroGesturesLocomotionHandInteractorGroup",
+                "dd5c3bd9d99285c4984565b9e3dbfb98",
+                InputModality.HandAndNoController);
+
+        public static readonly InteractorTemplate ControllerPokeInteractor =
+            new InteractorTemplate(
                 "PokeInteractor",
-                "ef9bd966f1a997b4cb9eef15b0620b24");
+                "ef9bd966f1a997b4cb9eef15b0620b24",
+                InputModality.ControllerAndNoHand);
 
-        public static readonly Template ControllerRayInteractor =
-            new Template(
+        public static readonly InteractorTemplate ControllerRayInteractor =
+            new InteractorTemplate(
                 "RayInteractor",
-                "074f70ff54d0c6d489aaeba17f4bc66d");
+                "074f70ff54d0c6d489aaeba17f4bc66d",
+                InputModality.Controller);
 
-        public static readonly Template ControllerGrabInteractor =
-            new Template(
+        public static readonly InteractorTemplate ControllerGrabInteractor =
+            new InteractorTemplate(
                 "GrabInteractor",
-                "069b845e75891f04bb2e512a8ebf3b78");
+                "069b845e75891f04bb2e512a8ebf3b78",
+                InputModality.ControllerAndNoHand);
 
-        public static readonly Template ControllerDistanceGrabInteractor =
-            new Template(
+        public static readonly InteractorTemplate ControllerDistanceGrabInteractor =
+            new InteractorTemplate(
                 "DistanceGrabInteractor",
-                "d9ef0d4c78b4bfd409cb884dfe1524d6");
+                "d9ef0d4c78b4bfd409cb884dfe1524d6",
+                InputModality.ControllerAndNoHand);
 
-        public static readonly Template ControllerTeleportInteractor =
-            new Template(
+        public static readonly InteractorTemplate ControllerTeleportInteractor =
+            new InteractorTemplate(
                 "ControllerTeleportInteractorGroup",
-                "dd6fa3a95e908604fa8656608ea793a1");
+                "dd6fa3a95e908604fa8656608ea793a1",
+                InputModality.Controller);
 
-        private static Dictionary<InteractorTypes, Template> _handInteractorTemplates = new()
+        private static Dictionary<InteractorTypes, InteractorTemplate> _handInteractorTemplates = new()
         {
             [InteractorTypes.Grab] = HandGrabInteractor,
             [InteractorTypes.Poke] = HandPokeInteractor,
@@ -170,7 +209,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         };
 
-        private static Dictionary<InteractorTypes, Template> _controllerInteractorTemplates = new()
+        private static Dictionary<InteractorTypes, InteractorTemplate> _controllerInteractorTemplates = new()
         {
             [InteractorTypes.Grab] = ControllerGrabInteractor,
             [InteractorTypes.Poke] = ControllerPokeInteractor,
@@ -179,10 +218,19 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Teleport] = ControllerTeleportInteractor,
         };
 
+        private static Dictionary<InteractorTypes, InteractorTemplate> _controllerHandInteractorTemplates = new()
+        {
+            [InteractorTypes.Grab] = HandGrabInteractor,
+            [InteractorTypes.Poke] = HandPokeInteractor,
+            [InteractorTypes.Ray] = ControllerRayInteractor,
+            [InteractorTypes.DistanceGrab] = DistanceHandGrabInteractor,
+            [InteractorTypes.Teleport] = ControllerTeleportInteractor,
+        };
+
         /// <summary>
         /// Gets the <see cref="Template"/> for a Hand interactor type
         /// </summary>
-        public static bool TryGetHandInteractorTemplate(InteractorTypes type, out Template template)
+        public static bool TryGetHandInteractorTemplate(InteractorTypes type, out InteractorTemplate template)
         {
             return _handInteractorTemplates.TryGetValue(type, out template);
         }
@@ -190,9 +238,17 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// <summary>
         /// Gets the <see cref="Template"/> for a Controller interactor type
         /// </summary>
-        public static bool TryGetControllerInteractorTemplate(InteractorTypes type, out Template template)
+        public static bool TryGetControllerInteractorTemplate(InteractorTypes type, out InteractorTemplate template)
         {
             return _controllerInteractorTemplates.TryGetValue(type, out template);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Template"/> for a Controller driven Hand interactor type
+        /// </summary>
+        public static bool TryGetControllerHandInteractorTemplate(InteractorTypes type, out InteractorTemplate template)
+        {
+            return _controllerHandInteractorTemplates.TryGetValue(type, out template);
         }
 
         #endregion Interactors

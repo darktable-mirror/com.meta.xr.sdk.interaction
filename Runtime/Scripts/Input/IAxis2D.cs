@@ -22,8 +22,20 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// An interface designating that implementing types represent two-dimensional measurements or "axes."
+    /// Such measurements can be used to encapsulate thumbsticks and similar input modalities (such as from
+    /// <see cref="ControllerInput.Primary2DAxis"/>), in contrast to buttons and other lower-dimensional
+    /// input modalities.
+    /// </summary>
     public interface IAxis2D
     {
+        /// <summary>
+        /// Returns the most recent measured value of the IAxis2D; for example, a type representing a
+        /// <see cref="ControllerInput.Primary2DAxis"/> might return (0.5f, 0.5f) if the underlying thumbstick
+        /// is being held slightly up and to the right of its neutral position.
+        /// </summary>
+        /// <returns>The most recent measured value of the IAxis2D</returns>
         Vector2 Value();
     }
 }
