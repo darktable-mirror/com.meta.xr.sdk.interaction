@@ -18,27 +18,23 @@
  * limitations under the License.
  */
 
-using Oculus.Interaction.Surfaces;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Oculus.Interaction.Editor.QuickActions
 {
-    internal class RayGrabWizard : QuickActionsWizard
+    internal class TouchGrabWizard : QuickActionsWizard
     {
         private const string MENU_NAME = MENU_FOLDER +
-            "Add Ray Grab Interaction";
+            "Add TouchGrab Interaction (Internal only)";
 
-        [MenuItem(MENU_NAME, priority = MenuOrder.RAY_GRAB)]
         private static void OpenWizard()
         {
-            ShowWindow<RayGrabWizard>(Selection.gameObjects[0]);
+            ShowWindow<TouchGrabWizard>(Selection.gameObjects[0]);
         }
 
-        [MenuItem(MENU_NAME, true)]
-        static bool Validate()
+        private static bool Validate()
         {
             return Selection.gameObjects.Length == 1;
         }
@@ -51,6 +47,13 @@ namespace Oculus.Interaction.Editor.QuickActions
         [Tooltip("The interactors required for the new interactable will be " +
             "added for the device types selected here, if not already present.")]
         private DeviceTypes _deviceTypes = DeviceTypes.All;
+
+        [SerializeField]
+        [WizardSetting]
+        [BooleanDropdown(False = "Do Not Generate Collider", True = "Generate Collider")]
+        [Tooltip("If a collider is not present under the provided RigidBody, " +
+            "a collider will be auto-generated.")]
+        private bool _autoGenerateCollider = true;
 
         [SerializeField]
         [Tooltip("The transform to be moved when grabbing the object.")]
@@ -67,24 +70,6 @@ namespace Oculus.Interaction.Editor.QuickActions
         [WizardDependency(FindMethod = nameof(FindGrabbable), FixMethod = nameof(FixGrabbable))]
         private UnityEngine.Object _grabbable;
         private IPointableElement Grabbable { get; set; }
-
-        [SerializeField]
-        [InspectorName("Raycast Surface")]
-        [Tooltip("This surface will be used for hit testing the interaction. " +
-            "If a collider should be used for hit testing instead of an ISurface, " +
-            "leave this null and assign a collider to the 'Raycast Collider' field.")]
-        [WizardDependency(Category = Category.Optional,
-            FindMethod = nameof(FindSurface))]
-        [Interface(typeof(ISurface))]
-        private UnityEngine.Object _surface;
-
-        [SerializeField]
-        [InspectorName("Raycast Collider")]
-        [Tooltip("If present, this collider will be used for raycast hit tests.")]
-        [WizardDependency(Category = Category.Optional,
-            FindMethod = nameof(FindCollider), FixMethod = nameof(FixCollider))]
-        [ConditionalHide(nameof(_surface), null)]
-        private Collider _collider;
 
         #endregion Fields
 
@@ -103,6 +88,14 @@ namespace Oculus.Interaction.Editor.QuickActions
             _rigidbody = Target.GetComponent<Rigidbody>();
         }
 
+        private void FixRigidbody()
+        {
+            GameObject target = _targetTransform != null ? _targetTransform.gameObject : Target;
+            _rigidbody = AddComponent<Rigidbody>(target);
+            _rigidbody.useGravity = false;
+            _rigidbody.isKinematic = true;
+        }
+
         private void FindGrabbable()
         {
             Grabbable = Target.GetComponent<Grabbable>();
@@ -115,83 +108,49 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         private void FixGrabbable()
         {
-            Transform target = _rigidbody != null ? _rigidbody.transform : Target.transform;
             Grabbable grabbable = AddComponent<Grabbable>(Target);
-            grabbable.InjectOptionalTargetTransform(target);
+            grabbable.InjectOptionalTargetTransform(_targetTransform);
             FindGrabbable();
         }
 
-        private void FixRigidbody()
+        private bool HasCollider()
         {
-            _rigidbody = AddComponent<Rigidbody>(Target);
-            _rigidbody.useGravity = false;
-            _rigidbody.isKinematic = true;
+            return _rigidbody != null && _rigidbody.gameObject.
+                GetComponentInChildren<Collider>() != null;
         }
-
-        private void FindSurface()
-        {
-            _surface = Target.GetComponent<ISurface>() as UnityEngine.Object;
-        }
-
-        private void FindCollider()
-        {
-            _collider = Target.GetComponent<Collider>();
-        }
-
-        private void FixCollider()
-        {
-            _collider = Utils.GenerateCollider(Target);
-        }
-
         protected override void Create()
         {
             GameObject obj = Templates.CreateFromTemplate(
-                Target.transform, Templates.RayGrabInteractable);
+                Target.transform, Templates.TouchHandGrabInteractable);
 
             Transform transform = obj.transform;
             transform.localPosition = Vector3.zero;
             transform.localScale = Vector3.one;
             transform.localRotation = Quaternion.identity;
 
-            var rayInteractable = obj.GetComponent<RayInteractable>();
-            rayInteractable.InjectOptionalPointableElement(Grabbable);
+            TouchHandGrabInteractable interactable =
+                obj.GetComponent<TouchHandGrabInteractable>();
 
-            ISurface surface = _surface as ISurface;
-            if (surface == null)
+            Collider collider = _rigidbody.gameObject.GetComponentInChildren<Collider>();
+            if (!HasCollider() && _autoGenerateCollider)
             {
-                var colliderSurface = AddComponent<ColliderSurface>(obj);
-                colliderSurface.InjectCollider(_collider);
-                surface = colliderSurface;
+                collider = Utils.GenerateCollider(_rigidbody.gameObject);
             }
 
-            rayInteractable.InjectSurface(surface);
+            if (collider != null)
+            {
+                interactable.InjectBoundsCollider(collider);
+                interactable.InjectColliders(new List<Collider>() { collider });
+            }
+            interactable.InjectOptionalPointableElement(Grabbable);
 
             var interactors = InteractorUtils.AddInteractorsToRig(
-                InteractorTypes.Ray, _deviceTypes);
-        }
+                InteractorTypes.TouchGrab, _deviceTypes);
 
-        protected override IEnumerable<MessageData> GetMessages()
-        {
-            var result = Enumerable.Empty<MessageData>();
-
-            if (_collider == null && _surface == null)
+            foreach (var interactor in interactors)
             {
-                void FindOrFixCollider()
-                {
-                    FindCollider();
-                    if (_collider == null)
-                    {
-                        FixCollider();
-                    }
-                }
-                result = result.Append(new MessageData(MessageType.Error,
-                    "A Collider or a Surface must be provided for raycast hit testing. " +
-                    "Assign either an ISurface or a Collider to the appropriate fields, or " +
-                    "press the Fix button to generate a collider.",
-                    new ButtonData("Fix", FindOrFixCollider)));
+                UnityObjectAddedBroadcaster.HandleObjectWasAdded(interactor);
             }
-
-            return result;
         }
     }
 }

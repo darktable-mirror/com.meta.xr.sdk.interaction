@@ -393,6 +393,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                                 InteractorUtils.GetHmd(), holder, group);
                         interactors.GetComponent<HandRef>().InjectHand(hand);
                         newInteractors.Add(interactors);
+                        UnityObjectAddedBroadcaster.HandleObjectWasAdded(interactors);
                     }
                 }
             }

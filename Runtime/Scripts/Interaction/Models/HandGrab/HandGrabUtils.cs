@@ -145,8 +145,6 @@ namespace Oculus.Interaction.HandGrab
 
             HandGrabPoseData mirrorData = SaveHandGrabPoseData(originalPoint);
             HandPose mirroredHandPose = mirrorData.handPose;
-
-
             mirroredHandPose.Handedness = oppositeHandedness;
 
             for (int i = 0; i < mirroredHandPose.JointRotations.Length; i++)
@@ -160,7 +158,15 @@ namespace Oculus.Interaction.HandGrab
             }
             else
             {
+#if ISDK_OPENXR_HAND
+                Quaternion arbitraryRotation = Quaternion.Euler(180f, 0f, 180f);
+#else
+                Quaternion arbitraryRotation = Quaternion.Euler(180f, 180f, 0f);
+#endif
                 mirrorData.gripPose = HandMirroring.Mirror(mirrorData.gripPose);
+                mirrorData.gripPose.position = arbitraryRotation * mirrorData.gripPose.position;
+                mirrorData.gripPose.rotation = arbitraryRotation * mirrorData.gripPose.rotation;
+
             }
 
             LoadHandGrabPoseData(mirrorPoint, mirrorData, relativeTo);

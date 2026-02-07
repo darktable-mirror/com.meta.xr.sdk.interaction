@@ -326,6 +326,15 @@ namespace Oculus.Interaction.Locomotion
             " instead of setting this variable to false directly.")]
         private bool _velocityDisabled;
 
+        /// <summary>
+        /// If no ground is detected below this distance in meters on Start, it will disable the velocity to prevent falling.
+        /// Negative numbers disable this behavior.
+        /// </summary>
+        [SerializeField, Optional, Min(-1f)]
+        [Tooltip("If no ground is detected below this distance in meters on Start, it will disable the velocity to prevent falling. " +
+        "Negative numbers disable this behavior.")]
+        private float _maxStartGroundDistance = 10f;
+
         private Func<float> _deltaTimeProvider = () => Time.deltaTime;
         public void SetDeltaTimeProvider(Func<float> deltaTimeProvider)
         {
@@ -393,6 +402,17 @@ namespace Oculus.Interaction.Locomotion
             this.AssertField(_characterController, nameof(_characterController));
             this.AssertField(_playerOrigin, nameof(_playerOrigin));
             this.AssertField(_playerEyes, nameof(_playerEyes));
+
+            if (!_velocityDisabled
+                && _maxStartGroundDistance >= 0f
+                && !_characterController.TryGround(_maxStartGroundDistance))
+            {
+                this.LogWarning(whyItFailed: $"The ground could not be found below the locomotor for {_maxStartGroundDistance} meters. Velocity will be disabled.",
+                    howToFix: $"A) Add a ground collider under the character controller.\n" +
+                    $"B) Set {nameof(_velocityDisabled)} to disable movement and prevent falling without showing this warning.\n" +
+                    $"C) Set {nameof(_maxStartGroundDistance)} to 0 to disable this behaviour.\n");
+                DisableMovement();
+            }
 
             this.EndStart(ref _started);
         }
@@ -870,6 +890,11 @@ namespace Oculus.Interaction.Locomotion
         public void InjectPlayerOrigin(Transform playerOrigin)
         {
             _playerOrigin = playerOrigin;
+        }
+
+        public void InjectOptionalMaxStartGroundDistance(float maxStartGroundDistance)
+        {
+            _maxStartGroundDistance = maxStartGroundDistance;
         }
 
         #endregion

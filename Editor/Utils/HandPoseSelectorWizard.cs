@@ -227,7 +227,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             }
 
             GUILayout.Label("\n<size=20>3.</size>\t" +
-                "Recording takes a few seconds, to try to hold still for a count of 5, or until you see the \"Recording complete\" message " +
+                "Recording takes a few seconds, so try to hold still for a count of 5, or until you see the \"Recording complete\" message " +
                 "logged to the console. Recording will automatically generate both a HandShape asset and a fully wired-up selector prefab in " +
                 "the Assets/RecordedHandPoseSelectors directory <b>(overwriting any pre-existing assets in the same place of the same name)</b>. " +
                 "Optionally, you can choose to have the resultant prefab automatically added to your scene and wired up once you exit Play " +

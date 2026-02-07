@@ -52,7 +52,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         [SerializeField]
         [WizardSetting]
-        [Tooltip("The selected interactor types will be added to the controller.")]
+        [Tooltip("The selected interactor types will be added to the controller hand.")]
         private InteractorTypes _interactorTypes = InteractorTypes.All;
 
         [SerializeField]
@@ -170,6 +170,18 @@ namespace Oculus.Interaction.Editor.QuickActions
             {
                 messages = messages.Append(new MessageData(MessageType.Warning,
                     $"It recommended to add interactors under their associated Controller Driven Hand."));
+            }
+            foreach (InteractorTypes value in Enum.GetValues(typeof(InteractorTypes)))
+            {
+                if (value != InteractorTypes.All &&
+                    value != InteractorTypes.None &&
+                    _interactorTypes.HasFlag(value) &&
+                    !Templates.TryGetControllerHandInteractorTemplate(value, out _))
+                {
+                    messages = messages.Append(new MessageData(MessageType.Error,
+                    $"No existing {value} template for this device.",
+                    new ButtonData("Do Not Add", () => _interactorTypes &= ~value)));
+                }
             }
             return messages;
         }

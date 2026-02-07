@@ -73,6 +73,12 @@ namespace Oculus.Interaction.Editor.QuickActions
         [WizardDependency(FindMethod = nameof(FindRigidbody), FixMethod = nameof(FixRigidbody))]
         private Rigidbody _rigidbody;
 
+        [SerializeField, Interface(typeof(IPointableElement))]
+        [Tooltip("The grabbable that will receive the Interactable events and move the object.")]
+        [WizardDependency(FindMethod = nameof(FindGrabbable), FixMethod = nameof(FixGrabbable))]
+        private UnityEngine.Object _grabbable;
+        private IPointableElement Grabbable { get; set; }
+
         [SerializeField]
         [InspectorName("Time Out Snap Zone")]
         [Tooltip("If provided, the object will snap back to this location once released.")]
@@ -119,6 +125,24 @@ namespace Oculus.Interaction.Editor.QuickActions
             _rigidbody = AddComponent<Rigidbody>(Target);
             _rigidbody.useGravity = false;
             _rigidbody.isKinematic = true;
+        }
+
+        private void FindGrabbable()
+        {
+            Grabbable = Target.GetComponent<Grabbable>();
+            if (Grabbable == null)
+            {
+                Grabbable = Target.GetComponent<IPointableElement>();
+            }
+            _grabbable = Grabbable as UnityEngine.Object;
+        }
+
+        private void FixGrabbable()
+        {
+            Transform target = _rigidbody != null ? _rigidbody.transform : Target.transform;
+            Grabbable grabbable = AddComponent<Grabbable>(Target);
+            grabbable.InjectOptionalTargetTransform(target);
+            FindGrabbable();
         }
 
         private bool HasCollider()
@@ -193,20 +217,18 @@ namespace Oculus.Interaction.Editor.QuickActions
             transform.localScale = Vector3.one;
             transform.localRotation = Quaternion.identity;
 
-            Grabbable grabbable = obj.GetComponent<Grabbable>();
-            grabbable.InjectOptionalTargetTransform(Target.transform);
-            grabbable.InjectOptionalRigidbody(_rigidbody);
-
             DistanceHandGrabInteractable distanceHandInteractable =
                 obj.GetComponentInChildren<DistanceHandGrabInteractable>();
 
             distanceHandInteractable.InjectRigidbody(_rigidbody);
             distanceHandInteractable.InjectSupportedGrabTypes(_grabTypeFlags);
+            distanceHandInteractable.InjectOptionalPointableElement(Grabbable);
 
             DistanceGrabInteractable distanceInteractable =
                 obj.GetComponentInChildren<DistanceGrabInteractable>();
 
             distanceInteractable.InjectRigidbody(_rigidbody);
+            distanceInteractable.InjectOptionalPointableElement(Grabbable);
 
             SnapInteractor snapInteractor =
                 obj.GetComponent<SnapInteractor>();
@@ -215,6 +237,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             {
                 snapInteractor.InjectRigidbody(_rigidbody);
                 snapInteractor.InjectOptionalTimeOutInteractable(_timeOutSnapZone);
+                snapInteractor.InjectPointableElement(Grabbable as PointableElement);
             }
             else
             {

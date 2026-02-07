@@ -78,6 +78,12 @@ namespace Oculus.Interaction.Editor.QuickActions
         [WizardDependency(FindMethod = nameof(FindRigidbody), FixMethod = nameof(FixRigidbody))]
         private Rigidbody _rigidbody;
 
+        [SerializeField, Interface(typeof(IPointableElement))]
+        [Tooltip("The grabbable that will receive the Interactable events and move the object.")]
+        [WizardDependency(FindMethod = nameof(FindGrabbable), FixMethod = nameof(FixGrabbable))]
+        private UnityEngine.Object _grabbable;
+        private IPointableElement Grabbable { get; set; }
+
         #endregion Fields
 
         private void FindTransform()
@@ -97,9 +103,27 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         private void FixRigidbody()
         {
-            _rigidbody = AddComponent<Rigidbody>(Target);
+            GameObject target = _targetTransform != null ? _targetTransform.gameObject : Target;
+            _rigidbody = AddComponent<Rigidbody>(target);
             _rigidbody.useGravity = false;
             _rigidbody.isKinematic = true;
+        }
+
+        private void FindGrabbable()
+        {
+            Grabbable = Target.GetComponent<Grabbable>();
+            if (Grabbable == null)
+            {
+                Grabbable = Target.GetComponent<IPointableElement>();
+            }
+            _grabbable = Grabbable as UnityEngine.Object;
+        }
+
+        private void FixGrabbable()
+        {
+            Grabbable grabbable = AddComponent<Grabbable>(Target);
+            grabbable.InjectOptionalTargetTransform(_targetTransform);
+            FindGrabbable();
         }
 
         private bool HasCollider()
@@ -123,15 +147,13 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             handInteractable.InjectRigidbody(_rigidbody);
             handInteractable.InjectSupportedGrabTypes(_grabTypeFlags);
+            handInteractable.InjectOptionalPointableElement(Grabbable);
 
             GrabInteractable grabInteractable =
                 obj.GetComponent<GrabInteractable>();
 
             grabInteractable.InjectRigidbody(_rigidbody);
-
-            Grabbable grabbable = obj.GetComponent<Grabbable>();
-            grabbable.InjectOptionalTargetTransform(_targetTransform);
-            grabbable.InjectOptionalRigidbody(_rigidbody);
+            grabInteractable.InjectOptionalPointableElement(Grabbable);
 
             if (!HasCollider() && _autoGenerateCollider)
             {

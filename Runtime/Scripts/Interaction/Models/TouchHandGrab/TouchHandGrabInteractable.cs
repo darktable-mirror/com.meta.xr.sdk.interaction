@@ -74,7 +74,7 @@ namespace Oculus.Interaction
         /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
         /// usage.
         /// </summary>
-        private void InjectBoundsCollider(Collider boundsCollider)
+        public void InjectBoundsCollider(Collider boundsCollider)
         {
             _boundsCollider = boundsCollider;
         }

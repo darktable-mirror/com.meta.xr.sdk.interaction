@@ -81,18 +81,33 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         public static readonly Template RayCanvasInteractable =
             new Template(
-                "ISDK_RayInteraction",
+                "ISDK_RayCanvasInteraction",
                 "8369d93f7b6b99742bbea0649a41b7b1");
+
+        public static readonly Template RayInteractable =
+            new Template(
+                "ISDK_RayInteraction",
+                "7948691e53a735b4f868799331ccf8b6");
 
         public static readonly Template PokeCanvasInteractable =
             new Template(
-                "ISDK_PokeInteraction",
+                "ISDK_PokeCanvasInteraction",
                 "4db41829582c7d24f80ee9603868dd67");
+
+        public static readonly Template PokeInteractable =
+            new Template(
+                "ISDK_PokeInteraction",
+                "5fca3702cdf1a214a94e69dcfa704e17");
 
         public static readonly Template HandGrabInteractable =
             new Template(
                 "ISDK_HandGrabInteraction",
                 "6ee61821e0d5b094a8d732834b365b21");
+
+        public static readonly Template TouchHandGrabInteractable =
+            new Template(
+                "ISDK_TouchHandGrabInteraction",
+                "aaae94d61b3f6bb42be68ba0a270e478");
 
         public static readonly Template DistanceGrabInteractable_ToHand =
             new Template(
@@ -137,17 +152,35 @@ namespace Oculus.Interaction.Editor.QuickActions
             new InteractorTemplate(
                 "HandGrabInteractor",
                 "f0a90b2d303e7744fa8c9d3c6e2418a4",
-                InputModality.Hand);
+                InputModality.HandAndNoController);
+
+        public static readonly InteractorTemplate ControllerHandGrabInteractor =
+            new InteractorTemplate(
+                "ControllerHandGrabInteractor",
+                "4b2cb30a9113d0b458002883f6bcb439",
+                InputModality.HandAndController);
+
+        public static readonly InteractorTemplate TouchHandGrabInteractor =
+            new InteractorTemplate(
+                "TouchHandGrabInteractor",
+                "43d80bcd752bc6e4986f6b18e863db9f",
+                InputModality.HandAndNoController);
+
+        public static readonly InteractorTemplate TouchControllerHandGrabInteractor =
+            new InteractorTemplate(
+                "TouchControllerHandGrabInteractor",
+                "0bda7369b6a755047a27bb1aa467f9c8",
+                InputModality.HandAndController);
 
         public static readonly InteractorTemplate HandPokeInteractor =
             new InteractorTemplate(
-                "PokeInteractor",
+                "HandPokeInteractor",
                 "abe5a2b766edc96438786a6785a2f74b",
                 InputModality.Hand);
 
         public static readonly InteractorTemplate HandRayInteractor =
             new InteractorTemplate(
-                "RayInteractor",
+                "HandRayInteractor",
                 "a6df867c95b07224498cb3ea2d410ce5",
                 InputModality.HandAndNoController);
 
@@ -155,7 +188,13 @@ namespace Oculus.Interaction.Editor.QuickActions
             new InteractorTemplate(
                 "DistanceHandGrabInteractor",
                 "7ea5ce61c81c5ba40a697e2642e80c83",
-                InputModality.Hand);
+                InputModality.HandAndNoController);
+
+        public static readonly InteractorTemplate DistanceControllerHandGrabInteractor =
+            new InteractorTemplate(
+                "DistanceControllerHandGrabInteractor",
+                "33dd6c3e835849e488f27e72fb00aa1d",
+                InputModality.HandAndController);
 
         public static readonly InteractorTemplate HandTeleportInteractor =
             new InteractorTemplate(
@@ -171,25 +210,25 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         public static readonly InteractorTemplate ControllerPokeInteractor =
             new InteractorTemplate(
-                "PokeInteractor",
+                "ControllerPokeInteractor",
                 "ef9bd966f1a997b4cb9eef15b0620b24",
                 InputModality.ControllerAndNoHand);
 
         public static readonly InteractorTemplate ControllerRayInteractor =
             new InteractorTemplate(
-                "RayInteractor",
+                "ControllerRayInteractor",
                 "074f70ff54d0c6d489aaeba17f4bc66d",
                 InputModality.Controller);
 
         public static readonly InteractorTemplate ControllerGrabInteractor =
             new InteractorTemplate(
-                "GrabInteractor",
+                "ControllerGrabInteractor",
                 "069b845e75891f04bb2e512a8ebf3b78",
                 InputModality.ControllerAndNoHand);
 
         public static readonly InteractorTemplate ControllerDistanceGrabInteractor =
             new InteractorTemplate(
-                "DistanceGrabInteractor",
+                "DistanceControllerGrabInteractor",
                 "d9ef0d4c78b4bfd409cb884dfe1524d6",
                 InputModality.ControllerAndNoHand);
 
@@ -206,7 +245,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = HandRayInteractor,
             [InteractorTypes.DistanceGrab] = DistanceHandGrabInteractor,
             [InteractorTypes.Teleport] = HandTeleportInteractor,
-
+            [InteractorTypes.TouchGrab] = TouchHandGrabInteractor,
         };
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _controllerInteractorTemplates = new()
@@ -220,11 +259,12 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _controllerHandInteractorTemplates = new()
         {
-            [InteractorTypes.Grab] = HandGrabInteractor,
+            [InteractorTypes.Grab] = ControllerHandGrabInteractor,
             [InteractorTypes.Poke] = HandPokeInteractor,
             [InteractorTypes.Ray] = ControllerRayInteractor,
-            [InteractorTypes.DistanceGrab] = DistanceHandGrabInteractor,
+            [InteractorTypes.DistanceGrab] = DistanceControllerHandGrabInteractor,
             [InteractorTypes.Teleport] = ControllerTeleportInteractor,
+            [InteractorTypes.TouchGrab] = TouchControllerHandGrabInteractor,
         };
 
         /// <summary>

@@ -89,6 +89,11 @@ namespace Oculus.Interaction.Editor
                 knownIds.Clear();
             }
 
+            if (!scene.isLoaded)
+            {
+                return;
+            }
+
             AddInstanceIdsFromSubHierarchyToCache(knownIds, scene.GetRootGameObjects());
         }
 

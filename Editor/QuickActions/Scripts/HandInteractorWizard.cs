@@ -43,8 +43,8 @@ namespace Oculus.Interaction.Editor.QuickActions
         [MenuItem(MENU_NAME, true)]
         static bool Validate()
         {
-            return Selection.gameObjects.Length == 1 && GetBaseComponent<Hand>(
-                Selection.gameObjects[0].transform, false, true) != null;
+            return Selection.gameObjects.Length == 1 &&
+                GetBaseComponent<Hand>(Selection.gameObjects[0].transform, false, true) != null;
         }
 
         #region Fields
@@ -160,7 +160,59 @@ namespace Oculus.Interaction.Editor.QuickActions
                 messages = messages.Append(new MessageData(MessageType.Warning,
                 $"It recommended to add interactors under their associated Hand."));
             }
+
+            foreach (InteractorTypes value in Enum.GetValues(typeof(InteractorTypes)))
+            {
+                if (value != InteractorTypes.All &&
+                    value != InteractorTypes.None &&
+                    _interactorTypes.HasFlag(value) &&
+                    !Templates.TryGetHandInteractorTemplate(value, out _))
+                {
+                    messages = messages.Append(new MessageData(MessageType.Error,
+                    $"No existing {value} template for this device.",
+                    new ButtonData("Do Not Add", () => _interactorTypes &= ~value)));
+                }
+            }
             return messages;
         }
+
+        #region Inject
+
+        public void InjectAllHandInteractorWizard(InteractorTypes interactorTypes,
+            Hand hand, Hmd hmd, Transform transform)
+        {
+            InjectInteractorTypes(interactorTypes);
+            InjectHand(hand);
+            InjectHmd(hmd);
+            InjectTransform(transform);
+        }
+
+        public void InjectInteractorTypes(InteractorTypes interactorTypes)
+        {
+            _interactorTypes = interactorTypes;
+        }
+
+        public void InjectHand(Hand hand)
+        {
+            _hand = hand;
+        }
+
+        public void InjectHmd(Hmd hmd)
+        {
+            _hmd = hmd;
+        }
+
+        public void InjectTransform(Transform transform)
+        {
+            _transform = transform;
+        }
+
+        public void InjectOptionalInteractorGroup(InteractorGroup group)
+        {
+            _interactorGroup = group;
+        }
+
+
+        #endregion
     }
 }

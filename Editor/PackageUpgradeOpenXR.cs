@@ -107,7 +107,7 @@ namespace Oculus.Interaction.Editor
         {
             _styles ??= new ISDKEditorStyles();
             titleContent = new GUIContent("Interaction SDK OpenXR Upgrade");
-            minSize = new Vector2(640, 340);
+            minSize = new Vector2(640, 356);
             maxSize = minSize + new Vector2(2, 2);
             EditorApplication.delayCall += () => maxSize = new Vector2(4000, 4000);
         }
@@ -138,18 +138,16 @@ namespace Oculus.Interaction.Editor
         private void DrawContent()
         {
             string content =
-                    "As of version 71, Interaction SDK begins deprecating the OVR hand skeleton in favor of the OpenXR skeleton. " +
-                    "Support for the OVR skeleton will be discontinued in early 2025." +
+                    "Version 77 of Interaction SDK is the last version that will support the legacy (OVR) hand skeleton." +
                     "\n\n" +
-                    "<b>New projects are strongly encouraged to use the OpenXR Hand Skeleton.</b>" +
-                    "\n" +
-                    "Performing the upgrade will set the scripting define ISDK_OPENXR_HAND in your player settings, and change the HandSkeletonVersion " +
-                    "in OVRRuntimeSettings to OVRHandSkeletonVersion.OpenXR." +
+                    "<b>For new projects</b>, please select <i>Use OpenXR Hand</i>. This will be the default for new projects going forward." +
                     "\n\n" +
-                    "<b>Existing projects may continue using the OVR Hand Skeleton through the end of 2024.</b>" +
-                    "\n" +
-                    "While upgrading existing projects is not officially supported, a number of upgrade tools do exist for built-in components. " +
-                    "If you do upgrade an existing project, ensure you have a backup of your project in case you encounter unexpected behavior.";
+                    "<b>For existing projects</b>, it is recommended that you select <i>Use OpenXR Hand</i>. If you continue using the OVR hand skeleton, " +
+                    "your project will not function as expected in future versions of Interaction SDK." +
+                    "\n\n" +
+                    "Selecting <i>Use OpenXR Hand</i> will set the scripting define ISDK_OPENXR_HAND in your player settings and change the HandSkeletonVersion in " +
+                    "OVRRuntimeSettings to OVRHandSkeletonVersion.OpenXR. Tools have been included in the Inspector to upgrade built-in components, though some manual " +
+                    "work may be required in certain situations. Please ensure you have a backup of your project in case you encounter unexpected behavior after upgrading.";
 
             _styles.DrawContent(content, () =>
             {
@@ -169,8 +167,8 @@ namespace Oculus.Interaction.Editor
             {
                 using (new GUILayout.HorizontalScope())
                 {
-                    bool upgrade = GUILayout.Button("Use OpenXR Hand\n<size=11>(New Projects)</size>", _styles.Button);
-                    bool hide = GUILayout.Button("Keep Using OVR Hand\n<size=11>(Existing Projects)</size>", _styles.Button);
+                    bool upgrade = GUILayout.Button("Use OpenXR Hand\n<size=11>(Recommended)</size>", _styles.Button);
+                    bool hide = GUILayout.Button("Keep Using OVR Hand\n<size=11>(Not Recommended)</size>", _styles.Button);
                     bool defer = GUILayout.Button("Remind Me Later", _styles.Button);
 
                     if (upgrade)

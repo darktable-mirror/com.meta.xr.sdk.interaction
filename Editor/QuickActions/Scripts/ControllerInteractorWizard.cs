@@ -160,6 +160,18 @@ namespace Oculus.Interaction.Editor.QuickActions
                 messages = messages.Append(new MessageData(MessageType.Warning,
                     $"It recommended to add interactors under their associated Controller."));
             }
+            foreach (InteractorTypes value in Enum.GetValues(typeof(InteractorTypes)))
+            {
+                if (value != InteractorTypes.All &&
+                    value != InteractorTypes.None &&
+                    _interactorTypes.HasFlag(value) &&
+                    !Templates.TryGetControllerInteractorTemplate(value, out _))
+                {
+                    messages = messages.Append(new MessageData(MessageType.Error,
+                    $"No existing {value} template for this device.",
+                    new ButtonData("Do Not Add", () => _interactorTypes &= ~value)));
+                }
+            }
             return messages;
         }
     }

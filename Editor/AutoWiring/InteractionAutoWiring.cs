@@ -149,6 +149,40 @@ namespace Oculus.Interaction.Editor
                         })
                 }
             );
+
+            AutoWiring.Register(
+                typeof(HandGrab.HandGrabStateVisual),
+                new[] {
+                    new ComponentWiringStrategyConfig("_syntheticHand", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToNearestComponent
+                        })
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(TouchHandGrabInteractorVisual),
+                new[] {
+                    new ComponentWiringStrategyConfig("_syntheticHand", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToNearestComponent
+                        })
+                }
+            );
+            #endregion
+
+            #region Poke
+
+            AutoWiring.Register(
+                typeof(HandPokeLimiterVisual),
+                new[] {
+                    new ComponentWiringStrategyConfig("_syntheticHand", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToNearestComponent
+                        })
+                }
+            );
+
             #endregion
 
             #region Locomotion

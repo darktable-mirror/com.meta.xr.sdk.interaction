@@ -42,6 +42,8 @@ namespace Oculus.Interaction.Editor.QuickActions
         DistanceGrab = 1 << 3,
         Teleport = 1 << 4,
         All = (1 << 5) - 1,
+        //Experimental types will be hidden by the UI drawer
+        TouchGrab = 1 << 5,
     }
 
     [Flags]
@@ -67,6 +69,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
+            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor)
         };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerTypeLookup = new()
@@ -84,7 +87,8 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Grab] = typeof(HandGrabInteractor),
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
-            [InteractorTypes.Teleport] = typeof(TeleportInteractor)
+            [InteractorTypes.Teleport] = typeof(TeleportInteractor),
+            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor)
         };
 
         private static readonly Dictionary<InputModality, string> _modalityGroupNames = new()
@@ -125,6 +129,28 @@ namespace Oculus.Interaction.Editor.QuickActions
             InteractorTypes interactorType, out Type type)
         {
             return _controllerHandTypeLookup.TryGetValue(interactorType, out type);
+        }
+
+        /// <summary>
+        /// Get the Type of am interactor associated with an
+        /// <see cref="InteractorTypes"/> value for a specific
+        /// <see cref="DeviceTypes"/> device.
+        /// </summary>
+        public static bool TryGetTypeForInteractor(DeviceTypes device,
+             InteractorTypes interactorType, out Type type)
+        {
+            switch (device)
+            {
+                case DeviceTypes.Hands:
+                    return TryGetTypeForHandInteractor(interactorType, out type);
+                case DeviceTypes.Controllers:
+                    return TryGetTypeForControllerInteractor(interactorType, out type);
+                case DeviceTypes.ControllerDrivenHands:
+                    return TryGetTypeForControllerHandInteractor(interactorType, out type);
+                default:
+                    type = default;
+                    return false;
+            }
         }
 
         /// <summary>
@@ -209,6 +235,46 @@ namespace Oculus.Interaction.Editor.QuickActions
                 .Where(o => o != null)
                 .ToList().ConvertAll(o => o as IInteractor);
         }
+        /// <summary>
+        /// Looks for an specific interactor type and input modality within a hierarchy
+        /// </summary>
+        /// <param name="root">Root of the hierarchy to look for interactors</param>
+        /// <param name="deviceTypes">Device using the interactor</param>
+        /// <param name="interactorTypes">Interactor type being searched</param>
+        /// <param name="inputModality">Input modality expected for the interactor</param>
+        /// <returns>True if the interactor with the input modality exists within the hierarchy</returns>
+        public static bool HasInteractorWithModality(Transform root,
+            DeviceTypes deviceTypes, InteractorTypes interactorTypes, InputModality inputModality)
+        {
+            if (!TryGetTypeForInteractor(deviceTypes, interactorTypes, out Type iType))
+            {
+                return false;
+            }
+
+            bool found = false;
+            foreach (Component component in root.GetComponentsInChildren(iType, true))
+            {
+                bool hasHand = component.TryGetComponent<IHand>(out _);
+                bool hasController = component.TryGetComponent<IController>(out _);
+                switch (inputModality)
+                {
+                    case InputModality.Hand:
+                    case InputModality.HandAndNoController:
+                        found |= (hasHand && !hasController); break;
+                    case InputModality.Controller:
+                    case InputModality.ControllerAndNoHand:
+                        found |= (hasController && !hasHand); break;
+                    case InputModality.HandAndController:
+                        found |= (hasHand && hasController); break;
+                }
+                if (found)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Get any Hand <see cref="InteractorTypes"/> that may
@@ -226,10 +292,12 @@ namespace Oculus.Interaction.Editor.QuickActions
                 }
 
                 bool found = false;
-                //the component must exist and have a hand reference
+
+                //the component must exist and have a hand and not a controller reference
                 foreach (Component component in root.GetComponentsInChildren(iType, true))
                 {
-                    if (component.TryGetComponent<IHand>(out _))
+                    if (component.TryGetComponent<IHand>(out _)
+                        && !component.TryGetComponent<IController>(out _))
                     {
                         found = true;
                         break;
@@ -260,11 +328,12 @@ namespace Oculus.Interaction.Editor.QuickActions
                     continue;
                 }
 
-                //the component must exist and have a controller reference
+                //the component must exist and have a controller reference and not a hand reference
                 bool found = false;
                 foreach (Component component in root.GetComponentsInChildren(iType, true))
                 {
-                    if (component.TryGetComponent<IController>(out _))
+                    if (component.TryGetComponent<IController>(out _)
+                        && !component.TryGetComponent<IHand>(out _))
                     {
                         found = true;
                         break;
@@ -278,7 +347,6 @@ namespace Oculus.Interaction.Editor.QuickActions
             }
             return result;
         }
-
 
         /// <summary>
         /// Get any Controller Driven Hand <see cref="InteractorTypes"/> that may
@@ -295,12 +363,12 @@ namespace Oculus.Interaction.Editor.QuickActions
                     continue;
                 }
 
-                //the component must exist and have a controller or Hand reference
+                //the component must exist and have a controller and Hand reference
                 bool found = false;
                 foreach (Component component in root.GetComponentsInChildren(iType, true))
                 {
                     if (component.TryGetComponent<IController>(out _)
-                        || component.TryGetComponent<IHand>(out _))
+                        && component.TryGetComponent<IHand>(out _))
                     {
                         found = true;
                         break;
@@ -413,8 +481,8 @@ namespace Oculus.Interaction.Editor.QuickActions
             foreach (InteractorTypes interactor in Enum.GetValues(typeof(InteractorTypes)))
             {
                 if (types.HasFlag(interactor) &&
-                    !GetExistingHandInteractors(parentTransform).HasFlag(interactor) &&
-                    Templates.TryGetHandInteractorTemplate(interactor, out var template))
+                    Templates.TryGetHandInteractorTemplate(interactor, out var template) &&
+                    !HasInteractorWithModality(parentTransform, DeviceTypes.Hands, interactor, template.Modality))
                 {
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<HandRef>().InjectHand(hand);
@@ -436,8 +504,8 @@ namespace Oculus.Interaction.Editor.QuickActions
             foreach (InteractorTypes interactor in Enum.GetValues(typeof(InteractorTypes)))
             {
                 if (types.HasFlag(interactor) &&
-                    !GetExistingControllerInteractors(parentTransform).HasFlag(interactor) &&
-                    Templates.TryGetControllerInteractorTemplate(interactor, out var template))
+                    Templates.TryGetControllerInteractorTemplate(interactor, out var template) &&
+                    !HasInteractorWithModality(parentTransform, DeviceTypes.Controllers, interactor, template.Modality))
                 {
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<ControllerRef>().InjectController(controller);
@@ -459,8 +527,8 @@ namespace Oculus.Interaction.Editor.QuickActions
             foreach (InteractorTypes interactor in Enum.GetValues(typeof(InteractorTypes)))
             {
                 if (types.HasFlag(interactor) &&
-                    !GetExistingControllerHandInteractors(parentTransform).HasFlag(interactor) &&
-                    Templates.TryGetControllerHandInteractorTemplate(interactor, out var template))
+                    Templates.TryGetControllerHandInteractorTemplate(interactor, out var template) &&
+                    !HasInteractorWithModality(parentTransform, DeviceTypes.ControllerDrivenHands, interactor, template.Modality))
                 {
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     if (newInteractor.TryGetComponent(out ControllerRef controllerRef))
@@ -493,7 +561,6 @@ namespace Oculus.Interaction.Editor.QuickActions
             return newInteractorGo;
         }
 
-
         internal static Transform GetModalityGroup(InputModality modality, Transform parentTransform)
         {
             if (modality == InputModality.Any)
@@ -515,16 +582,26 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// </summary>
         public static IEnumerable<Hand> GetHands()
         {
+            //get all devices (exact type)
 #pragma warning disable CS0618 // Type or member is obsolete
-            IEnumerable<Hand> hands = Object.FindObjectsOfType<Hand>()
+            IEnumerable<Hand> devices = Object.FindObjectsOfType<Hand>()
 #pragma warning restore CS0618 // Type or member is obsolete
-                .Where(hand => hand.GetType() == typeof(Hand))
-                .Where(hand => !hand.TryGetComponent<IController>(out _));
+                .Where(device => device.GetType() == typeof(Hand));
 
-            //get just the final device of the stack
-            return hands.Where(hand =>
-                !hands.Any(otherHand =>
-                    otherHand.ModifyDataFromSource == (hand as IHand)));
+            //get just the final devices of the data stack and the hierarchy
+            var devices2 = devices.Where(device => !devices.Any(other =>
+                    other.ModifyDataFromSource == device as IDataSource<HandDataAsset>));
+
+            //remove by hierarchy
+            var devices3 = devices2.Where(device => !devices2.Any(other =>
+                    other != device && other.GetComponentsInChildren<Hand>().Contains(device)));
+
+            //old rig does not have HMD ref at the Input entry level
+            var devices4 = devices3.Where(device =>
+                device.TryGetComponent<HmdRef>(out _) ==
+                device.TryGetComponent<Controller>(out _));
+
+            return devices4;
         }
 
         /// <summary>
@@ -535,13 +612,17 @@ namespace Oculus.Interaction.Editor.QuickActions
 #pragma warning disable CS0618 // Type or member is obsolete
             IEnumerable<Controller> controllers = Object.FindObjectsOfType<Controller>()
 #pragma warning restore CS0618 // Type or member is obsolete
-                .Where(controller => controller.GetType() == typeof(Controller))
-                .Where(controller => !controller.TryGetComponent<Hand>(out _));
+                .Where(device => device.GetType() == typeof(Controller));
+            //get just the final devices of the data stack
+            var devices2 = controllers.Where(device => !controllers.Any(other =>
+                    other.ModifyDataFromSource == device as IDataSource<ControllerDataAsset>));
 
-            //get just the final device of the stack
-            return controllers.Where(controller =>
-                !controllers.Any(otherController =>
-                    otherController.ModifyDataFromSource == (controller as IController)));
+            //old rig does not have HMD ref at the Input entry level
+            var devices3 = devices2.Where(device =>
+                device.TryGetComponent<HmdRef>(out _) ==
+                device.TryGetComponent<Hand>(out _));
+
+            return devices3;
         }
 
         /// <summary>
@@ -550,16 +631,17 @@ namespace Oculus.Interaction.Editor.QuickActions
         public static IEnumerable<(Controller, Hand)> GetControllerHands()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            IEnumerable<(Controller, Hand)> controllerHands = Object.FindObjectsOfType<Controller>()
+            IEnumerable<(Controller, Hand)> devices = Object.FindObjectsOfType<Controller>()
 #pragma warning restore CS0618 // Type or member is obsolete
-                .Where(controller => controller.GetType() == typeof(Controller))
-                .Where(controller => controller.TryGetComponent(out Hand hand) && hand.GetType() == typeof(Hand))
-                .Select(controller => (controller, controller.GetComponent<Hand>()));
+                .Where(device => device.GetType() == typeof(Controller))
+                .Where(device => device.TryGetComponent(out Hand hand) && hand.GetType() == typeof(Hand))
+                .Select(device => (device, device.GetComponent<Hand>()));
 
             //get just the final device of the stack
-            return controllerHands.Where(controllerHand =>
-                !controllerHands.Any(otherControllerHand =>
-                    (otherControllerHand.Item2).ModifyDataFromSource == (controllerHand.Item2 as IHand)));
+            var devices2 = devices.Where(controllerHand => !devices.Any(otherControllerHand =>
+                    otherControllerHand.Item2.ModifyDataFromSource == controllerHand.Item2 as IDataSource<HandDataAsset>));
+
+            return devices2;
         }
 
         /// <summary>

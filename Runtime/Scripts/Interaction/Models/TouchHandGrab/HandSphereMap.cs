@@ -58,7 +58,8 @@ namespace Oculus.Interaction
 
                 foreach (Transform t in assocTransform)
                 {
-                    if (t.name != "sphere")
+                    if (t.name != "sphere"
+                        || !t.gameObject.activeSelf)
                     {
                         continue;
                     }
@@ -66,8 +67,7 @@ namespace Oculus.Interaction
                     Pose sphereOffset = t.GetPose(Space.Self);
                     Vector3 position = sphereOffset.position;
                     spheres.Add(new HandSphere(position, t.lossyScale.x * 0.5f, joint));
-
-                    Destroy(t.gameObject);
+                    t.gameObject.SetActive(false);
                 }
             }
         }

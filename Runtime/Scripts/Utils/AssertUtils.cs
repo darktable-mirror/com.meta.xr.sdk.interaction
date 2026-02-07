@@ -233,6 +233,28 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
+        /// Displays a generic warning using the same identifiable messages as the Asserts
+        /// </summary>
+        /// <param name="component">Component throwing the warning</param>
+        /// <param name="variableName">Variable that failed</param>
+        /// <param name="whyItFailed">The failure reason, empty by default.</param>
+        /// <param name="whereItFailed">The location of the failure. Points to the component by default</param>
+        /// <param name="howToFix">How to fix the issue, empty by default.</param>
+        [Conditional("UNITY_ASSERTIONS")]
+        public static void LogWarning(this Component component,
+            string whyItFailed = null, string whereItFailed = null, string howToFix = null)
+        {
+            string gameObjectName = component.name;
+            string componentName = component.GetType().Name;
+
+            UnityEngine.Debug.LogWarning(
+                (whereItFailed ?? $"At GameObject <color={HiglightColor}><b>{gameObjectName}</b></color>, component <b>{componentName}</b>. ") +
+                (whyItFailed ?? string.Empty) +
+                (howToFix ?? string.Empty)
+                , component);
+
+        }
+        /// <summary>
         /// Make a displayable name for a variable.
         /// This function will insert spaces before capital letters and remove optional m_, _ or k followed by uppercase letter in front of the name.
         /// </summary>

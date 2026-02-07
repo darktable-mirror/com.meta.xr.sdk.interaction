@@ -236,7 +236,7 @@ namespace Oculus.Interaction.Locomotion
         /// Determines if a <see cref="TeleportInteractor"/> is close enough to target this interactable. This is
         /// called by internal logic of <see cref="TeleportInteractor"/> and should not be invoked independently.
         /// </summary>
-        public bool IsInRange(Pose origin, float maxSqrDistance)
+        public bool IsInRange(in Pose origin, float maxSqrDistance)
         {
             if (SurfaceBounds == null)
             {
@@ -244,26 +244,69 @@ namespace Oculus.Interaction.Locomotion
             }
 
             Bounds bounds = SurfaceBounds.Bounds;
-            Vector3 dir = Vector3.ProjectOnPlane(origin.forward, Vector3.up).normalized;
-            Vector3 point = bounds.center;
-            point.y = origin.position.y;
-            float maxColliderSqrRadius = bounds.extents.x * bounds.extents.x
+            Vector3 center = bounds.center;
+            center.y = origin.position.y;
+
+            Vector3 originToCenter = center - origin.position;
+            float colliderSqrRadius = bounds.extents.x * bounds.extents.x
                 + bounds.extents.z * bounds.extents.z;
 
-            float sqrDistanceToCenter = (point - origin.position).sqrMagnitude;
-            if (Mathf.Max(0, sqrDistanceToCenter - maxColliderSqrRadius) > maxSqrDistance)
+            //point inside volume
+            if (originToCenter.sqrMagnitude <= colliderSqrRadius)
+            {
+                return true;
+            }
+
+            //point radius too far away from volume radius
+            float sqrDistanceToCenter = originToCenter.sqrMagnitude;
+            if (!CheckSquaredDistances(sqrDistanceToCenter, colliderSqrRadius, maxSqrDistance))
             {
                 return false;
             }
 
-            Vector3 pointToDir = Vector3.Cross(point - origin.position, dir);
-            float sqrDistanceToDir = pointToDir.sqrMagnitude;
-            if (sqrDistanceToDir <= maxColliderSqrRadius)
+            //make the dir flat in XZ
+            Vector3 dir = origin.forward;
+            float invFactor = 1f / Mathf.Sqrt(1 - dir.y * dir.y);
+            dir.y = 0;
+            dir.x *= invFactor;
+            dir.z *= invFactor;
+            float sqrDistanceToDir = SqrDistanceToSegment(center, origin.position, dir, maxSqrDistance);
+            if (sqrDistanceToDir <= colliderSqrRadius)
             {
                 return true;
             }
 
             return false;
+
+            //equivalent to sqrt(x) - sqrt(y) <= sqrt(threshold)
+            bool CheckSquaredDistances(float x, float y, float threshold)
+            {
+                float num = x - y - threshold;
+                if (x > y + threshold
+                    && num * num > 4 * y * threshold)
+                {
+                    return false;
+                }
+                return true;
+            }
+
+            float SqrDistanceToSegment(Vector3 point, Vector3 origin, Vector3 dir, float sqrLength)
+            {
+                Vector3 startToPoint = point - origin;
+                float t = Vector3.Dot(startToPoint, dir);
+
+                if (t < 0f)
+                {
+                    t = 0f;
+                }
+                else if (t * t > sqrLength)
+                {
+                    t = Mathf.Sqrt(sqrLength);
+                }
+
+                Vector3 closestPoint = origin + dir * t;
+                return (point - closestPoint).sqrMagnitude;
+            }
         }
 
         /// <summary>

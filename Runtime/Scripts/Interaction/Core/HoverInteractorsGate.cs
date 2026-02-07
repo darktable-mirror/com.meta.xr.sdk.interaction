@@ -66,8 +66,8 @@ namespace Oculus.Interaction
         {
             this.BeginStart(ref _started);
 
-            this.AssertCollectionField(InteractorsA, nameof(_interactorsA));
-            this.AssertCollectionField(InteractorsB, nameof(_interactorsB));
+            this.AssertCollectionItems(InteractorsA, nameof(_interactorsA));
+            this.AssertCollectionItems(InteractorsB, nameof(_interactorsB));
 
             this.EndStart(ref _started);
         }
