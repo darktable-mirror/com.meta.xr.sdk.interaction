@@ -26,6 +26,6 @@ namespace Oculus.Interaction
     /// </summary>
     public interface ICandidateComparer
     {
-        int Compare(object a, object b) ;
+        int Compare(object a, object b);
     }
 }

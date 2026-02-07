@@ -39,17 +39,21 @@ namespace Oculus.Interaction
         [SerializeField]
         private Vector3 _radiusToScaleRatio = new Vector3(1f, 1f, 1f);
 
-        public float MinAngle {
+        public float MinAngle
+        {
             get => _minAngle;
-            set {
+            set
+            {
                 _minAngle = value;
                 ClampMinMax();
             }
         }
 
-        public float MaxAngle {
+        public float MaxAngle
+        {
             get => _maxAngle;
-            set {
+            set
+            {
                 _maxAngle = value;
                 ClampMinMax();
             }
@@ -61,14 +65,17 @@ namespace Oculus.Interaction
             _maxAngle = Mathf.Clamp(_maxAngle, _minAngle, 90);
         }
 
-        public bool ScaleWithRadius {
+        public bool ScaleWithRadius
+        {
             get => _scaleWithRadius;
             set { _scaleWithRadius = value; }
         }
 
-        public Vector3 RadiusToScaleRatio {
+        public Vector3 RadiusToScaleRatio
+        {
             get => _radiusToScaleRatio;
-            set {
+            set
+            {
                 _radiusToScaleRatio = value;
             }
         }
@@ -102,7 +109,7 @@ namespace Oculus.Interaction
             float radiusSq = 1;
             float radius = 1;
             float fullRadius = 1;
-            if(_scaleWithRadius)
+            if (_scaleWithRadius)
             {
                 Vector3 localScaledXY =
                     new Vector3(_localToTransform.position.x * _radiusToScaleRatio.x,
@@ -123,7 +130,9 @@ namespace Oculus.Interaction
                 target.localScale = new Vector3(worldTargetScale.x / parentScale.x,
                                                 worldTargetScale.y / parentScale.y,
                                                 worldTargetScale.z / parentScale.z);
-            } else {
+            }
+            else
+            {
                 Vector3 targetDeltaXY = target.TransformVector(
                     new Vector3(_localToTransform.position.x,
                                 _localToTransform.position.y,
@@ -132,14 +141,14 @@ namespace Oculus.Interaction
                 radiusSq = grabRadiusSq - oppositeSq;
                 // Check feasability to maintain the invariant:
                 // the grab may be too close to the sphere center
-                if(radiusSq <= 0)
+                if (radiusSq <= 0)
                 {
                     return;
                 }
 
                 radius = Mathf.Sqrt(radiusSq);
                 float z = target.TransformVector(new Vector3(0, 0, _localToTransform.position.z)).magnitude;
-                if(_localToTransform.position.z < 0) z *= -1;
+                if (_localToTransform.position.z < 0) z *= -1;
                 fullRadius = radius - z;
             }
 
@@ -153,7 +162,7 @@ namespace Oculus.Interaction
             float angle = Mathf.Asin(clamped) * Mathf.Rad2Deg;
 
             float targetDeltaY = Mathf.Sqrt(targetDeltaYSq);
-            if(_localToTransform.position.y  < 0)
+            if (_localToTransform.position.y < 0)
             {
                 targetDeltaY *= -1;
             }

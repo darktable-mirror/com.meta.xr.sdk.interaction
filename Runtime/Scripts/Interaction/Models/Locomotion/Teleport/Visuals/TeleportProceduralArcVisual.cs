@@ -71,25 +71,6 @@ namespace Oculus.Interaction.Locomotion
 
         private TubePoint[] _arcPoints;
 
-        private static float[,] MIDPOINT_FACTOR = new float[,]
-        {
-            { -0.984807753f, 2.86f },
-            { -0.8660254038f, 1.02f },
-            { -0.6427876097f, 0.66f },
-            { -0.3420201433f, 0.54f },
-            { 0f, 0.5f },
-            { 0.3420201433f, 0.53f },
-            { 0.6427876097f, 0.65f },
-            { 0.8660254038f, 1f },
-            { 0.9396926208f, 1.45f },
-            { 0.984807753f, 2.86f },
-            { 0.9961946981f, 5.7f },
-            { 0.9975640503f, 7.2f },
-            { 0.9986295348f, 9.55f },
-            { 0.999390827f, 14.31f },
-            { 0.9998476952f, 28.65f }
-        };
-
         private IReticleData _reticleData;
 
         protected bool _started;
@@ -106,7 +87,7 @@ namespace Oculus.Interaction.Locomotion
             this.AssertField(_tubeRenderer, nameof(_tubeRenderer));
             if (_progress != null)
             {
-                this.AssertField(Progress, nameof(Progress));
+                this.AssertField(Progress, nameof(_progress));
             }
             this.EndStart(ref _started);
         }
@@ -119,6 +100,8 @@ namespace Oculus.Interaction.Locomotion
                 _interactor.WhenStateChanged += HandleInteractorStateChanged;
                 _interactor.WhenInteractableSet.Action += HandleInteractableSet;
                 _interactor.WhenInteractableUnset.Action += HandleInteractableUnset;
+
+                _tubeRenderer.Hide();
             }
         }
 
@@ -169,9 +152,11 @@ namespace Oculus.Interaction.Locomotion
                 tint = _noDestinationTint;
             }
 
-            Vector3 target = _reticleData != null ?
-                _reticleData.ProcessHitPoint(_interactor.ArcEnd.Point) :
-                _interactor.ArcEnd.Point;
+            Vector3 target = _interactor.ArcEnd.Point;
+            if (_reticleData != null)
+            {
+                target = _reticleData.ProcessHitPoint(target);
+            }
 
             UpdateVisualArcPoints(_interactor.ArcOrigin, target);
 
@@ -179,10 +164,10 @@ namespace Oculus.Interaction.Locomotion
             _tubeRenderer.Progress = Progress != null ? Progress.Value() : 0f;
             _tubeRenderer.RenderTube(_arcPoints, Space.World);
 
-            UpdatePointer(tint);
+            UpdatePointer(tint, target);
         }
 
-        private void UpdatePointer(Color tint)
+        private void UpdatePointer(Color tint, Vector3 target)
         {
             if (_pointer == null)
             {
@@ -190,8 +175,7 @@ namespace Oculus.Interaction.Locomotion
             }
             _pointer.Tint = tint;
             Vector3 pos = _pointerAnchor != null ? _pointerAnchor.position : _interactor.ArcOrigin.position;
-            Vector3 fadePos = _interactor.ArcEnd.Point;
-            Quaternion rot = Quaternion.LookRotation(fadePos - pos);
+            Quaternion rot = Quaternion.LookRotation(target - pos);
             _pointer.SetPositionAndRotation(pos, rot);
         }
 
@@ -219,11 +203,13 @@ namespace Oculus.Interaction.Locomotion
                 float t = i / (ArcPointsCount - 1f);
                 Vector3 position = EvaluateBezierArc(origin.position, midPoint, target, t);
                 Vector3 difference = (position - prevPosition);
-                totalDistance += difference.magnitude;
 
                 _arcPoints[i].position = Vector3.Scale(position, inverseScale);
                 _arcPoints[i].rotation = Quaternion.LookRotation(difference.normalized);
-
+                if (i > 0)
+                {
+                    totalDistance += difference.magnitude;
+                }
                 prevPosition = position;
             }
 
@@ -245,33 +231,8 @@ namespace Oculus.Interaction.Locomotion
 
         private static float CalculateMidpointFactor(float pitchDot)
         {
-            int lastSample = MIDPOINT_FACTOR.GetLength(0) - 1;
-            for (int i = 0; i < lastSample; i++)
-            {
-                if (MIDPOINT_FACTOR[i, 0] <= pitchDot
-                    && MIDPOINT_FACTOR[i + 1, 0] > pitchDot)
-                {
-                    return Interpolate(pitchDot, i, i + 1);
-                }
-            }
-
-            if (MIDPOINT_FACTOR[0, 0] < pitchDot)
-            {
-                return Interpolate(pitchDot, 0, 1);
-            }
-
-            if (MIDPOINT_FACTOR[lastSample, 0] < pitchDot)
-            {
-                return Interpolate(pitchDot, lastSample - 1, lastSample);
-            }
-
-            float Interpolate(float angle, int fromIndex, int toIndex)
-            {
-                float t = Mathf.InverseLerp(MIDPOINT_FACTOR[fromIndex, 0], MIDPOINT_FACTOR[toIndex, 0], angle);
-                return Mathf.LerpUnclamped(MIDPOINT_FACTOR[fromIndex, 1], MIDPOINT_FACTOR[toIndex, 1], t);
-            }
-
-            return 0.5f;
+            //great approximation for the MidPoint distance based on pitch
+            return Mathf.Pow(1f - pitchDot * pitchDot, -0.25f) - 0.5f;
         }
 
         #region Inject

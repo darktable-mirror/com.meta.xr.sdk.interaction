@@ -42,6 +42,8 @@ namespace Oculus.Interaction
             public float weight;
         }
 
+        #region OVR Fields
+
         [SerializeField]
         [InspectorName("Weighted Joints")]
         private List<WeightedJoint> _weightedJoints;
@@ -54,6 +56,23 @@ namespace Oculus.Interaction
         [InspectorName("Rotation")]
         private Quaternion _rotationOffset = Quaternion.identity;
 
+        #endregion OVR Fields
+
+        #region OpenXR Fields
+
+        [SerializeField]
+        [InspectorName("Weighted Joints")]
+        private List<WeightedJoint> _joints;
+
+        [SerializeField]
+        [InspectorName("Offset")]
+        private Vector3 _posOffset;
+
+        [SerializeField]
+        [InspectorName("Rotation")]
+        private Quaternion _rotOffset = Quaternion.identity;
+
+        #endregion OpenXR Fields
 
         [SerializeField]
         [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
@@ -69,20 +88,35 @@ namespace Oculus.Interaction
 
         public List<WeightedJoint> WeightedJoints
         {
+#if ISDK_OPENXR_HAND
+            get => _joints;
+            set => _joints = value;
+#else
             get => _weightedJoints;
             set => _weightedJoints = value;
+#endif
         }
 
         public Vector3 LocalPositionOffset
         {
+#if ISDK_OPENXR_HAND
+            get => _posOffset;
+            set => _posOffset = value;
+#else
             get => _localPositionOffset;
             set => _localPositionOffset = value;
+#endif
         }
 
         public Quaternion RotationOffset
         {
+#if ISDK_OPENXR_HAND
+            get => _rotOffset;
+            set => _rotOffset = value;
+#else
             get => _rotationOffset;
             set => _rotationOffset = value;
+#endif
         }
 
         #endregion
@@ -134,12 +168,17 @@ namespace Oculus.Interaction
                 pose.Lerp(jointPose, t);
             }
 
+#if ISDK_OPENXR_HAND
+            GetOffset(ref _cachedPose, Hand.Handedness, Hand.Scale);
+            _cachedPose.Postmultiply(pose);
+#else
             Vector3 positionOffsetWithHandedness = Hand.Handedness == Handedness.Left && MirrorOffsetsForLeftHand ?
                 HandMirroring.Mirror(_localPositionOffset) : _localPositionOffset;
             //Note that RotationOffset should be on the right of pose.rotation in order to be applied locally.
             //having it pre-multiplying can yield unwanted results.
             pose.position += _rotationOffset * pose.rotation *
                               positionOffsetWithHandedness * Hand.Scale;
+#endif
 
             transform.SetPose(pose);
         }

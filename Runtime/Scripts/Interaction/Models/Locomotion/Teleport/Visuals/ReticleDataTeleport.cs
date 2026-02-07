@@ -48,7 +48,7 @@ namespace Oculus.Interaction.DistanceReticles
         /// </summary>
         [Tooltip("Determines if the teleport reticle is hidden or marked as either valid or invalid when hovering over this spot.")]
         [SerializeField]
-        [Obsolete("Use "+ nameof(_hideReticle) + " instead"), Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(_hideReticle) + " instead"), Optional(OptionalAttribute.Flag.Obsolete)]
         private TeleportReticleMode _reticleMode = TeleportReticleMode.ValidTarget;
         [Obsolete("Use " + nameof(HideReticle) + " instead")]
         public TeleportReticleMode ReticleMode
@@ -92,7 +92,7 @@ namespace Oculus.Interaction.DistanceReticles
 
         public void Highlight(bool highlight)
         {
-            if(_materialBlock != null)
+            if (_materialBlock != null)
             {
                 _materialBlock.MaterialPropertyBlock.SetFloat(_highlightShaderID, highlight ? 1f : 0f);
                 _materialBlock.UpdateMaterialPropertyBlock();

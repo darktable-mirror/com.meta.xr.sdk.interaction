@@ -62,6 +62,22 @@ namespace Oculus.Interaction.Input
             }
         }
 
+#if ISDK_OPENXR_HAND
+        private static readonly HandMirroring.HandSpace _openXRRootLeft = new HandMirroring.HandSpace(
+            Vector3.forward, Vector3.up, Vector3.right);
+        private static readonly HandMirroring.HandSpace _openXRRootRight = new HandMirroring.HandSpace(
+            Vector3.forward, Vector3.up, Vector3.left);
+        private static readonly HandMirroring.HandSpace _ovrRootLeft = new HandMirroring.HandSpace(
+            Vector3.left, Vector3.down, Vector3.forward);
+        private static readonly HandMirroring.HandSpace _ovrRootRight = new HandMirroring.HandSpace(
+            Vector3.right, Vector3.up, Vector3.forward);
+        private static readonly HandMirroring.HandsSpace openXRRootHands = new HandMirroring.HandsSpace(
+            _openXRRootLeft, _openXRRootRight);
+        private static readonly HandMirroring.HandsSpace ovrRootHands = new HandMirroring.HandsSpace(
+            _ovrRootLeft, _ovrRootRight);
+        private Quaternion[] _ovrJointRotations = new Quaternion[Compatibility.OVR.Constants.NUM_HAND_JOINTS];
+#endif
+
         protected override void Start()
         {
             this.BeginStart(ref _started, () => base.Start());
@@ -81,7 +97,14 @@ namespace Oculus.Interaction.Input
 
             Config.Handedness = controllerConfig.Handedness;
             Config.TrackingToWorldTransformer = controllerConfig.TrackingToWorldTransformer;
+
+#if ISDK_OPENXR_HAND
+            Config.HandSkeleton = Config.Handedness == Handedness.Left ?
+                HandSkeleton.DefaultLeftSkeleton :
+                HandSkeleton.DefaultRightSkeleton;
+#else
             Config.HandSkeleton = HandSkeleton.FromJoints(_bones);
+#endif
         }
 
         protected override void UpdateData()
@@ -138,14 +161,46 @@ namespace Oculus.Interaction.Input
             _handDataAsset.PointerPoseOrigin = PoseOrigin.FilteredTrackedPose;
             _handDataAsset.PointerPose = controllerData.PointerPose;
 
+#if ISDK_OPENXR_HAND
+
+            // Populate ovr rotations from bone transforms
+            for (int i = 0; i < Compatibility.OVR.Constants.NUM_HAND_JOINTS; i++)
+            {
+                _ovrJointRotations[i] = _bones[i].localRotation;
+            }
+
+            // Set wrist poses to identity
+            _handDataAsset.JointPoses[(int)HandJointId.HandWristRoot] = Pose.identity;
+            _ovrJointRotations[(int)Compatibility.OVR.HandJointId.HandWristRoot] = Quaternion.identity;
+
+            // Translate ovr rotations to OpenXR joint poses
+            HandTranslationUtils.OVRHandRotationsToOpenXRPoses(_ovrJointRotations, _config.Handedness,
+                ref _handDataAsset.JointPoses);
+
+#pragma warning disable 0618
+            // Populate legacy Joints array
+            HandJointUtils.WristJointPosesToLocalRotations(_handDataAsset.JointPoses, ref _handDataAsset.Joints);
+#pragma warning restore 0618
+#else
             for (int i = 0; i < _bones.Length; i++)
             {
+#pragma warning disable 0618
                 _handDataAsset.Joints[i] = _bones[i].localRotation;
+#pragma warning restore 0618
             }
+#endif
 
             if (_rootIsLocal)
             {
                 Pose offset = _root.GetPose(Space.Self);
+#if ISDK_OPENXR_HAND
+                Handedness transformHandedness = Config.Handedness;
+                HandMirroring.HandSpace fromHand = ovrRootHands[transformHandedness];
+                HandMirroring.HandSpace toHand = openXRRootHands[transformHandedness];
+                Vector3 forward = HandMirroring.TransformPosition(offset.rotation * Vector3.forward, fromHand, toHand);
+                Vector3 up = HandMirroring.TransformPosition(offset.rotation * Vector3.up, fromHand, toHand);
+                offset.rotation = Quaternion.LookRotation(forward, up);
+#endif
                 Pose controllerPose = controllerData.RootPose;
                 PoseUtils.Multiply(controllerPose, offset, ref _handDataAsset.Root);
                 _handDataAsset.HandScale = _root.localScale.x;

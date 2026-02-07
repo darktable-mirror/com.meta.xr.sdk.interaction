@@ -81,7 +81,7 @@ namespace Oculus.Interaction
                 else
                 {
                     Debug.LogError($"This interactor was already added to {nameof(HandTrackingConfidenceProvider)}. "
-                        + $"Ensure each interactor is paired just once" );
+                        + $"Ensure each interactor is paired just once");
                 }
             }
         }

@@ -20,11 +20,22 @@
 
 namespace Oculus.Interaction.Surfaces
 {
+    /// <summary>
+    /// This interface represents a surface as finite subsections or "patches" of mathematically simpler but less
+    /// bounded surfaces. For example, the screen of a virtual tablet can be thought of as a "patch" of an unbounded mathematical
+    /// plane. This representation is convenient for a number of scenarios, such as continuing an interaction which began within
+    /// a "patch" even if it continues outside the "patch" but without departing the underlying surface. ISurfacePatch formalizes
+    /// this type of surface as an <see cref="ISurface"/> in its own right, but containing an additional (canonically broader)
+    /// <see cref="BackingSurface"/>.
+    /// </summary>
     public interface ISurfacePatch : ISurface
     {
         /// <summary>
-        /// A surface patch is defined as an portion of this
-        /// underlying surface.
+        /// The backing surface for this ISurfacePatch. Used correctly, this backing surface is a strict geometric superset of the
+        /// space defined by ISurfacePatch itself. In other words, for every spatial query against the ISurfacePatch for which a
+        /// solution exists (a raycast that hits the surface, for example), that same solution should be a valid solution to the same
+        /// query for the BackingSurface; however, there may exist spatial queries for which the ISurfacePatch has no solution, but
+        /// a solution exists for the BackingSurface.
         /// </summary>
         ISurface BackingSurface { get; }
     }

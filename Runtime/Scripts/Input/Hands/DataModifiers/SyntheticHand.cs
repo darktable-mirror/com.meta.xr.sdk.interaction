@@ -23,12 +23,17 @@ using UnityEngine;
 namespace Oculus.Interaction.Input
 {
     /// <summary>
-    /// Used primarily for touch limiting during pokes and custom poses during grabs. Alters hand data piped into this modifier to lock and unlock joints (wrist position and rotation,
-    /// finger joint rotations).  When switching between locked and unlocked states, additionally smooths
-    /// out transitions by easing between source hand data and target hand data.
+    /// Used primarily for touch limiting (modifying the motion of a tracked <see cref="IHand"/> so that it doesn't penetrate surfaces)
+    /// during pokes and custom poses during grabs. Alters hand data piped into this modifier to lock and unlock joints (wrist position
+    /// and rotation, finger joint rotations).  When switching between locked and unlocked states, additionally smooths out transitions
+    /// by easing between source hand data and target hand data.
     /// </summary>
     public class SyntheticHand : Hand
     {
+        /// <summary>
+        /// Enumeration of modes for "wrist locking," which is the mechanism SyntheticHand uses to alter the motion of an
+        /// <see cref="IHand"/> for touch limiting. This enum is intended to be used as a bit mask.
+        /// </summary>
         [System.Flags]
         public enum WristLockMode
         {
@@ -57,6 +62,9 @@ namespace Oculus.Interaction.Input
         [Tooltip("Use this factor to control how much the fingers can spread when nearby a constrained pose.")]
         private float _spreadAllowance = 5f;
 
+        /// <summary>
+        /// A signal which can be used to alert observers that the SyntheticHand should be updated.
+        /// </summary>
         public System.Action UpdateRequired = delegate { };
 
         private readonly HandDataAsset _lastStates = new HandDataAsset();
@@ -114,9 +122,36 @@ namespace Oculus.Interaction.Input
 
             UpdateJointsRotation(data);
             UpdateRootPose(ref data.Root);
+#if ISDK_OPENXR_HAND
+            SyncDataPoses(data);
+#endif
             data.RootPoseOrigin = PoseOrigin.SyntheticPose;
         }
 
+#if ISDK_OPENXR_HAND
+        /// <summary>
+        /// Sync poses from root to modified local pose array
+        /// </summary>
+        private void SyncDataPoses(HandDataAsset data)
+        {
+            for (int i = 0; i < Constants.NUM_HAND_JOINTS; ++i)
+            {
+                int parent = (int)HandJointUtils.JointParentList[i];
+                if (parent >= 0)
+                {
+                    Vector3 localPos = PoseUtils.Delta(
+                        _lastStates.JointPoses[parent],
+                        _lastStates.JointPoses[i]).position;
+
+#pragma warning disable 0618
+                    PoseUtils.Multiply(data.JointPoses[parent],
+                        new Pose(localPos, data.Joints[i]),
+                        ref data.JointPoses[i]);
+#pragma warning restore 0618
+                }
+            }
+        }
+#endif
 
         /// <summary>
         /// Updates the pose of the root of the hand
@@ -158,7 +193,9 @@ namespace Oculus.Interaction.Input
         private void UpdateJointsRotation(HandDataAsset data)
         {
             float extraRotationAllowance = 0f;
+#pragma warning disable 0618
             Quaternion[] jointRotations = data.Joints;
+#pragma warning restore 0618
 
             for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; ++i)
             {
@@ -231,7 +268,7 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Stores the rotation data for all joints in the hand, to be applied during the ApplyHand event.
+        /// Stores the rotation data for all joints in the hand, to be applied during <see cref="Apply(HandDataAsset)"/>.
         /// </summary>
         /// <param name="jointRotations">The joint rotations following the FingersMetadata.HAND_JOINT_IDS format.</param>
         /// <param name="overrideFactor">How much to lerp the fingers from the tracked (raw) state to the provided one.</param>
@@ -245,9 +282,9 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Stores the rotation data for all joints for the given finger, to be applied during the ApplyHand event.
+        /// Stores the rotation data for all joints for the given finger, to be applied during <see cref="Apply(HandDataAsset)"/>.
         /// </summary>
-        /// <param name="finger">The finger for which to lock joints.</param>
+        /// <param name="finger">The <see cref="HandFinger"/> for which to lock joints.</param>
         /// <param name="rotations">The joint rotations for each joint on the finger</param>
         /// <param name="overrideFactor">How much to lerp the fingers from the tracked (raw) state to the provided one.</param>
         public void OverrideFingerRotations(HandFinger finger, Quaternion[] rotations, float overrideFactor)
@@ -259,6 +296,13 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Overrides the rotation value for the specified <see cref="HandJointId"/>, to be applied during
+        /// <see cref="Apply(HandDataAsset)"/>.
+        /// </summary>
+        /// <param name="jointId">The <see cref="HandJointId"/> specifying which joint to override</param>
+        /// <param name="rotation">The overriding rotation</param>
+        /// <param name="overrideFactor">How much to lerp the fingers from the tracked (raw) state to the provided one</param>
         public void OverrideJointRotation(HandJointId jointId, Quaternion rotation, float overrideFactor)
         {
             int jointIndex = FingersMetadata.HandJointIdToIndex(jointId);
@@ -272,7 +316,7 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Immediately locks an individual finger (all its internal joints) at the last known value.
+        /// Immediately locks an individual <see cref="HandFinger"/> (all its internal joints) at the last known value.
         /// </summary>
         /// <param name="finger">The finger for which to lock joints.</param>
         public void LockFingerAtCurrent(in HandFinger finger)
@@ -286,11 +330,20 @@ namespace Oculus.Interaction.Input
                 int jointIndex = jointIndexes[i];
                 int rawJointIndex = (int)FingersMetadata.HAND_JOINT_IDS[jointIndex];
 
+#pragma warning disable 0618
                 _desiredJointsRotation[jointIndex] = _lastStates.Joints[rawJointIndex];
+#pragma warning restore 0618
                 _jointsOverrideFactor[jointIndex] = 1f;
             }
         }
 
+        /// <summary>
+        /// Locks a specified joint to a specified overriding rotation. Note that, because this is locking rather than
+        /// interpolating, <paramref name="overrideFactor"/> is not used by this call.
+        /// </summary>
+        /// <param name="jointId">The <see cref="HandJointId"/> specifying which joint to override</param>
+        /// <param name="rotation">The rotation to which to lock</param>
+        /// <param name="overrideFactor">Unused</param>
         public void LockJoint(in HandJointId jointId, Quaternion rotation, float overrideFactor = 1f)
         {
             int jointIndex = FingersMetadata.HandJointIdToIndex(jointId);
@@ -300,11 +353,13 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// To use in conjunction with OverrideAllJoints, it sets the freedom state for a provided finger.
-        /// Opposite to LockFingerAtCurrent, this method uses the data provided in OverrideAllJoints instead
-        /// of the last known state.
+        /// To use in conjunction with <see cref="OverrideAllJoints(in Quaternion[], float)"/>, this sets the freedom state for a
+        /// provided finger. Opposite to <see cref="LockFingerAtCurrent(in HandFinger)"/>, this method uses the data provided in
+        /// <see cref="OverrideAllJoints(in Quaternion[], float)"/> instead of the last known state.
         /// </summary>
+        /// <param name="finger">The finger to modify, specified as a <see cref="HandFinger"/></param>
         /// <param name="freedomLevel">The freedom level for the finger</param>
+        /// <param name="skipAnimation">Whether or not to animate as a result of setting</param>
         public void SetFingerFreedom(in HandFinger finger, in JointFreedom freedomLevel, bool skipAnimation = false)
         {
             int[] jointIndexes = FingersMetadata.FINGER_TO_JOINT_INDEX[(int)finger];
@@ -314,12 +369,25 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// To use in conjunction with <see cref="OverrideAllJoints(in Quaternion[], float)"/>, this sets the freedom state for a
+        /// provided finger. Opposite to <see cref="LockFingerAtCurrent(in HandFinger)"/>, this method uses the data provided in
+        /// <see cref="OverrideAllJoints(in Quaternion[], float)"/> instead of the last known state.
+        /// </summary>
+        /// <param name="jointId">The finger to modify, specified as a <see cref="HandJointId"/></param>
+        /// <param name="freedomLevel">The freedom level for the finger</param>
+        /// <param name="skipAnimation">Whether to skip the animation curve for this override</param>
         public void SetJointFreedom(in HandJointId jointId, in JointFreedom freedomLevel, bool skipAnimation = false)
         {
             int jointIndex = FingersMetadata.HandJointIdToIndex(jointId);
             SetJointFreedomAtIndex(jointIndex, freedomLevel, skipAnimation);
         }
 
+        /// <summary>
+        /// Queries the current <see cref="JointFreedom"/> for the specified finger.
+        /// </summary>
+        /// <param name="jointId">The finger, specified as a <see cref="HandJointId"/></param>
+        /// <returns>The <see cref="JointFreedom"/> of the specified finger</returns>
         public JointFreedom GetJointFreedom(in HandJointId jointId)
         {
             int jointIndex = FingersMetadata.HandJointIdToIndex(jointId);
@@ -356,9 +424,8 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Stores the desired pose to set the wrist of the hand to.
-        /// This is not necessarily the final pose of the hand, as it allows
-        /// lerping between the tracked and provided one during the ApplyHand phase.
+        /// Stores the desired pose to set the wrist of the hand to. This is not necessarily the final pose of the hand, as it allows
+        /// lerping between the tracked and provided one during <see cref="Apply(HandDataAsset)"/>.
         ///
         /// To ensure the hand is locked at the desired pose, pass a value of 1 in the overrideFactor
         /// </summary>
@@ -368,8 +435,8 @@ namespace Oculus.Interaction.Input
         /// <param name="skipAnimation">Whether to skip the animation curve for this override.</param>
         public void LockWristPose(Pose wristPose, float overrideFactor = 1f, WristLockMode lockMode = WristLockMode.Full, bool worldPose = false, bool skipAnimation = false)
         {
-            Pose desiredWristPose = (worldPose && TrackingToWorldTransformer != null ) ?
-                TrackingToWorldTransformer.ToTrackingPose(wristPose): wristPose;
+            Pose desiredWristPose = (worldPose && TrackingToWorldTransformer != null) ?
+                TrackingToWorldTransformer.ToTrackingPose(wristPose) : wristPose;
 
             if ((lockMode & WristLockMode.Position) != 0)
             {
@@ -382,6 +449,13 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Similar to <see cref="LockWristPose(Pose, float, WristLockMode, bool, bool)"/>, but only locks the position, leaving orientation
+        /// free.
+        /// </summary>
+        /// <param name="position">The position to which to lock the wrist</param>
+        /// <param name="overrideFactor">How much to lerp between the tracked and the locked position</param>
+        /// <param name="skipAnimation">Whether to skip the animation curve for this override</param>
         public void LockWristPosition(Vector3 position, float overrideFactor = 1f, bool skipAnimation = false)
         {
             _wristPositionOverrideFactor = overrideFactor;
@@ -393,6 +467,13 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Similar to <see cref="LockWristPose(Pose, float, WristLockMode, bool, bool)"/>, but only locks the rotation, leaving position
+        /// free.
+        /// </summary>
+        /// <param name="rotation">The rotation to which to lock the wrist</param>
+        /// <param name="overrideFactor">How much to lerp between the tracked and the locked rotation</param>
+        /// <param name="skipAnimation">Whether to skip the animation curve for this override</param>
         public void LockWristRotation(Quaternion rotation, float overrideFactor = 1f, bool skipAnimation = false)
         {
             _wristRotationOverrideFactor = overrideFactor;
@@ -405,8 +486,8 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Unlocks the hand (locked at the OverrideWristPose method) starting
-        /// a timer for the smooth release animation.
+        /// Unlocks the hand (locked using <see cref="LockWristPose(Pose, float, WristLockMode, bool, bool)"/> or one of its sibling
+        /// methods) starting a timer for the smooth release animation.
         /// </summary>
         public void FreeWrist(WristLockMode lockMode = WristLockMode.Full)
         {
@@ -476,6 +557,15 @@ namespace Oculus.Interaction.Input
 
         #region Inject
 
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated SyntheticHand; effectively wraps
+        /// <see cref="Hand.InjectAllHand(DataSource{HandDataAsset}.UpdateModeFlags, IDataSource, DataModifier{HandDataAsset}, bool)"/>,
+        /// <see cref="InjectWristPositionLockCurve(ProgressCurve)"/>, <see cref="InjectWristPositionUnlockCurve(ProgressCurve)"/>,
+        /// <see cref="InjectWristRotationLockCurve(ProgressCurve)"/>, <see cref="InjectWristRotationUnlockCurve(ProgressCurve)"/>,
+        /// <see cref="InjectJointLockCurve(ProgressCurve)"/>, <see cref="InjectJointUnlockCurve(ProgressCurve)"/>,
+        /// and <see cref="InjectSpreadAllowance(float)"/>. This method exists to support Interaction SDK's dependency injection pattern
+        /// and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllSyntheticHandModifier(UpdateModeFlags updateMode, IDataSource updateAfter,
             DataModifier<HandDataAsset> modifyDataFromSource, bool applyModifier,
             ProgressCurve wristPositionLockCurve, ProgressCurve wristPositionUnlockCurve,
@@ -494,31 +584,72 @@ namespace Oculus.Interaction.Input
             InjectSpreadAllowance(spreadAllowance);
         }
 
-        public void InjectWristPositionLockCurve(ProgressCurve wristPositionLockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for wrist position
+        /// locking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectWristPositionLockCurve(ProgressCurve wristPositionLockCurve)
+        {
             _wristPositionLockCurve = wristPositionLockCurve;
         }
 
-        public void InjectWristPositionUnlockCurve(ProgressCurve wristPositionUnlockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for wrist position
+        /// unlocking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectWristPositionUnlockCurve(ProgressCurve wristPositionUnlockCurve)
+        {
             _wristPositionUnlockCurve = wristPositionUnlockCurve;
         }
 
-        public void InjectWristRotationLockCurve(ProgressCurve wristRotationLockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for wrist rotation
+        /// locking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectWristRotationLockCurve(ProgressCurve wristRotationLockCurve)
+        {
             _wristRotationLockCurve = wristRotationLockCurve;
         }
 
-        public void InjectWristRotationUnlockCurve(ProgressCurve wristRotationUnlockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for wrist rotation
+        /// unlocking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectWristRotationUnlockCurve(ProgressCurve wristRotationUnlockCurve)
+        {
             _wristRotationUnlockCurve = wristRotationUnlockCurve;
         }
 
-        public void InjectJointLockCurve(ProgressCurve jointLockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for joint
+        /// locking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectJointLockCurve(ProgressCurve jointLockCurve)
+        {
             _jointLockCurve = jointLockCurve;
         }
 
-        public void InjectJointUnlockCurve(ProgressCurve jointUnlockCurve) {
+        /// <summary>
+        /// Adds a <see cref="ProgressCurve"/> to a dynamically instantiated SyntheticHand as the animation curve for joint
+        /// unlocking. This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
+        public void InjectJointUnlockCurve(ProgressCurve jointUnlockCurve)
+        {
             _jointUnlockCurve = jointUnlockCurve;
         }
 
-        public void InjectSpreadAllowance(float spreadAllowance) {
+        /// <summary>
+        /// Adds a floating point value to a dynamically instantiated SyntheticHand as spread allowance. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
+        public void InjectSpreadAllowance(float spreadAllowance)
+        {
             _spreadAllowance = spreadAllowance;
         }
 

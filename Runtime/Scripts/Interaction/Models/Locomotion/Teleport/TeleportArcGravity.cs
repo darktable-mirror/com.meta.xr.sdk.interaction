@@ -181,7 +181,7 @@ namespace Oculus.Interaction.Locomotion
             return point;
         }
 
-        private void UpdateArcParameters()
+        public void UpdateArcParameters()
         {
             _pose = CalculatePose();
             _speed = CalculateSpeed(_pose);

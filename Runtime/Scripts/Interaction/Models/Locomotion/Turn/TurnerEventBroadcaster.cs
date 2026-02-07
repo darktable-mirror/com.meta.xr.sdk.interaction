@@ -204,7 +204,7 @@ namespace Oculus.Interaction.Locomotion
                 if ((Interactor.State == InteractorState.Hover || Interactor.State == InteractorState.Normal)
                     && _turnMethod == TurnMode.Snap)
                 {
-                    ProcessSnapTurn(Axis.Value());
+                    SnapTurn(Axis.Value());
                 }
             }
 
@@ -212,22 +212,27 @@ namespace Oculus.Interaction.Locomotion
             {
                 if (_turnMethod == TurnMode.Smooth)
                 {
-                    ProcessSmoothTurn(Axis.Value());
+                    SmoothTurn(Axis.Value());
                 }
                 else if (_turnMethod == TurnMode.Snap
                     && !_fireSnapOnUnselect
                     && !_wasSelecting)
                 {
                     _wasSelecting = true;
-                    ProcessSnapTurn(Axis.Value());
+                    SnapTurn(Axis.Value());
                 }
             }
 
         }
 
-        private void ProcessSnapTurn(float pointerOffset)
+        /// <summary>
+        /// Fires a Relative Rotation event using the given direction.
+        /// It ignores the magnitude of the direction and uses the _snapTurnDegrees
+        /// </summary>
+        /// <param name="direction">The direction of the turn, 1 for clockwise, -1 anti-clockwise</param>
+        public void SnapTurn(float direction)
         {
-            float sign = Mathf.Sign(pointerOffset);
+            float sign = Mathf.Sign(direction);
             Quaternion rot = Quaternion.Euler(0f, sign * _snapTurnDegrees, 0f);
 
             LocomotionEvent locomotionEvent = new LocomotionEvent(
@@ -235,10 +240,15 @@ namespace Oculus.Interaction.Locomotion
             _whenLocomotionEventRaised.Invoke(locomotionEvent);
         }
 
-        private void ProcessSmoothTurn(float pointerOffset)
+        /// <summary>
+        /// Fires a Velocity Rotation event using the given direction.
+        /// It uses the magnitude of the direction and adjusts it using the _smoothTurnCurve
+        /// </summary>
+        /// <param name="direction">The direction and magnitude of the turn, 1 for clockwise, -1 anti-clockwise</param>
+        public void SmoothTurn(float direction)
         {
-            float sign = Mathf.Sign(pointerOffset);
-            float vel = _smoothTurnCurve.Evaluate(Mathf.Abs(pointerOffset));
+            float sign = Mathf.Sign(direction);
+            float vel = _smoothTurnCurve.Evaluate(Mathf.Abs(direction));
             Quaternion rot = Quaternion.Euler(0f, sign * vel, 0f);
             LocomotionEvent locomotionEvent = new LocomotionEvent(
                 Identifier, rot, LocomotionEvent.RotationType.Velocity);

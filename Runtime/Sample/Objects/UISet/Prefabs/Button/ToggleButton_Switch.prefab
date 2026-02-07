@@ -387,19 +387,7 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6248811006969753686}
-        m_TargetAssemblyTypeName: AnimatorOverrideLayer, FLUID.WIP
-        m_MethodName: SetOverrideLayerActive
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 0
 --- !u!95 &1474146498998784439
 Animator:
@@ -434,10 +422,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec472db9c42ccc342a2d35777d25c03d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 1474146498998784439}
-  overrideLayer: Selected Layer
-  transitionDuration: 0.2
-  transitionCurve:
+  _animator: {fileID: 1474146498998784439}
+  _overrideLayer: Selected Layer
+  _transitionDuration: 0.2
+  _transitionCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -461,6 +449,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  _toggle: {fileID: 3349346243019873864}
 --- !u!1 &8096635482759266499
 GameObject:
   m_ObjectHideFlags: 0

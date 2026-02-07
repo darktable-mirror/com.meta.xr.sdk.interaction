@@ -22,6 +22,18 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// PointerInteractor provides a base template for any kind of interaction which can be characterized as, "pointing at something."
+    /// Interactors of this kind, examples of which include <see cref="PokeInteractor"/> and <see cref="RayInteractor"/>, emit
+    /// <see cref="PointerEvent"/>s which describe their behavior during interaction, in addition to the signals and data provided by
+    /// <see cref="Interactor{TInteractor, TInteractable}"/>s.
+    /// </summary>
+    /// <remarks>
+    /// Like <see cref="Interactor{TInteractor, TInteractable}"/>, this type has a
+    /// [curiously recurring](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) generic argument
+    /// <typeparamref name="TInteractor"/>, which should be the concrete interactor type which derives from this type and is uniquely
+    /// associated with <typeparamref name="TInteractable"/>.
+    /// </remarks>
     public abstract class PointerInteractor<TInteractor, TInteractable> : Interactor<TInteractor, TInteractable>
                                     where TInteractor : Interactor<TInteractor, TInteractable>
                                     where TInteractable : PointerInteractable<TInteractor, TInteractable>

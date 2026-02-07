@@ -26,6 +26,90 @@ namespace Oculus.Interaction.Editor
     [CanEditMultipleObjects]
     [CustomEditor(typeof(HandPinchOffset))]
     public class HandPinchOffsetEditor : SimplifiedEditor
+#if ISDK_OPENXR_HAND
+        , IOpenXRMigrableEditor
+#endif
     {
+#if ISDK_OPENXR_HAND
+        private bool _unrollConverter = true;
+        private static readonly string[] _ovrPropertyNames =
+            {"_localPositionOffset", "_rotationOffset" };
+#else
+        private static readonly string[] _openXRPropertyNames =
+            {"_posOffset", "_rotOffset" };
+#endif
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+#if ISDK_OPENXR_HAND
+            _unrollConverter = NeedsConversion(serializedObject);
+            _editorDrawer.Hide(_ovrPropertyNames);
+#else
+            _editorDrawer.Hide(_openXRPropertyNames);
+#endif
+        }
+
+#if ISDK_OPENXR_HAND
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            this.OpenXRConversionMenu(ref _unrollConverter, (so) => Convert(so), _ovrPropertyNames);
+        }
+
+        public bool NeedsConversion(SerializedObject target)
+        {
+            ConversionValues(target, out Vector3 offsetPosition, out Quaternion rotation);
+            GetOpenXRProperties(target,
+                out SerializedProperty offsetProp,
+                out SerializedProperty rotationProp);
+
+            return (offsetProp.vector3Value != offsetPosition
+                || rotationProp.quaternionValue != rotation);
+        }
+
+        public void Convert(SerializedObject target)
+        {
+            ConversionValues(target, out Vector3 offsetPosition, out Quaternion rotation);
+
+            GetOpenXRProperties(target,
+                out SerializedProperty offsetProp,
+                out SerializedProperty rotationProp);
+
+            offsetProp.vector3Value = offsetPosition;
+            rotationProp.quaternionValue = rotation;
+        }
+
+        private static void ConversionValues(SerializedObject target,
+            out Vector3 offsetPosition, out Quaternion rotation)
+        {
+            GetOVRProperties(target,
+                out SerializedProperty ovrOffsetProp,
+                out SerializedProperty ovrRotationProp);
+
+            Vector3 localPositionOffset = ovrOffsetProp.vector3Value;
+            Quaternion rotationOffset = ovrRotationProp.quaternionValue;
+            Pose translatedRoot = HandRootOffsetEditor.TranslateRoot(target, localPositionOffset, rotationOffset);
+            offsetPosition = translatedRoot.position;
+            rotation = translatedRoot.rotation;
+        }
+
+        private static void GetOVRProperties(SerializedObject target,
+            out SerializedProperty offsetProp,
+            out SerializedProperty rotationProp)
+        {
+            offsetProp = target.FindProperty("_localPositionOffset");
+            rotationProp = target.FindProperty("_rotationOffset");
+        }
+
+        private static void GetOpenXRProperties(SerializedObject target,
+            out SerializedProperty offsetProp,
+            out SerializedProperty rotationProp)
+        {
+            offsetProp = target.FindProperty("_posOffset");
+            rotationProp = target.FindProperty("_rotOffset");
+        }
+
+#endif
     }
 }

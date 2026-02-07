@@ -235,7 +235,7 @@ namespace Oculus.Interaction.Editor
                 }
 
                 var recommendedVersion = (request.Status == StatusCode.Success &&
-                                          request.Result.Length == 1)?
+                                          request.Result.Length == 1) ?
 #if UNITY_2022_2_OR_NEWER
                     request.Result[0].versions?.recommended : null;
 #else

@@ -96,9 +96,9 @@ namespace Oculus.Interaction
 
         private FingerStatus[] _fingerStatuses;
         private TouchShadowHand _touchShadowHand;
-        private ShadowHand _fromShadow;
-        private ShadowHand _toShadow;
-        private ShadowHand _openShadow;
+        private readonly ShadowHand _fromShadow = new();
+        private readonly ShadowHand _toShadow = new();
+        private readonly ShadowHand _openShadow = new();
         private bool _firstSelect = false;
         private float _previousTime;
         private float _deltaTime;
@@ -141,9 +141,6 @@ namespace Oculus.Interaction
             this.AssertIsTrue(_iterations > 0, $"{AssertUtils.Nicify(nameof(_iterations))} must be bigger than {0}.");
 
             _touchShadowHand = new TouchShadowHand(HandSphereMap, Hand.Handedness, _iterations);
-            _fromShadow = new ShadowHand();
-            _toShadow = new ShadowHand();
-            _openShadow = new ShadowHand();
             _fromShadow.FromHand(Hand);
             _toShadow.FromHand(Hand);
             _previousTime = _timeProvider();

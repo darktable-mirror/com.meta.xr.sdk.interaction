@@ -27,15 +27,17 @@ using System;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// Helper class for Hand Grabbing objects.
-    /// This class keeps track of the grabbing anchors and updates the target
-    /// and movement during a Hand Grab interaction.
+    /// Helper class for Hand Grabbing types such as <see cref="HandGrabInteractor"/>/<see cref="HandGrabInteractable"/> and
+    /// <see cref="DistanceHandGrabInteractor"/>/<see cref="DistanceHandGrabInteractable"/>. This class keeps track of the
+    /// grabbing anchors and updates the target and movement during a Hand Grab interaction.
     /// </summary>
     public static class HandGrabInteraction
     {
         /// <summary>
-        /// Calculates a new target. That is the point of the
-        /// interactable at which the HandGrab will happen.
+        /// Obsolete: Calculates a new target. That is the point of the interactable at which the hand grab interaction will occur.
+        /// This function is obsolete and should be replaced by calls to
+        /// <see cref="CalculateBestGrab(IHandGrabInteractor, IHandGrabInteractable, GrabTypeFlags, out GrabTypeFlags, ref HandGrabResult)"/>
+        /// in new code.
         /// </summary>
         /// <param name="interactable">The interactable to be HandGrabbed</param>
         /// <param name="grabTypes">The supported GrabTypes</param>
@@ -66,6 +68,13 @@ namespace Oculus.Interaction.HandGrab
             return true;
         }
 
+        /// <summary>
+        /// Obsolete: this is a convenience method for retrieving the current grab type from an <see cref="IHandGrabInteractor"/>. This
+        /// method should not be used in new code; the value can instead be directly retrieved from the <see cref="HandGrabTarget.Anchor"/>
+        /// property of the interactor's <see cref="IHandGrabState.HandGrabTarget"/>: `handGrabInteractor.HandGrabTarget.Anchor`.
+        /// </summary>
+        /// <param name="handGrabInteractor">The interactor to query for its current grab type</param>
+        /// <returns>The current grab type of the interactor</returns>
         [Obsolete]
         public static GrabTypeFlags CurrentGrabType(this IHandGrabInteractor handGrabInteractor)
         {
@@ -73,8 +82,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Calculates a new target. That is the point of the
-        /// interactable at which the HandGrab will happen.
+        /// Extension method for <see cref="IHandGrabInteractor"/>s which calculates a new interaction target. That is the point of the
+        /// interactable at which the hand grab interaction will occur.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="interactable">The interactable to be HandGrabbed</param>
@@ -94,8 +103,7 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Initiates the movement of the Interactable
-        /// with the current HandGrabTarget
+        /// Initiates the movement of the <see cref="IHandGrabInteractable"/> with the current <see cref="HandGrabTarget"/>.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="interactable">The interactable to be HandGrabbed</param>
@@ -107,9 +115,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Gets the current pose of the current grabbing point.
+        /// Extension method for <see cref="IHandGrabInteractor"/> which retrivies the current pose of the current grabbing point.
         /// </summary>
-        /// <returns>The pose in world coordinates</returns>
+        /// <returns>The pose of the current grabbing point in world space</returns>
         public static Pose GetHandGrabPose(this IHandGrabInteractor handGrabInteractor)
         {
             GetPoseOffset(handGrabInteractor, GrabTypeFlags.None, out Pose wristPose, out _);
@@ -117,8 +125,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Calculates the GrabPoseScore for an interactable with the
-        /// given grab modes.
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates the GrabPoseScore for a given interactable with the
+        /// specified grab modes.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="interactable">The interactable to measure to</param>
@@ -139,8 +147,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Indicates if an interactor can interact with (hover and select) and interactable.
-        /// This depends on the handedness and the valid grab types of both elements
+        /// Extension method for <see cref="IHandGrabInteractor"/> which indicates if an <see cref="IHandGrabInteractor"/> can interact
+        /// with (hover and select) a given <see cref="IHandGrabInteractable"/>. This depends on the handedness and the valid grab types
+        /// of both elements.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="handGrabInteractable">The interactable to be grabbed</param>
@@ -156,8 +165,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Calculates the offset from the Wrist to the actual grabbing point
-        /// defined by the current anchor in the interactor HandGrabTarget.
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates the offset from the wrist to the actual grabbing point
+        /// defined by the current anchor in the interactor <see cref="HandGrabTarget"/>.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor whose HandGrabTarget to inspect</param>
         /// <returns>The local offset from the wrist to the grab point</returns>
@@ -170,7 +179,10 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Calculates the strenght of the fingers of an interactor trying (or grabbing) an interactable
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates the strength of the fingers of an interactor trying
+        /// (or grabbing) an interactable. "Strength" is a measure of of how similar/different the finger's state is to what the system
+        /// considers "grabbing"; for a more detailed overview, see the documentation for
+        /// <see cref="IHand.GetFingerPinchStrength(HandFinger)"/>.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="handGrabInteractable">The interactable being grabbed</param>
@@ -207,6 +219,18 @@ namespace Oculus.Interaction.HandGrab
             return handGrabScore;
         }
 
+        /// <summary>
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates whether the interactor should select a given
+        /// <see cref="IHandGrabInteractable"/>. This is conceptually related to
+        /// <see cref="Interactor{TInteractor, TInteractable}.ComputeShouldSelect"/>, but rather than being a specific part of the
+        /// general processing flow it's used in several places throughout the grab interaction logic.
+        /// </summary>
+        /// <param name="handGrabInteractor">The interactor</param>
+        /// <param name="handGrabInteractable">The interactable</param>
+        /// <returns>
+        /// True if the <paramref name="handGrabInteractor"/> should select (grab) the <paramref name="handGrabInteractable"/>,
+        /// false otherwise
+        /// </returns>
         public static GrabTypeFlags ComputeShouldSelect(this IHandGrabInteractor handGrabInteractor,
             IHandGrabInteractable handGrabInteractable)
         {
@@ -232,6 +256,19 @@ namespace Oculus.Interaction.HandGrab
             return selectingGrabTypes;
         }
 
+        /// <summary>
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates whether the interactor should unselect a given
+        /// <see cref="IHandGrabInteractable"/>. This is conceptually related to
+        /// <see cref="Interactor{TInteractor, TInteractable}.ComputeShouldUnselect"/>, but rather than being a specific part of the
+        /// general processing flow it's used in several places throughout the grab interaction logic.
+
+        /// </summary>
+        /// <param name="handGrabInteractor">The interactor</param>
+        /// <param name="handGrabInteractable">The interactable</param>
+        /// <returns>
+        /// True if the <paramref name="handGrabInteractor"/> should unselect (release) the <paramref name="handGrabInteractable"/>,
+        /// false otherwise
+        /// </returns>
         public static GrabTypeFlags ComputeShouldUnselect(this IHandGrabInteractor handGrabInteractor,
             IHandGrabInteractable handGrabInteractable)
         {
@@ -267,6 +304,15 @@ namespace Oculus.Interaction.HandGrab
             return unselectingGrabTypes;
         }
 
+        /// <summary>
+        /// Extension method for <see cref="IHandGrabInteractor"/> which builds a bit flag enumeration of the fingers which are
+        /// currently considered to be grabbing. Note that, because the returned value is a bit mask, it should not be checked
+        /// directly against enum values as it may not appear in the enum at all. Instead, bitwise operations should be used to
+        /// check for the presence of enum values within the mask: i.e., `(mask & <see cref="HandFingerFlags.Thumb"/>) != 0`.
+        /// </summary>
+        /// <param name="handGrabInteractor">The interactor</param>
+        /// <param name="handGrabInteractable">The interactable being grabbed</param>
+        /// <returns>A bit mask of <see cref="HandFingerFlags"/> values indicating which fingers are currently grabbing</returns>
         public static HandFingerFlags GrabbingFingers(this IHandGrabInteractor handGrabInteractor,
             IHandGrabInteractable handGrabInteractable)
         {
@@ -320,7 +366,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Calculates the root of a grab and the practica offset to the grabbing point
+        /// Extension method for <see cref="IHandGrabInteractor"/> which calculates the root of a grab and the practical offset to
+        /// the grabbing point.
         /// </summary>
         /// <param name="handGrabInteractor">The interactor grabbing</param>
         /// <param name="anchorMode">The grab types to be used</param>

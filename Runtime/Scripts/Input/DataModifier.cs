@@ -22,6 +22,12 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// A specialization of <see cref="DataSource{TData}"/> which consumes data from another <see cref="IDataSource{TData}"/>,
+    /// modifies that data in some way, then makes the modified data available to downstream consumers. Examples of this include
+    /// <see cref="Filter.HandFilter"/> (which applies smoothing to hand tracking data) and <see cref="SyntheticHand"/> (which
+    /// can change the position and shape of hand tracking data based on conditions in the scene).
+    /// </summary>
     public abstract class
         DataModifier<TData> : DataSource<TData>
         where TData : class, ICopyFrom<TData>, new()
@@ -43,10 +49,19 @@ namespace Oculus.Interaction.Input
 
         protected override TData DataAsset => _currentDataAsset;
 
+        /// <summary>
+        /// Returns the <see cref="IDataSource{TData}"/> from which this DataModifier retrieves the <typeparamref name="TData"/> it
+        /// modifies. This source is typically set through the Unity Editor, but it can also be set programmatically using
+        /// <see cref="InjectModifyDataFromSource(IDataSource{TData})"/>.
+        /// </summary>
         public virtual IDataSource<TData> ModifyDataFromSource => _modifyDataFromSource == null
             ? (_modifyDataFromSource = _iModifyDataFromSourceMono as IDataSource<TData>)
             : _modifyDataFromSource;
 
+        /// <summary>
+        /// Implementation of <see cref="IDataSource.CurrentDataVersion"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public override int CurrentDataVersion
         {
             get
@@ -57,6 +72,18 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Changes the source from which this modifier retrieves the data it modifies, the source for updates, and the
+        /// <see cref="DataSource{TData}.UpdateModeFlags"/>.
+        /// </summary>
+        /// <param name="modifyDataFromSource">The source from which this modifier retrieves the data it modifies</param>
+        /// <param name="updateAfter">The <see cref="IDataSource"/> after which this modifier should be updated</param>
+        /// <param name="updateMode">The <see cref="DataSource{TData}.UpdateModeFlags"/> to use from now on</param>
+        /// <remarks>
+        /// Typically, the same value is passed as both <paramref name="modifyDataFromSource"/> and <paramref name="updateAfter"/>
+        /// so that the modifier is updated whenever and immediately after the source from which it retrieves the unmodified data
+        /// acquires new data to modify.
+        /// </remarks>
         public void ResetSources(IDataSource<TData> modifyDataFromSource, IDataSource updateAfter, UpdateModeFlags updateMode)
         {
             ResetUpdateAfter(updateAfter, updateMode);
@@ -87,12 +114,19 @@ namespace Oculus.Interaction.Input
 
         protected override void Start()
         {
-            this.BeginStart(ref _started, ()=>base.Start());
+            this.BeginStart(ref _started, () => base.Start());
             this.AssertField(ModifyDataFromSource, nameof(ModifyDataFromSource));
             this.EndStart(ref _started);
         }
 
         #region Inject
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated DataModifier; effectively wraps
+        /// <see cref="DataSource{TData}.InjectAllDataSource(DataSource{TData}.UpdateModeFlags, IDataSource)"/>,
+        /// <see cref="InjectModifyDataFromSource(IDataSource{TData})"/>, and <see cref="InjectApplyModifier(bool)"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
         public void InjectAllDataModifier(UpdateModeFlags updateMode, IDataSource updateAfter, IDataSource<TData> modifyDataFromSource, bool applyModifier)
         {
             base.InjectAllDataSource(updateMode, updateAfter);
@@ -100,12 +134,22 @@ namespace Oculus.Interaction.Input
             InjectApplyModifier(applyModifier);
         }
 
+        /// <summary>
+        /// Sets the <see cref="IDataSource{TData}"/> for unmodified data on a dynamically instantiated DataModifier. This method exists
+        /// to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
+        /// <param name="updateMode"></param>
         public void InjectModifyDataFromSource(IDataSource<TData> modifyDataFromSource)
         {
             _modifyDataFromSource = modifyDataFromSource;
             _iModifyDataFromSourceMono = modifyDataFromSource as Object;
         }
 
+        /// <summary>
+        /// Sets whether or not to apply modification on a dynamically instantiated DataSource. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
+        /// <param name="updateMode"></param>
         public void InjectApplyModifier(bool applyModifier)
         {
             _applyModifier = applyModifier;

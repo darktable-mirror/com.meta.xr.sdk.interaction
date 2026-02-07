@@ -9,6 +9,9 @@ Shader "Unlit/Hotspot"
 		_HighlightColor("Highlight Color", COLOR) = (1,1,1,1)
 		_ShrinkLimit("Shrink Limit",float) = 0.227
 		[Toggle(NORMALS_SHRINK)] _NormalsShrink("Shrink along normal", Float) = 0
+		
+        _OffsetFactor("Offset Factor", float) = 0
+        _OffsetUnits("Offset Units", float) = 0
 	}
 		SubShader
 		{
@@ -17,6 +20,7 @@ Shader "Unlit/Hotspot"
 			Blend SrcAlpha OneMinusSrcAlpha
 			Pass
 			{
+				Offset[_OffsetFactor],[_OffsetUnits]
 				CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
@@ -49,6 +53,9 @@ Shader "Unlit/Hotspot"
 				half _Highlight;
 				half4 _HighlightColor;
 				half _ShrinkLimit;
+
+				float _OffsetFactor;
+				float _OffsetUnits;
 
 				VertexOutput vert(VertexInput v)
 				{

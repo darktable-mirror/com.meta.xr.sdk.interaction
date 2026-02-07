@@ -36,7 +36,11 @@ namespace Oculus.Interaction.Hands.Editor
         private void OnEnable()
         {
             _handProperty = serializedObject.FindProperty("_hand");
+#if ISDK_OPENXR_HAND
+            _rootProperty = serializedObject.FindProperty("_openXRRoot");
+#else
             _rootProperty = serializedObject.FindProperty("_root");
+#endif
         }
 
         public override void OnInspectorGUI()

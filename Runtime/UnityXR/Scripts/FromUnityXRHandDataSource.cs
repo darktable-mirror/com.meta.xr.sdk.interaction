@@ -142,8 +142,11 @@ namespace Oculus.Interaction.Input.UnityXR
         private InputAction _devicePosition;
         private InputAction _deviceRotation;
 
+#if ISDK_OPENXR_HAND
+#else
         private readonly OpenXRHandDataAsset _dataAsset = new();
         protected override OpenXRHandDataAsset OpenXRData => _dataAsset;
+#endif
 
         protected override void Awake()
         {
@@ -266,12 +269,43 @@ namespace Oculus.Interaction.Input.UnityXR
             _dataAsset.Root = hand.rootPose;
             _dataAsset.RootPoseOrigin = PoseOrigin.RawTrackedPose;
 
+#if ISDK_OPENXR_HAND
+            _dataAsset.IsHighConfidence = true;
+            for (var i = 0; i < Constants.NUM_FINGERS; i++)
+            {
+                _dataAsset.IsFingerHighConfidence[i] = true;
+            }
+#endif
             for (var i = XRHandJointID.BeginMarker.ToIndex();
                  i < XRHandJointID.EndMarker.ToIndex();
                  i++)
             {
                 var jointID = XRHandJointIDUtility.FromIndex(i);
                 var trackingData = hand.GetJoint(jointID);
+#if ISDK_OPENXR_HAND
+                int jointIndex = jointID switch
+                {
+                    XRHandJointID.Palm => (int)HandJointId.HandPalm,
+                    XRHandJointID.Wrist => (int)HandJointId.HandWristRoot,
+                    _ => i
+                };
+                if (!trackingData.trackingState.HasFlag(XRHandJointTrackingState.Pose))
+                {
+                    _dataAsset.IsHighConfidence = false;
+                    if (FingersMetadata.JOINT_TO_FINGER_INDEX[jointIndex] > 0)
+                    {
+                        _dataAsset.IsFingerHighConfidence[FingersMetadata.JOINT_TO_FINGER_INDEX[jointIndex]] = false;
+                    }
+                }
+                if (trackingData.TryGetPose(out var pose))
+                {
+                    _dataAsset.JointPoses[jointIndex] = PoseUtils.Delta(_dataAsset.Root, pose);
+                }
+                if (trackingData.TryGetRadius(out var radius))
+                {
+                    _dataAsset.JointRadii[jointIndex] = radius;
+                }
+#else
                 _dataAsset.JointStates[i] = (OpenXRHandDataAsset.JointTrackingState)trackingData.trackingState;
                 if (trackingData.TryGetPose(out var pose))
                 {
@@ -292,10 +326,21 @@ namespace Oculus.Interaction.Input.UnityXR
                 {
                     _dataAsset.JointLinearVelocities[i] = linearVelocity;
                 }
+#endif
             }
 
             // XR_FB_hand_tracking_aim
+#if ISDK_OPENXR_HAND
+            MetaAimFlags aimFlags = (MetaAimFlags)_metaAimFlags.ReadValue<int>();
+            _shouldMockHandTrackingAim = _dataAsset.IsDataValidAndConnected && aimFlags == MetaAimFlags.None;
+            _dataAsset.IsDominantHand = aimFlags.HasFlag(MetaAimFlags.DominantHand);
+            _dataAsset.IsFingerPinching[(int)HandFinger.Index] = aimFlags.HasFlag(MetaAimFlags.IndexPinching);
+            _dataAsset.IsFingerPinching[(int)HandFinger.Middle] = aimFlags.HasFlag(MetaAimFlags.MiddlePinching);
+            _dataAsset.IsFingerPinching[(int)HandFinger.Ring] = aimFlags.HasFlag(MetaAimFlags.RingPinching);
+            _dataAsset.IsFingerPinching[(int)HandFinger.Pinky] = aimFlags.HasFlag(MetaAimFlags.LittlePinching);
+#else
             _dataAsset.AimFlags = (OpenXRHandDataAsset.AimFlagsFB)_metaAimFlags.ReadValue<int>();
+#endif
 
             _dataAsset.FingerPinchStrength[(int)HandFinger.Index] = _pinchStrengthIndex.ReadValue<float>();
             _dataAsset.FingerPinchStrength[(int)HandFinger.Middle] = _pinchStrengthMiddle.ReadValue<float>();

@@ -32,6 +32,13 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor
     [CustomEditor(typeof(HandPuppet))]
     public class HandPuppetEditor : UnityEditor.Editor
     {
+        private SerializedProperty _jointMaps;
+
+        public void OnEnable()
+        {
+            _jointMaps = serializedObject.FindProperty("_jointMaps");
+        }
+
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
@@ -42,8 +49,22 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor
                 SkinnedMeshRenderer skinnedHand = puppet.GetComponentInChildren<SkinnedMeshRenderer>();
                 if (skinnedHand != null)
                 {
-                    SetPrivateValue(puppet, "_jointMaps", AutoAsignBones(skinnedHand));
+                    var joints = AutoAsignBones(skinnedHand);
+                    _jointMaps.arraySize = joints.Count;
+                    for (var i = 0; i < joints.Count; i++)
+                    {
+                        var transformProperty = serializedObject.FindProperty(
+                            $"_jointMaps.Array.data[{i}].{nameof(HandJointMap.transform)}");
+                        transformProperty.objectReferenceValue = joints[i].transform;
+                        var idProperty = serializedObject.FindProperty(
+                            $"_jointMaps.Array.data[{i}].{nameof(HandJointMap.id)}");
+                        idProperty.intValue = (int)joints[i].id;
+                        var rotationOffsetProperty = serializedObject.FindProperty(
+                            $"_jointMaps.Array.data[{i}].{nameof(HandJointMap.rotationOffset)}");
+                        rotationOffsetProperty.vector3Value = joints[i].rotationOffset;
+                    }
                 }
+                serializedObject.ApplyModifiedProperties();
             }
         }
 
@@ -69,6 +90,10 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor
                             rotationOffset = Vector3.zero
                         });
                     }
+                    else
+                    {
+                        Debug.LogWarning($"'{bone}' Not Found", this);
+                    }
                 }
             }
             return maps;
@@ -85,8 +110,22 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor
             {
                 Transform child = root.GetChild(i);
                 string childName = child.name.ToLower();
+                if (args[0] == "thumb")
+                {
+                    childName = childName.Replace("metacarpal", "1")
+                        .Replace("proximal", "2")
+                        .Replace("distal", "3");
+                }
+                else
+                {
+                    childName = childName.Replace("little", "pinky")
+                        .Replace("metacarpal", "0")
+                        .Replace("proximal", "1")
+                        .Replace("intermediate", "2")
+                        .Replace("distal", "3");
+                }
 
-                bool shouldCheck = string.IsNullOrEmpty(ignorePattern)|| !childName.Contains(ignorePattern);
+                bool shouldCheck = string.IsNullOrEmpty(ignorePattern) || !childName.Contains(ignorePattern);
                 if (shouldCheck)
                 {
                     bool containsAllArgs = args.All(a => childName.Contains(a));
@@ -99,24 +138,6 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor
                 }
             }
             return null;
-        }
-
-        private static void SetPrivateValue(object instance, string fieldName, object value)
-        {
-            FieldInfo fieldData = GetPrivateField(instance, fieldName);
-            fieldData.SetValue(instance, value);
-        }
-
-        private static FieldInfo GetPrivateField(object instance, string fieldName)
-        {
-            Type type = instance.GetType();
-            FieldInfo fieldData = null;
-            while (type != null && fieldData == null)
-            {
-                fieldData = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                type = type.BaseType;
-            }
-            return fieldData;
         }
     }
 }

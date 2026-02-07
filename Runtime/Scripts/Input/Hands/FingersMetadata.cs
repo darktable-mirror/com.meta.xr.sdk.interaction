@@ -66,6 +66,27 @@ namespace Oculus.Interaction.Input
         /// </summary>
         public static readonly HandJointId[] HAND_JOINT_IDS = new HandJointId[]
         {
+#if ISDK_OPENXR_HAND
+            HandJointId.HandThumb1,
+            HandJointId.HandThumb2,
+            HandJointId.HandThumb3,
+            HandJointId.HandIndex0,
+            HandJointId.HandIndex1,
+            HandJointId.HandIndex2,
+            HandJointId.HandIndex3,
+            HandJointId.HandMiddle0,
+            HandJointId.HandMiddle1,
+            HandJointId.HandMiddle2,
+            HandJointId.HandMiddle3,
+            HandJointId.HandRing0,
+            HandJointId.HandRing1,
+            HandJointId.HandRing2,
+            HandJointId.HandRing3,
+            HandJointId.HandPinky0,
+            HandJointId.HandPinky1,
+            HandJointId.HandPinky2,
+            HandJointId.HandPinky3
+#else
             HandJointId.HandThumb0,
             HandJointId.HandThumb1,
             HandJointId.HandThumb2,
@@ -83,6 +104,7 @@ namespace Oculus.Interaction.Input
             HandJointId.HandPinky1,
             HandJointId.HandPinky2,
             HandJointId.HandPinky3
+#endif
         };
 
         /// <summary>
@@ -185,9 +207,14 @@ namespace Oculus.Interaction.Input
             {
                 HandJointId jointId = HAND_JOINT_IDS[i];
                 int fingerIndex = jointToFingerIndex[(int)jointId];
+#if ISDK_OPENXR_HAND
+                canSpread[i] = fingerIndex <= 1 //most fingers start in the metacarpal
+                    && jointId != HandJointId.HandThumb2;
+#else
                 canSpread[i] = fingerIndex == 0 //most fingers start in the proximal
                     || jointId == HandJointId.HandThumb1 //thumb starts in the metacarpal
                     || jointId == HandJointId.HandPinky1; //pinky starts in the metacarpal
+#endif
             }
             return canSpread;
         }

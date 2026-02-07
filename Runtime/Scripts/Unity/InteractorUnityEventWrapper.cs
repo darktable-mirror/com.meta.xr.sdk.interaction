@@ -19,9 +19,7 @@
  */
 
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -80,12 +78,38 @@ namespace Oculus.Interaction
         [SerializeField]
         private UnityEvent _whenUnselect;
 
+        [Space]
+
+        /// <summary>
+        /// Raised when the Interactor preprocesses
+        /// </summary>
+        [Tooltip("Raised when the Interactor preprocesses.")]
+        [SerializeField]
+        private UnityEvent _whenPreprocessed;
+
+        /// <summary>
+        /// Raised when the Interactor processes
+        /// </summary>
+        [Tooltip("Raised when the Interactor processes.")]
+        [SerializeField]
+        private UnityEvent _whenProcessed;
+        /// <summary>
+        /// Raised when the Interactor processes
+        /// </summary>
+        [Tooltip("Raised when the Interactor processes.")]
+        [SerializeField]
+        private UnityEvent _whenPostprocessed;
+
         public UnityEvent WhenDisabled => _whenDisabled;
         public UnityEvent WhenEnabled => _whenEnabled;
         public UnityEvent WhenHover => _whenHover;
         public UnityEvent WhenUnhover => _whenUnhover;
         public UnityEvent WhenSelect => _whenSelect;
         public UnityEvent WhenUnselect => _whenUnselect;
+
+        public UnityEvent WhenPreprocessed => _whenPreprocessed;
+        public UnityEvent WhenProcessed => _whenProcessed;
+        public UnityEvent WhenPostprocessed => _whenPostprocessed;
 
         protected bool _started = false;
 
@@ -106,6 +130,9 @@ namespace Oculus.Interaction
             if (_started)
             {
                 InteractorView.WhenStateChanged += HandleStateChanged;
+                InteractorView.WhenPreprocessed += HandlePreprocessed;
+                InteractorView.WhenProcessed += HandleProcessed;
+                InteractorView.WhenPostprocessed += HandlePostprocessed;
             }
         }
 
@@ -114,6 +141,9 @@ namespace Oculus.Interaction
             if (_started)
             {
                 InteractorView.WhenStateChanged -= HandleStateChanged;
+                InteractorView.WhenPreprocessed -= HandlePreprocessed;
+                InteractorView.WhenProcessed -= HandleProcessed;
+                InteractorView.WhenPostprocessed -= HandlePostprocessed;
             }
         }
 
@@ -154,6 +184,23 @@ namespace Oculus.Interaction
                     break;
             }
         }
+
+        private void HandlePreprocessed()
+        {
+            _whenPreprocessed.Invoke();
+        }
+
+        private void HandleProcessed()
+        {
+            _whenProcessed.Invoke();
+        }
+
+        private void HandlePostprocessed()
+        {
+            _whenPostprocessed.Invoke();
+        }
+
+
 
         #region Inject
 

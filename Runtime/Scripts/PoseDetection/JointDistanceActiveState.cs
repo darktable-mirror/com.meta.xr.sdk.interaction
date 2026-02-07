@@ -39,10 +39,19 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField]
         private HandJointId _jointIdA;
 
+        [Tooltip("The joint of HandA to use for distance check.")]
+        [SerializeField]
+        private HandJointId _jointA;
+
         public HandJointId JointIdA
         {
+#if ISDK_OPENXR_HAND
+            get => _jointA;
+            set => _jointA = value;
+#else
             get => _jointIdA;
             set => _jointIdA = value;
+#endif
         }
 
         [Tooltip("The IHand that JointIdB will be sourced from.")]
@@ -54,11 +63,19 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField]
         private HandJointId _jointIdB;
 
+        [Tooltip("The joint of HandB to use for distance check.")]
+        [SerializeField]
+        private HandJointId _jointB;
 
         public HandJointId JointIdB
         {
+#if ISDK_OPENXR_HAND
+            get => _jointB;
+            set => _jointB = value;
+#else
             get => _jointIdB;
             set => _jointIdB = value;
+#endif
         }
 
         [Tooltip("The ActiveState will become Active when joints are " +

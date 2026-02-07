@@ -97,7 +97,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         protected override void Create()
         {
             AddInteractorsToController(_interactorTypes,
-                _controller,_hmd, _transform, _interactorGroup);
+                _controller, _hmd, _transform, _interactorGroup);
         }
 
         protected override void InitializeFieldsExtra()

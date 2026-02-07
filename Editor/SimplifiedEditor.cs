@@ -36,10 +36,13 @@ namespace Oculus.Interaction.Editor
         {
             _editorDrawer = new EditorBase(serializedObject);
 
-            _editorDrawer.CreateSections(FindCustomSections(serializedObject), true);
+            Dictionary<string, string[]> sections = FindCustomSections(serializedObject);
+            foreach (var sectionData in sections)
+            {
+                RegisterSection(sectionData.Key, sectionData.Value);
+            }
 
-            _editorDrawer.CreateSection(OptionalSection, true);
-            _editorDrawer.AddToSection(OptionalSection, FindOptionals(serializedObject));
+            RegisterSection(OptionalSection, FindOptionals(serializedObject));
         }
 
         protected virtual void OnDisable()
@@ -49,6 +52,13 @@ namespace Oculus.Interaction.Editor
         public override void OnInspectorGUI()
         {
             _editorDrawer.DrawFullInspector();
+        }
+
+        private void RegisterSection(string sectionName, string[] sectionProperties)
+        {
+            string foldoutKey = $"{GetType().FullName}.{sectionName}.Foldout";
+            _editorDrawer.CreateSection(sectionName, true, foldoutKey);
+            _editorDrawer.AddToSection(sectionName, sectionProperties);
         }
 
         private static string[] FindOptionals(SerializedObject serializedObject)

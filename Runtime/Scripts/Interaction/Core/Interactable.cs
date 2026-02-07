@@ -27,11 +27,19 @@ using Oculus.Interaction.Collections;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Interactable provides a base template for any kind of interactable object.
-    /// An Interactable can have Hover and HandleSelected Interactor(s) acting on it.
-    /// Concrete Interactables can define whether they have a One-to-One or
-    /// One-to-Many relationship with their associated concrete Interactors.
+    /// Base class for most concrete interactable types. New interactables can be created by inheriting from this class directly;
+    /// however, it is also common for new interactables to inherit from <see cref="PointerInteractable{TInteractor, TInteractable}"/>,
+    /// a descendent type which adds features for characterizing interactions as <see cref="PointerEvent"/>s.
     /// </summary>
+    /// <remarks>
+    /// Interactions can be wholly defined by three things: the concrete Interactor, the concrete Interactable, and the logic governing
+    /// their coordination. Subclasses are responsible for implementing that coordination logic via template methods that operate on
+    /// the concrete interactor and interactable classes.
+    ///
+    /// This type has a [curiously recurring](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) generic argument
+    /// <typeparamref name="TInteractable"/>, which should be the concrete interactable type which derives from this type and is
+    /// uniquely associated with <typeparamref name="TInteractor"/>.
+    /// </remarks>
     public abstract class Interactable<TInteractor, TInteractable> : MonoBehaviour, IInteractable
                                         where TInteractor : Interactor<TInteractor, TInteractable>
                                         where TInteractable : Interactable<TInteractor, TInteractable>
@@ -60,11 +68,20 @@ namespace Oculus.Interaction
         /// </summary>
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.Data"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public object Data { get; protected set; } = null;
 
         protected bool _started = false;
 
         #region Properties
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.MaxInteractors"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public int MaxInteractors
         {
             get
@@ -77,6 +94,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.MaxSelectingInteractors"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public int MaxSelectingInteractors
         {
             get
@@ -90,30 +111,86 @@ namespace Oculus.Interaction
         }
         #endregion
 
-
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.InteractorViews"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public IEnumerable<IInteractorView> InteractorViews => _interactors.Cast<IInteractorView>();
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.SelectingInteractorViews"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public IEnumerable<IInteractorView> SelectingInteractorViews => _selectingInteractors.Cast<IInteractorView>();
 
         private EnumerableHashSet<TInteractor> _interactors = new EnumerableHashSet<TInteractor>();
         private EnumerableHashSet<TInteractor> _selectingInteractors = new EnumerableHashSet<TInteractor>();
 
         private InteractableState _state = InteractableState.Disabled;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenStateChanged"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public event Action<InteractableStateChangeArgs> WhenStateChanged = delegate { };
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenInteractorViewAdded"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenInteractorViewAdded = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenInteractorViewRemoved"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenInteractorViewRemoved = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenSelectingInteractorViewAdded"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenSelectingInteractorViewAdded = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.WhenSelectingInteractorViewRemoved"/>; for details, please refer to the
+        /// related documentation provided for that interface.
+        /// </summary>
         public event Action<IInteractorView> WhenSelectingInteractorViewRemoved = delegate { };
 
         private MultiAction<TInteractor> _whenInteractorAdded = new MultiAction<TInteractor>();
         private MultiAction<TInteractor> _whenInteractorRemoved = new MultiAction<TInteractor>();
         private MultiAction<TInteractor> _whenSelectingInteractorAdded = new MultiAction<TInteractor>();
         private MultiAction<TInteractor> _whenSelectingInteractorRemoved = new MultiAction<TInteractor>();
+
+        /// <summary>
+        /// An event indicating that a new interactor has been added to <see cref="InteractorViews"/>. In terms of
+        /// <see cref="InteractableState"/>, this occurs when this interactable is hovered by a new interactor.
+        /// </summary>
         public MAction<TInteractor> WhenInteractorAdded => _whenInteractorAdded;
+
+        /// <summary>
+        /// An event indicating that an interactor has been removed from <see cref="InteractorViews"/>. In terms of
+        /// <see cref="InteractableState"/>, this occurs when this interactable ceases to be hovered by an interactor.
+        /// </summary>
         public MAction<TInteractor> WhenInteractorRemoved => _whenInteractorRemoved;
+
+        /// <summary>
+        /// An event indicating that a new interactor has been added to <see cref="SelectingInteractorViews"/>. In terms of
+        /// <see cref="InteractableState"/>, this occurs when this interactable is selected by a new interactor.
+        /// </summary>
         public MAction<TInteractor> WhenSelectingInteractorAdded => _whenSelectingInteractorAdded;
+
+        /// <summary>
+        /// An event indicating that an interactor has been removed from <see cref="SelectingInteractorViews"/>. In terms of
+        /// <see cref="InteractableState"/>, this occurs when this interactable ceases to be selected by an interactor.
+        /// </summary>
         public MAction<TInteractor> WhenSelectingInteractorRemoved => _whenSelectingInteractorRemoved;
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractableView.State"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public InteractableState State
         {
             get
@@ -125,13 +202,21 @@ namespace Oculus.Interaction
                 if (_state == value) return;
                 InteractableState previousState = _state;
                 _state = value;
-                WhenStateChanged(new InteractableStateChangeArgs(previousState,_state));
+                WhenStateChanged(new InteractableStateChangeArgs(previousState, _state));
             }
         }
 
         private static InteractableRegistry<TInteractor, TInteractable> _registry =
                                         new InteractableRegistry<TInteractor, TInteractable>();
 
+        /// <summary>
+        /// Retrieves the <see cref="InteractableRegistry{TInteractor, TInteractable}"/> for the concrete interactable type
+        /// <typeparamref name="TInteractable"/>.
+        /// </summary>
+        /// <remarks>
+        /// The interactable registry is a static global container which, at any given moment, contains all the
+        /// <typeparamref name="TInteractable"/>s extant and enabled at that moment.
+        /// </remarks>
         public static InteractableRegistry<TInteractor, TInteractable> Registry => _registry;
 
         protected virtual void InteractorAdded(TInteractor interactor)
@@ -156,13 +241,29 @@ namespace Oculus.Interaction
             _whenSelectingInteractorRemoved.Invoke(interactor);
         }
 
+        /// <summary>
+        /// Enumerates all the <typeparamref name="TInteractor"/>s currently associated with this instance. This list is identical
+        /// to that returned by <see cref="InteractorViews"/>, but the returned elements are of type <typeparamref name="TInteractor"/>
+        /// instead of <see cref="IInteractorView"/>.
+        /// </summary>
         public IEnumerableHashSet<TInteractor> Interactors => _interactors;
 
+        /// <summary>
+        /// Enumerates all the <typeparamref name="TInteractor"/>s currently selecting this instance. This list is identical
+        /// to that returned by <see cref="SelectingInteractorViews"/>, but the returned elements are of type
+        /// <typeparamref name="TInteractor"/> instead of <see cref="IInteractorView"/>.
+        /// </summary>
         public IEnumerableHashSet<TInteractor> SelectingInteractors => _selectingInteractors;
 
         /// <summary>
-        /// Adds an interactor to the interactable.
+        /// Adds a <typeparamref name="TInteractor"/> to this interactable instance.
         /// </summary>
+        /// <remarks>
+        /// This is an internal API and should only be invoked by the <paramref name="interactor"/> being added; directly invoking
+        /// this from outside the normal interactor processing flow risks creating an asymmetric interactor-interactable relationship
+        /// (i.e., a situation where an interactor believes it is associated with an interactable in a certain way, but the
+        /// interactable believes something else), which can result in undefined behavior.
+        /// </remarks>
         public void AddInteractor(TInteractor interactor)
         {
             _interactors.Add(interactor);
@@ -171,8 +272,14 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Removes an interactor from the interactable.
+        /// Removes a <typeparamref name="TInteractor"/> from this interactable instance.
         /// </summary>
+        /// <remarks>
+        /// This is an internal API and should only be invoked by the <paramref name="interactor"/> being removed; directly invoking
+        /// this from outside the normal interactor processing flow risks creating an asymmetric interactor-interactable relationship
+        /// (i.e., a situation where an interactor believes it is associated with an interactable in a certain way, but the
+        /// interactable believes something else), which can result in undefined behavior.
+        /// </remarks>
         public void RemoveInteractor(TInteractor interactor)
         {
             if (!_interactors.Remove(interactor))
@@ -185,8 +292,14 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a selecting interactor to the interactable.
+        /// Adds a <typeparamref name="TInteractor"/> to the list of interactors selecting this interactable instance.
         /// </summary>
+        /// <remarks>
+        /// This is an internal API and should only be invoked by the <paramref name="interactor"/> being added; directly invoking
+        /// this from outside the normal interactor processing flow risks creating an asymmetric interactor-interactable relationship
+        /// (i.e., a situation where an interactor believes it is associated with an interactable in a certain way, but the
+        /// interactable believes something else), which can result in undefined behavior.
+        /// </remarks>
         public void AddSelectingInteractor(TInteractor interactor)
         {
             _selectingInteractors.Add(interactor);
@@ -195,8 +308,14 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Removes a selecting interactor from the interactable.
+        /// Removes a <typeparamref name="TInteractor"/> from the list of interactors selecting this interactable instance.
         /// </summary>
+        /// <remarks>
+        /// This is an internal API and should only be invoked by the <paramref name="interactor"/> being removed; directly invoking
+        /// this from outside the normal interactor processing flow risks creating an asymmetric interactor-interactable relationship
+        /// (i.e., a situation where an interactor believes it is associated with an interactable in a certain way, but the
+        /// interactable believes something else), which can result in undefined behavior.
+        /// </remarks>
         public void RemoveSelectingInteractor(TInteractor interactor)
         {
             if (!_selectingInteractors.Remove(interactor))
@@ -231,6 +350,17 @@ namespace Oculus.Interaction
         /// </summary>
         /// <param name="interactor"> The interactor that intends to interact with the interactable.</param>
         /// <returns>True if the interactor can interact with the interactable, false otherwise.</returns>
+        /// <remarks>
+        /// Similar to <see cref="Interactor{TInteractor, TInteractable}.CanSelect(TInteractable)"/>, the specific question answered
+        /// by this method is not about interaction _candidacy_ but more about interaction _possibility_: it does not test whether
+        /// the <paramref name="interactor"/> might select this interactable, but only whether the interactor would be able to if it
+        /// tried. This is a more ephemeral answer for <typeparamref name="TInteractable"/> than for <typeparamref name="TInteractor"/>;
+        /// enablement and number of currently active interactions (both highly variable considerations over time) factor into this
+        /// test for the interactable. To emphasize this point <see cref="Interactor{TInteractor, TInteractable}.CanSelect(TInteractable)"/>
+        /// and <see cref="Interactable{TInteractor, TInteractable}.CanBeSelectedBy(TInteractor)"/> are asymmetric: the fact that an
+        /// interactor is capable of selecting an interactable does not imply that the interactable is capable of being selected by that
+        /// interactor, nor vice versa, and _both_ must be true in order for a valid interaction to be possible.
+        /// </remarks>
         public bool CanBeSelectedBy(TInteractor interactor)
         {
             if (State == InteractableState.Disabled)
@@ -268,7 +398,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Determines if the interactable is being hovered by the given interactor.
+        /// Determines if the interactable is being hovered by the given interactor. This is a convenience method identical to calling
+        /// the `Contains()` method on <see cref="Interactors"/>.
         /// </summary>
         /// <param name="interactor">The interactor to check for hovering.</param>
         /// <returns>True if the interactor is hovering the interactable, false otherwise.</returns>
@@ -278,7 +409,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Determines if the interactable is being selected by the given interactor.
+        /// Determines if the interactable is being selected by the given interactor. This is a convenience method identical to calling
+        /// the `Contains()` method on <see cref="SelectingInteractors"/>.
         /// </summary>
         /// <param name="interactor">The interactor to check for selecting.</param>
         /// <returns>True if the interactor is selecting the interactable, false otherwise.</returns>
@@ -287,6 +419,10 @@ namespace Oculus.Interaction
             return _selectingInteractors.Contains(interactor);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractable.Enable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public void Enable()
         {
             if (State != InteractableState.Disabled)
@@ -302,6 +438,10 @@ namespace Oculus.Interaction
 
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractable.Disable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public void Disable()
         {
             if (State == InteractableState.Disabled)
@@ -329,9 +469,9 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Uses an interactor's unique ID to remove it from this interactable.
+        /// Implementation of <see cref="IInteractable.RemoveInteractorByIdentifier(int)"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
-        /// <param name="id">The ID of the interactor to remove.</param>
         public void RemoveInteractorByIdentifier(int id)
         {
             TInteractor foundInteractor = null;
@@ -415,7 +555,8 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Sets interactor filters for this interactable on a dynamically instantiated GameObject.
+        /// Sets the interactor filters for this interactable on a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalInteractorFilters(List<IGameObjectFilter> interactorFilters)
         {
@@ -425,7 +566,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets data for this interactable on a dynamically instantiated GameObject.
+        /// Sets the <see cref="Data"/> for this interactable on a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalData(object data)
         {

@@ -25,7 +25,9 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Makes the GameObject it's attached to kinematic during a grab. As a result, the GameObject can be transformed 1-1 without any undesirable effects.
+    /// Obsolete: Makes the GameObject it's attached to kinematic during a grab. As a result, the GameObject can be transformed 1-1 without any
+    /// undesirable effects. The features of this type are now available in <see cref="Grabbable"/> and
+    /// <see cref="RigidbodyKinematicLocker"/>, which are the recommended way for new code to leverage physics in grab interactions.
     /// </summary>
     [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
     public class PhysicsGrabbable : MonoBehaviour
@@ -56,6 +58,10 @@ namespace Oculus.Interaction
 
         protected bool _started = false;
 
+        /// <summary>
+        /// An event which signals when new velocities have been applied to this grabbable, for example in response to a grab by a
+        /// <see cref="GrabInteractor"/>. Handlers must accept two Vector3 arguments: linear velocity, and angular velocity.
+        /// </summary>
         public event Action<Vector3, Vector3> WhenVelocitiesApplied = delegate { };
 
         #region Editor
@@ -156,6 +162,16 @@ namespace Oculus.Interaction
             _rigidbody.UnlockKinematic();
         }
 
+        /// <summary>
+        /// Sets the velocities to be applied to the grabbable during the next Unity fixed update.
+        /// </summary>
+        /// <remarks>
+        /// Note that, since the velocities
+        /// are not actually applied synchronously here, this will _not_ trigger an invocation of <see cref="WhenVelocitiesApplied"/>;
+        /// that will happen when the velocities are actually provided to the physics system during the next fixed update.
+        /// </remarks>
+        /// <param name="linearVelocity">The linear velocity to be applied</param>
+        /// <param name="angularVelocity">The angular velocity to be applied</param>
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             _hasPendingForce = true;
@@ -180,13 +196,22 @@ namespace Oculus.Interaction
         }
 
         #region Inject
-
+        /// <summary>
+        /// Injects all required dependencies for a dynamically instantiated PhysicsGrabbable; effectively wraps
+        /// <see cref="InjectPointable(IPointable)"/> and <see cref="InjectRigidbody(Rigidbody)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllPhysicsGrabbable(IPointable pointable, Rigidbody rigidbody)
         {
             InjectPointable(pointable);
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Obsolete: Injects all required dependencies for a dynamically instantiated PhysicsGrabbable; effectively wraps
+        /// <see cref="InjectPointable(IPointable)"/> and <see cref="InjectRigidbody(Rigidbody)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         [Obsolete("Use " + nameof(InjectAllPhysicsGrabbable) + " with " + nameof(IPointable) + " instead")]
         public void InjectAllPhysicsGrabbable(Grabbable grabbable, Rigidbody rigidbody)
         {
@@ -194,23 +219,39 @@ namespace Oculus.Interaction
             InjectRigidbody(rigidbody);
         }
 
+        /// <summary>
+        /// Obsolete: wraps <see cref="InjectPointable(IPointable)"/>, which should be used directly in new code. This method exists
+        /// to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         [Obsolete("Use " + nameof(InjectPointable) + " instead")]
         public void InjectGrabbable(Grabbable grabbable)
         {
             InjectPointable(grabbable);
         }
 
+        /// <summary>
+        /// Sets an <see cref="IPointable"/> for a dynamically instantiated PhysicsGrabbable. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectPointable(IPointable pointable)
         {
             _pointable = pointable as UnityEngine.Object;
             Pointable = pointable;
         }
 
+        /// <summary>
+        /// Sets the Unity Rigidbody for a dynamically instantiated PhysicsGrabbable. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// <summary>
+        /// Sets whether or not to scale mass with size for a dynamically instantiated PhysicsGrabbable. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalScaleMassWithSize(bool scaleMassWithSize)
         {
             _scaleMassWithSize = scaleMassWithSize;

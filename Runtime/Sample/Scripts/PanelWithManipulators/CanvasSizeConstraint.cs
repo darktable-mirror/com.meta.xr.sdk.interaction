@@ -56,7 +56,7 @@ public class CanvasSizeConstraint : MonoBehaviour
             Vector3.Distance(horizontalAnchorA.position, horizontalAnchorB.position) - horizontalSizeOffset,
             Vector3.Distance(verticalAnchorA.position, verticalAnchorB.position) - verticalSizeOffset);
 
-        var sizeRatio = new Vector2(currentSize.x/ _initialSize.x, currentSize.y/ _initialSize.y);
+        var sizeRatio = new Vector2(currentSize.x / _initialSize.x, currentSize.y / _initialSize.y);
         _rectTransform.localScale = new Vector3(_initialLocalScale.x / sizeRatio.x, _initialLocalScale.y / sizeRatio.y, _initialLocalScale.z);
         _rectTransform.sizeDelta = new Vector2(_initialRectSize.x * sizeRatio.x, _initialRectSize.y * sizeRatio.y);
     }

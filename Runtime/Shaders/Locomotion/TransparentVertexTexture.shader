@@ -2,6 +2,7 @@ Shader "Unlit/TransparentVertexTexture"
 {
     Properties
     {
+		_MainTex("Texture", 2D) = "white" {}
         _Color("Color",COLOR) = (1,1,1,1)
         _FadeLimit("Fade Limit",VECTOR) = (0,0,1,1)
         _FadeSign("Fade Sign",Range(-1,1)) = 1
@@ -44,7 +45,8 @@ Shader "Unlit/TransparentVertexTexture"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
+            
+			sampler2D _MainTex;
             half4 _Color;
             half4 _FadeLimit;
             half _FadeSign;
@@ -70,7 +72,7 @@ Shader "Unlit/TransparentVertexTexture"
 
             half4 frag(VertexOutput i) : SV_Target
             {
-                half4 color = i.color;
+                half4 color =  tex2D(_MainTex, i.uv) * i.color;
                 half lowLimit = smoothstep(_FadeLimit.x, _FadeLimit.y, i.uv.y);
                 half highLimit = smoothstep(_FadeLimit.z, _FadeLimit.w, i.uv.y);
                 color.a *= saturate(lowLimit - _FadeSign * highLimit) * _Fade;

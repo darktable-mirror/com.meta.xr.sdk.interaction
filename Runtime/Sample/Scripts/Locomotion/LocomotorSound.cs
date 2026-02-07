@@ -24,8 +24,9 @@ namespace Oculus.Interaction.Locomotion
 {
     public class LocomotorSound : MonoBehaviour
     {
-        [SerializeField]
-        private PlayerLocomotor _locomotor;
+        [SerializeField, Interface(typeof(ILocomotionEventHandler))]
+        private UnityEngine.Object _locomotor;
+        private ILocomotionEventHandler Locomotor { get; set; }
 
         [SerializeField]
         private AdjustableAudio _translationSound;
@@ -43,10 +44,18 @@ namespace Oculus.Interaction.Locomotion
 
         protected bool _started;
 
+        protected virtual void Awake()
+        {
+            Locomotor = _locomotor as ILocomotionEventHandler;
+        }
+
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertField(_locomotor, nameof(_locomotor));
+            this.AssertField(Locomotor, nameof(_locomotor));
+            this.AssertField(_translationSound, nameof(_translationSound));
+            this.AssertField(_translationDeniedSound, nameof(_translationDeniedSound));
+            this.AssertField(_snapTurnSound, nameof(_snapTurnSound));
             this.EndStart(ref _started);
         }
 
@@ -54,7 +63,7 @@ namespace Oculus.Interaction.Locomotion
         {
             if (_started)
             {
-                _locomotor.WhenLocomotionEventHandled += HandleLocomotionEvent;
+                Locomotor.WhenLocomotionEventHandled += HandleLocomotionEvent;
             }
         }
 
@@ -62,17 +71,19 @@ namespace Oculus.Interaction.Locomotion
         {
             if (_started)
             {
-                _locomotor.WhenLocomotionEventHandled -= HandleLocomotionEvent;
+                Locomotor.WhenLocomotionEventHandled -= HandleLocomotionEvent;
             }
         }
 
         private void HandleLocomotionEvent(LocomotionEvent locomotionEvent, Pose delta)
         {
-            if (locomotionEvent.Translation > LocomotionEvent.TranslationType.Velocity)
+            if (locomotionEvent.Translation == LocomotionEvent.TranslationType.Absolute
+                || locomotionEvent.Translation == LocomotionEvent.TranslationType.AbsoluteEyeLevel
+                || locomotionEvent.Translation == LocomotionEvent.TranslationType.Relative)
             {
                 PlayTranslationSound(delta.position.magnitude);
             }
-            if (locomotionEvent.Rotation > LocomotionEvent.RotationType.Velocity)
+            if (locomotionEvent.Rotation == LocomotionEvent.RotationType.Relative)
             {
                 PlayRotationSound(delta.rotation.y * delta.rotation.w);
             }
@@ -106,14 +117,15 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
-        public void InjectAllLocomotorSound(PlayerLocomotor locomotor)
+        public void InjectAllLocomotorSound(ILocomotionEventHandler locomotor)
         {
             InjectPlayerLocomotor(locomotor);
         }
 
-        public void InjectPlayerLocomotor(PlayerLocomotor locomotor)
+        public void InjectPlayerLocomotor(ILocomotionEventHandler locomotor)
         {
-            _locomotor = locomotor;
+            _locomotor = locomotor as UnityEngine.Object;
+            Locomotor = locomotor;
         }
         #endregion
     }

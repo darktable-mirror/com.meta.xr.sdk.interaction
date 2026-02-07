@@ -41,17 +41,38 @@ namespace Oculus.Interaction
     }
 
     /// <summary>
-    /// IPointerInteractableModule manages all InteractableCanvas events in
-    /// the scene and translates them into pointer events for Unity Canvas UIs.
+    /// PointableCanvasModule is a context-like object which exists in the scene and handles routing for certain types of
+    /// <see cref="PointerEvent"/>s, translating them into Unity pointer events which can be routed to and consumed by Unity Canvases.
+    /// <see cref="PointableCanvas"/> requires that the scene contain a PointableCanvasModule.
     /// </summary>
     public class PointableCanvasModule : PointerInputModule
     {
+        /// <summary>
+        /// Global event invoked in response to a <see cref="PointerEventType.Select"/> on an <see cref="IPointableCanvas"/>.
+        /// Though this event itself is static, it is invoked by the PointableCanvasModule instance in the scene as part of
+        /// <see cref="Process"/>.
+        /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenSelected;
 
+        /// <summary>
+        /// Global event invoked in response to a <see cref="PointerEventType.Unselect"/> on an <see cref="IPointableCanvas"/>.
+        /// Though this event itself is static, it is invoked by the PointableCanvasModule instance in the scene as part of
+        /// <see cref="Process"/>.
+        /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenUnselected;
 
+        /// <summary>
+        /// Global event invoked in response to a <see cref="PointerEventType.Hover"/> on an <see cref="IPointableCanvas"/>.
+        /// Though this event itself is static, it is invoked by the PointableCanvasModule instance in the scene as part of
+        /// <see cref="Process"/>.
+        /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenSelectableHovered;
 
+        /// <summary>
+        /// Global event invoked in response to a <see cref="PointerEventType.Unhover"/> on an <see cref="IPointableCanvas"/>.
+        /// Though this event itself is static, it is invoked by the PointableCanvasModule instance in the scene as part of
+        /// <see cref="Process"/>.
+        /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenSelectableUnhovered;
 
         [Tooltip("If true, the initial press position will be used as the drag start " +
@@ -65,6 +86,10 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _exclusiveMode = false;
 
+        /// <summary>
+        /// If true, this module will disable other input modules in the event system and will be the only input module used in the
+        /// scene.
+        /// </summary>
         public bool ExclusiveMode { get => _exclusiveMode; set => _exclusiveMode = value; }
 
         private Camera _pointerEventCamera;
@@ -77,12 +102,22 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Registers an <see cref="IPointableCanvas"/> with the PointableCanvasModule in the scene so that its
+        /// <see cref="PointerEvent"/>s can be correctly handled, converted, and forwarded.
+        /// </summary>
+        /// <param name="pointerCanvas">The <see cref="IPointableCanvas"/> to register</param>
         public static void RegisterPointableCanvas(IPointableCanvas pointerCanvas)
         {
             Assert.IsNotNull(Instance, $"A <b>{nameof(PointableCanvasModule)}</b> is required in the scene.");
             Instance.AddPointerCanvas(pointerCanvas);
         }
 
+        /// <summary>
+        /// Unregisters an <see cref="IPointableCanvas"/> with the PointableCanvasModule in the scene. <see cref="PointerEvent"/>s
+        /// from that canvas will no longer be propagated to the Unity Canvas.
+        /// </summary>
+        /// <param name="pointerCanvas">The <see cref="IPointableCanvas"/> to unregister</param>
         public static void UnregisterPointableCanvas(IPointableCanvas pointerCanvas)
         {
             Instance?.RemovePointerCanvas(pointerCanvas);
@@ -238,7 +273,7 @@ namespace Oculus.Interaction
             public void SetPosition(Vector3 position)
             {
                 _targetPosition = position;
-                if(!_released)
+                if (!_released)
                 {
                     _position = position;
                 }
@@ -324,6 +359,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// This is an internal API which is invoked to update the PointableCanvasModule. This overrides the UpdateModule() method of
+        /// Unity's BaseInputModule, from which PointableCanvasModule is descended, and should not be invoked directly.
+        /// </summary>
         public override void UpdateModule()
         {
             base.UpdateModule();
@@ -421,6 +460,10 @@ namespace Oculus.Interaction
             pointerEventData.button = PointerEventData.InputButton.Left;
         }
 
+        /// <summary>
+        /// This is an internal API which is invoked to process input. This overrides the Process() method of Unity's
+        /// BaseInputModule, from which PointableCanvasModule is descended, and should not be invoked manually.
+        /// </summary>
         public override void Process()
         {
             ProcessPointers(_pointersForDeletion, true);

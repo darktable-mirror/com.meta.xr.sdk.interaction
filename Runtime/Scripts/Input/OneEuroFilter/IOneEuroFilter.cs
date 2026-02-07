@@ -20,10 +20,21 @@
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Core interface for [One Euro filter](https://dl.acm.org/doi/10.1145/2207676.2208639) implementations. An academic relative of the
+    /// [$-family of gesture recognizers](https://depts.washington.edu/acelab/proj/dollar/impact.html), the
+    /// One Euro filter is designed to make effective and efficient
+    /// noise reduction in signal processing accessible to non-domain experts. Thus, this filter focuses on balancing
+    /// result quality (bettering more naive approaches) with developer ease-of-use (contrasted with more
+    /// sophisticated techniques such as Kalman filters).
+    /// </summary>
+    /// <typeparam name="TData">The type of data to be filtered, such as a `float` or a `Vector3`</typeparam>
+    /// <remarks>The Interaction SDK's canonical implementation of this interface is <see cref="OneEuroFilter"/>.</remarks>
     public interface IOneEuroFilter<TData>
     {
         /// <summary>
-        /// The last value returned by <see cref="Step(TData, float)"/>
+        /// The last value returned by <see cref="Step(TData, float)"/>, which is the up-to-date known filtered value
+        /// of the signal being processed by this filter.
         /// </summary>
         TData Value { get; }
 

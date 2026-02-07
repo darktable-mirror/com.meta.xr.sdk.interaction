@@ -39,7 +39,15 @@ namespace Oculus.Interaction.Input
         [SerializeField]
         private List<Transform> _jointTransforms = new List<Transform>();
 
+        [HideInInspector]
+        [SerializeField]
+        private List<Transform> _jointTransformsOpenXR = new List<Transform>();
+
+#if ISDK_OPENXR_HAND
+        public List<Transform> JointTransforms => _jointTransformsOpenXR;
+#else
         public List<Transform> JointTransforms => _jointTransforms;
+#endif
 
         [SerializeField, Interface(typeof(IHandSkeletonProvider))]
         private UnityEngine.Object _handSkeletonProvider;
@@ -96,12 +104,24 @@ namespace Oculus.Interaction.Input
 
                 if (joint == null)
                 {
+#pragma warning disable 0618
                     _handDataAsset.Joints[i] = Quaternion.identity;
+#pragma warning restore 0618
+#if ISDK_OPENXR_HAND
+                    _handDataAsset.JointPoses[i] = new Pose(Vector3.zero, Quaternion.identity);
+#endif
                     continue;
                 }
 
+#pragma warning disable 0618
                 _handDataAsset.Joints[i] = joint.transform.localRotation;
+#pragma warning restore 0618
 
+#if ISDK_OPENXR_HAND
+                Pose pose = joint.transform.GetPose(Space.World);
+                pose = PoseUtils.Delta(transform, pose);
+                _handDataAsset.JointPoses[i] = pose;
+#endif
             }
         }
 

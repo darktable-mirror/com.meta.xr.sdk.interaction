@@ -35,7 +35,8 @@ public class PageScroll : UIBehaviour
     [SerializeField] private RectTransform _contentContainer;
 
     [Serializable]
-    public struct Page{
+    public struct Page
+    {
         public UnityEngine.UI.Toggle toggle;
         public RectTransform container;
         public CanvasGroup canvasGroup;
@@ -63,20 +64,20 @@ public class PageScroll : UIBehaviour
         SetPageIndex(newPage);
     }
 
-/*#if UNITY_EDITOR
-    protected override void OnValidate()
-    {
-        if (_pageIndex < 0)
+    /*#if UNITY_EDITOR
+        protected override void OnValidate()
         {
-            _pageIndex = 0;
+            if (_pageIndex < 0)
+            {
+                _pageIndex = 0;
+            }
+            else if (_pageIndex > _pages.Count - 1)
+            {
+                _pageIndex = _pages.Count - 1;
+            }
+            _pages[_pageIndex].toggle.isOn = true;
         }
-        else if (_pageIndex > _pages.Count - 1)
-        {
-            _pageIndex = _pages.Count - 1;
-        }
-        _pages[_pageIndex].toggle.isOn = true;
-    }
-#endif*/
+    #endif*/
 
     protected override void OnEnable()
     {

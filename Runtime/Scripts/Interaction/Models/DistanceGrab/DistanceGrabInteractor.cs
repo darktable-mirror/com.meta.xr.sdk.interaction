@@ -25,8 +25,9 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// DistanceGrabInteractor lets you grab interactables at a distance with controllers and will move them using configurable IMovements.
-    /// It uses a IDistantCandidateComputer in order to Hover the best candidate.
+    /// The <see cref="DistanceGrabInteractor"/> enables the grabbing of a <see cref="DistanceGrabInteractable"/> from a distance using controllers.
+    /// It moves the interactable object using a configurable <see cref="IMovement"/> instance.
+    /// Additionally, it employs a <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/> to determine and hover over the most suitable candidate for interaction.
     /// </summary>
     public class DistanceGrabInteractor : PointerInteractor<DistanceGrabInteractor, DistanceGrabInteractable>,
         IDistanceInteractor
@@ -70,16 +71,19 @@ namespace Oculus.Interaction
 
         /// <summary>
         /// The origin of the frustrums used by <cref="DistantCandidateComputer" />.
+        /// This property provides the starting point for the detection frustum, which is used to identify potential interactables.
         /// </summary>
         public Pose Origin => _distantCandidateComputer.Origin;
 
         /// <summary>
         /// The hitpoint of your controller's frustrum.
+        /// This value represents the exact point where the frustum intersects with an interactable, providing a precise location for interaction.
         /// </summary>
         public Vector3 HitPoint { get; private set; }
 
         /// <summary>
-        /// A reference to the main Transform of the current Interactable.
+        /// A reference to the main <see cref="Transform"/> of the currently selected <see cref="DistanceGrabInteractable"/>.
+        /// This property links back to the interactable object that is currently being manipulated by the user, allowing for continued interaction.
         /// </summary>
         public IRelativeToRef DistanceInteractable => this.Interactable;
 
@@ -120,6 +124,18 @@ namespace Oculus.Interaction
             transform.rotation = _grabCenter.rotation;
         }
 
+        /// <summary>
+        /// Determines the best <see cref="DistanceGrabInteractable"/>
+        /// candidate for selection based on the user's input and the current position of the interactor.
+        /// </summary>
+        /// <returns>
+        /// The best <see cref="DistanceGrabInteractable"/> candidate, or null if no suitable candidate is found.
+        /// </returns>
+        /// <remarks>
+        /// This method leverages the <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/>
+        /// to analyze the available interactables and select the one that best aligns with the user's input and the interactor's position.
+        /// It updates the <see cref="HitPoint"/> property with the exact point of interaction for the selected candidate.
+        /// </remarks>
         protected override DistanceGrabInteractable ComputeCandidate()
         {
             DistanceGrabInteractable bestCandidate = _distantCandidateComputer.ComputeCandidate(
@@ -128,13 +144,27 @@ namespace Oculus.Interaction
             return bestCandidate;
         }
 
+        /// <summary> Handles the logic required when a <see cref="DistanceGrabInteractable"/> is selected by the interactor.
+        /// </summary>
+        /// <param name="interactable">The <see cref="DistanceGrabInteractable"/> that has been selected.
+        /// </param>
+        /// <remarks>
+        /// This method initiates the movement sequence for the selected interactable using the configured movement provider.
+        /// It also subscribes to pointer events from the interactable to manage its state during interaction.
+        /// </remarks>
         protected override void InteractableSelected(DistanceGrabInteractable interactable)
         {
             _movement = interactable.GenerateMovement(_grabTarget.GetPose());
             base.InteractableSelected(interactable);
             interactable.WhenPointerEventRaised += HandleOtherPointerEventRaised;
         }
-
+        /// <summary> Handles the logic required when a <see cref="DistanceGrabInteractable"/> is unselected by the interactor.
+        /// </summary>
+        /// <param name="interactable">The <see cref="DistanceGrabInteractable"/> that has been unselected.</param>
+        /// <remarks>
+        /// This method finalizes the interaction by unsubscribing from the interactable's pointer events and resetting the movement state.
+        /// If a velocity calculator is available, it applies the calculated velocities to the interactable, simulating a throw or release action.
+        /// </remarks>
         protected override void InteractableUnselected(DistanceGrabInteractable interactable)
         {
             interactable.WhenPointerEventRaised -= HandleOtherPointerEventRaised;
@@ -179,7 +209,13 @@ namespace Oculus.Interaction
             }
             return _grabTarget.GetPose();
         }
-
+        /// <summary>
+        /// Updates the interactable's state while it is selected, ensuring it follows the target position.
+        /// </summary>
+        /// <remarks>This method is called during each frame while an interactable is selected,
+        /// updating its position and rotation to match the target's current pose.
+        /// It utilizes the movement provider to smoothly transition the interactable towards the target position.
+        /// </remarks>
         protected override void DoSelectUpdate()
         {
             DistanceGrabInteractable interactable = _selectedInteractable;
@@ -194,7 +230,8 @@ namespace Oculus.Interaction
 
         #region Inject
         /// <summary>
-        /// Adds a <cref="DistanceGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="DistanceGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// This method sets up the necessary components for a <see cref="DistanceGrabInteractor"/>, including the selector and candidate computer.
         /// </summary>
         public void InjectAllDistanceGrabInteractor(ISelector selector,
             DistantCandidateComputer<DistanceGrabInteractor, DistanceGrabInteractable> distantCandidateComputer)
@@ -204,7 +241,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds an <cref="ISelector"/> to a dynamically instantiated GameObject.
+        /// Adds an <see cref="ISelector"/> to a dynamically instantiated GameObject.
+        ///  This method injects the selector, which is responsible for detecting the user's input to initiate the grab action.
         /// </summary>
         public void InjectSelector(ISelector selector)
         {
@@ -213,7 +251,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a <cref="DistantCandidateComputer"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/> to a dynamically instantiated GameObject.
+        /// This method injects the candidate computer, which is used to determine the best interactable to hover based on the user's input.
         /// </summary>
         public void InjectDistantCandidateComputer(DistantCandidateComputer<DistanceGrabInteractor, DistanceGrabInteractable> distantCandidateComputer)
         {
@@ -237,7 +276,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a <cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
+        /// This method is marked as obsolete and should no longer be used. Use <see cref="Grabbable"/> instead.
         /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)

@@ -23,12 +23,27 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// The Interaction SDK's default concrete implementation of <see cref="IController"/>. Instances of this type represent and
+    /// expose the capabilities of tracked XR controllers in the physical world. Controllers are leveraged in many different ways
+    /// throughout the Interaction SDK (as <see cref="IController"/>s directly, as <see cref="ISelector"/>s, as sources for
+    /// <see cref="RayInteractor.Ray"/> data, etc.) and, along with <see cref="Hand"/>s, is one of the main interaction modalities
+    /// supported by the SDK.
+    /// </summary>
     public class Controller :
         DataModifier<ControllerDataAsset>,
         IController
     {
+        /// <summary>
+        /// Implementation of <see cref="IController.Handedness"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual Handedness Handedness => GetData().Config.Handedness;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsConnected"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool IsConnected
         {
             get
@@ -38,6 +53,10 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsPoseValid"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool IsPoseValid
         {
             get
@@ -48,6 +67,10 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Checks whether a valid "pointer pose" is currently available. See <see cref="IController.TryGetPointerPose(out Pose)"/>
+        /// for details on what a pointer pose is.
+        /// </summary>
         public virtual bool IsPointerPoseValid
         {
             get
@@ -58,6 +81,10 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.ControllerInput"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual ControllerInput ControllerInput
         {
             get
@@ -67,15 +94,27 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.WhenUpdated"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual event Action WhenUpdated = delegate { };
 
         private ITrackingToWorldTransformer TrackingToWorldTransformer =>
             GetData().Config.TrackingToWorldTransformer;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.Scale"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual float Scale => TrackingToWorldTransformer != null
             ? TrackingToWorldTransformer.Transform.lossyScale.x
             : 1;
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsButtonUsageAnyActive(ControllerButtonUsage)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public virtual bool IsButtonUsageAnyActive(ControllerButtonUsage buttonUsage)
         {
             var currentData = GetData();
@@ -84,6 +123,10 @@ namespace Oculus.Interaction.Input
                 (buttonUsage & currentData.Input.ButtonUsageMask) != 0;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IController.IsButtonUsageAllActive(ControllerButtonUsage)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
+        /// </summary>
         public virtual bool IsButtonUsageAllActive(ControllerButtonUsage buttonUsage)
         {
             var currentData = GetData();
@@ -92,10 +135,9 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Retrieves the current controller pose, in world space.
+        /// Implementation of <see cref="IController.TryGetPose(out Pose)"/>; for details, please refer to the related documentation
+        /// provided for that interface.
         /// </summary>
-        /// <param name="pose">Set to current pose if `IsPoseValid`; Pose.identity otherwise</param>
-        /// <returns>Value of `IsPoseValid`</returns>
         public virtual bool TryGetPose(out Pose pose)
         {
             if (!IsPoseValid)
@@ -109,10 +151,9 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
-        /// Retrieves the current controller pointer pose, in world space.
+        /// Implementation of <see cref="IController.TryGetPointerPose(out Pose)"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
-        /// <param name="pose">Set to current pose if `IsPoseValid`; Pose.identity otherwise</param>
-        /// <returns>Value of `IsPoseValid`</returns>
         public virtual bool TryGetPointerPose(out Pose pose)
         {
             if (!IsPointerPoseValid)
@@ -125,6 +166,10 @@ namespace Oculus.Interaction.Input
             return true;
         }
 
+        /// <summary>
+        /// Overrides and encapsulates <see cref="DataSource{TData}.MarkInputDataRequiresUpdate"/>, augmenting the behavior of the
+        /// base type's method by invoking <see cref="WhenUpdated"/> to notify observers of the occurrence.
+        /// </summary>
         public override void MarkInputDataRequiresUpdate()
         {
             base.MarkInputDataRequiresUpdate();
@@ -142,6 +187,12 @@ namespace Oculus.Interaction.Input
 
         #region Inject
 
+        /// <summary>
+        /// Wrapper for
+        /// <see cref="DataModifier{TData}.InjectAllDataModifier(DataSource{TData}.UpdateModeFlags, IDataSource, IDataSource{TData}, bool)"/>,
+        /// for injecting the required dependencies to a dynamically-allocated Controller instance. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectAllController(UpdateModeFlags updateMode, IDataSource updateAfter,
             IDataSource<ControllerDataAsset> modifyDataFromSource, bool applyModifier)
         {

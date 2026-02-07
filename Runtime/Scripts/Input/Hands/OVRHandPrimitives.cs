@@ -27,7 +27,11 @@ using UnityEngine;
 /// <summary>
 /// Primitive type serialization
 /// </summary>
+#if ISDK_OPENXR_HAND
+namespace Oculus.Interaction.Input.Compatibility.OVR
+#else
 namespace Oculus.Interaction.Input
+#endif
 {
     public static class Constants
     {

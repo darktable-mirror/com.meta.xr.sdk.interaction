@@ -49,6 +49,12 @@ namespace Oculus.Interaction.HandGrab
         Pose WristToGrabPoseOffset { get; }
         HandGrabTarget HandGrabTarget { get; }
 
+        /// <summary>
+        /// Returns a bit mask representing the fingers that are currently grabbing the interactable. Note that, because the returned
+        /// value is a bit mask, it should not be checked directly against enum values as it may not appear in the enum at all.
+        /// Instead, bitwise operations should be used to check for the presence of enum values within the mask: i.e.,
+        /// `(mask & <see cref="HandFingerFlags.Thumb"/>) != 0`.
+        /// </summary>
         HandFingerFlags GrabbingFingers();
     }
 

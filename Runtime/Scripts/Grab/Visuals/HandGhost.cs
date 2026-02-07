@@ -50,8 +50,6 @@ namespace Oculus.Interaction.HandGrab.Visuals
         [UnityEngine.Serialization.FormerlySerializedAs("_handGrabPoint")]
         private HandGrabPose _handGrabPose;
 
-
-
         #region editor events
         protected virtual void Reset()
         {

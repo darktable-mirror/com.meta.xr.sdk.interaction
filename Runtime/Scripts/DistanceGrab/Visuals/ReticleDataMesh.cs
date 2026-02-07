@@ -27,10 +27,10 @@ namespace Oculus.Interaction.DistanceReticles
     /// </summary>
     public class ReticleDataMesh : MonoBehaviour, IReticleData
     {
-    /// <summary>
-    /// The mesh of the GameObject to outline.
-    /// </summary>
-    [Tooltip("The mesh of the GameObject to outline.")]
+        /// <summary>
+        /// The mesh of the GameObject to outline.
+        /// </summary>
+        [Tooltip("The mesh of the GameObject to outline.")]
         [SerializeField]
         private MeshFilter _filter;
         public MeshFilter Filter

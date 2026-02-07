@@ -32,14 +32,14 @@ namespace Oculus.Interaction
     {
         [SerializeField]
         public FromHandPrefabDataSource _handPrefabDataSource;
-        private List<List<HandSphere>> _sourceSphereMap;
+
+        private readonly List<HandSphere>[] _sourceSphereMap = new List<HandSphere>[Constants.NUM_HAND_JOINTS];
 
         protected virtual void Awake()
         {
-            _sourceSphereMap = new List<List<HandSphere>>();
             for (int i = 0; i < (int)HandJointId.HandEnd; i++)
             {
-                _sourceSphereMap.Add(new List<HandSphere>());
+                _sourceSphereMap[i] = new List<HandSphere>();
             }
         }
 
@@ -94,5 +94,6 @@ namespace Oculus.Interaction
                 spheres.Add(target);
             }
         }
+
     }
 }

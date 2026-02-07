@@ -24,7 +24,8 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Makes an object grabbable by controllers so long as it's within arm's reach.
+    /// The <see cref="GrabInteractable"/> class enables objects to be grabbable by controllers, provided they are within arm's reach.
+    /// This class implements interfaces for handling rigidbody physics and collider references, facilitating detailed control over the interaction dynamics.
     /// </summary>
     public class GrabInteractable : PointerInteractable<GrabInteractor, GrabInteractable>,
                                       IRigidbodyRef, ICollidersRef
@@ -38,6 +39,10 @@ namespace Oculus.Interaction
         [Tooltip("The Rigidbody of the object.")]
         [SerializeField]
         Rigidbody _rigidbody;
+
+        /// <summary>
+        /// Provides access to the Rigidbody component associated with the interactable object, allowing for physics-based interactions.
+        /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
@@ -78,6 +83,9 @@ namespace Oculus.Interaction
 
         private static CollisionInteractionRegistry<GrabInteractor, GrabInteractable> _grabRegistry = null;
 
+        /// <summary>
+        /// Determines whether the closest point to the interactor should be used as the grab source, enhancing precision in grab interactions.
+        /// </summary>
         #region Properties
         public bool UseClosestPointAsGrabSource
         {
@@ -90,6 +98,10 @@ namespace Oculus.Interaction
                 _useClosestPointAsGrabSource = value;
             }
         }
+
+        /// <summary>
+        /// Specifies the distance at which the object will automatically be released from the grab, providing a limit to maintain realistic interactions.
+        /// </summary>
         public float ReleaseDistance
         {
             get
@@ -102,6 +114,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Indicates whether the grab should be reset when the grab points are updated, allowing for dynamic adjustment during ongoing interactions.
+        /// </summary>
         public bool ResetGrabOnGrabsUpdated
         {
             get
@@ -136,9 +151,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Determines the position of the grabbed object. This is used as the location from which the object will be grabbed.
+        /// Calculates the grab source position for a given target, which determines the initial location from which the object will be grabbed.
         /// </summary>
-        /// <param name="target">The Transform of the interactor.</param>
+        /// <param name="target">The pose of the interactor targeting the grabbable object.</param>
+        /// <returns>The calculated <see cref="Pose"/> representing the grab source.</returns>
         public Pose GetGrabSourceForTarget(Pose target)
         {
             if (_grabSource == null && !_useClosestPointAsGrabSource)
@@ -157,8 +173,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
+        /// Applies specified linear and angular velocities to the interactable's Rigidbody, if it has one, facilitating realistic physics interactions.
         /// </summary>
+        /// <param name="linearVelocity">The linear velocity to apply.</param>
+        /// <param name="angularVelocity">The angular velocity to apply.</param>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
@@ -180,32 +198,36 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// Adds a Rigidbody to the interactable, enabling physics interactions.
         /// </summary>
+        /// <param name="rigidbody">The Rigidbody to be added to the interactable object.</param>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
         /// <summary>
-        /// Adds a grab source to a dynamically instantiated GameObject.
+        /// Optionally sets a specific transform as the grab source for the interactable, allowing for customized grab initiation points.
         /// </summary>
+        /// <param name="grabSource">The transform to be used as the grab source.</param>
         public void InjectOptionalGrabSource(Transform grabSource)
         {
             _grabSource = grabSource;
         }
 
         /// <summary>
-        /// Adds a release distance to a dynamically instantiated GameObject.
+        /// Optionally sets a specific release distance for the interactable, defining how far the interactor can move before the grab is released.
         /// </summary>
+        /// <param name="releaseDistance">The release distance to be set.</param>
         public void InjectOptionalReleaseDistance(float releaseDistance)
         {
             _releaseDistance = releaseDistance;
         }
 
         /// <summary>
-        /// Adds a physics grabbable to a dynamically instantiated GameObject.
+        /// Optionally adds a PhysicsGrabbable component to the interactable, which is now deprecated and should be replaced with <see cref="Grabbable"/>.
         /// </summary>
+        /// <param name="physicsGrabbable">The PhysicsGrabbable component to be added.</param>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {

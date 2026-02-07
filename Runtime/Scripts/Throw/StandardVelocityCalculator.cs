@@ -489,7 +489,7 @@ namespace Oculus.Interaction.Throw
         {
             int numZeroVectors = 0;
 
-            foreach(var item in _bufferedPoses)
+            foreach (var item in _bufferedPoses)
             {
                 var velocityVector = item.LinearVelocity;
                 if (velocityVector.sqrMagnitude < Mathf.Epsilon)
@@ -700,7 +700,7 @@ namespace Oculus.Interaction.Throw
         {
             (_linearVelocity, _angularVelocity) = GetLatestLinearAndAngularVelocities(
                 referencePose, delta);
-             _linearVelocity = _linearVelocityFilter.Step(_linearVelocity);
+            _linearVelocity = _linearVelocityFilter.Step(_linearVelocity);
 
             var newReleaseVelocInfo = new ReleaseVelocityInformation(_linearVelocity, _angularVelocity,
                 referencePose.position);

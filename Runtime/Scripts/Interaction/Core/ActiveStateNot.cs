@@ -26,10 +26,15 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Gets the value of an <cref="IActiveState" /> and returns the opposite value.
+    /// Provides a logical NOT operation on an <see cref="IActiveState"/> to invert its active state. This class is useful in scenarios where the activation condition needs to be negated.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="ActiveStateNot"/> class is a component that can be attached to any GameObject in a Unity scene. It requires a reference to another object that implements the <see cref="IActiveState"/> interface. The active state of this referenced object is then logically inverted, meaning if the referenced state is active, <see cref="Active"/> will return false, and vice versa.
+    /// This inversion is useful in cases where the absence of a condition should trigger an interaction or event, without needing to write additional code to handle this logic explicitly.
+    /// </remarks>
     public class ActiveStateNot : MonoBehaviour, IActiveState
     {
+
         [Tooltip("The IActiveState that the NOT operation will be applied to.")]
         [SerializeField, Interface(typeof(IActiveState))]
         private UnityEngine.Object _activeState;
@@ -46,6 +51,12 @@ namespace Oculus.Interaction
             this.AssertField(ActiveState, nameof(ActiveState));
         }
 
+        /// <summary>
+        /// Gets the inverted active state of the associated <see cref="IActiveState"/>.
+        /// </summary>
+        /// <value>
+        /// True if the associated <see cref="IActiveState"/> is not active, false otherwise.
+        /// </value>
         public bool Active => !ActiveState.Active;
 
         static ActiveStateNot()
@@ -62,12 +73,18 @@ namespace Oculus.Interaction
         }
 
         #region Inject
-
+        /// <summary>
+        /// Injects the <see cref="IActiveState"/> dependency required by this component.
+        /// </summary>
+        /// <param name="activeState">The active state whose value will be inverted.</param>
         public void InjectAllActiveStateNot(IActiveState activeState)
         {
             InjectActiveState(activeState);
         }
-
+        /// <summary>
+        /// Injects the <see cref="IActiveState"/> dependency. This method is designed to support dependency injection for unit testing.
+        /// </summary>
+        /// <param name="activeState">The active state to be inverted.</param>
         public void InjectActiveState(IActiveState activeState)
         {
             _activeState = activeState as UnityEngine.Object;

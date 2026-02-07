@@ -24,27 +24,30 @@ using Oculus.Interaction.HandGrab.Visuals;
 
 namespace Oculus.Interaction.HandGrab.Editor
 {
-    public class HandGhostProviderUtils
+    public static class HandGhostProviderUtils
     {
+#if ISDK_OPENXR_HAND
+        private readonly static string PrefKey = "HandGhostProviderOpenXR";
+        private readonly static string DefaultGhostProviderPath = "Packages/com.meta.xr.sdk.interaction/Runtime/Prefabs/HandGrab/OpenXRGhostProvider.asset";
+#else
+        private readonly static string PrefKey = "HandGhostProvider";
+        private readonly static string DefaultGhostProviderPath = "Packages/com.meta.xr.sdk.interaction/Runtime/Prefabs/HandGrab/GhostProvider.asset";
+#endif
+
         public static bool TryGetDefaultProvider(out HandGhostProvider provider)
         {
-            provider = null;
-            HandGhostProvider[] providers = Resources.FindObjectsOfTypeAll<HandGhostProvider>();
-            if (providers != null && providers.Length > 0)
+            var providerPath = EditorPrefs.GetString(PrefKey, DefaultGhostProviderPath);
+            provider = AssetDatabase.LoadAssetAtPath<HandGhostProvider>(providerPath);
+            if (provider == null)
             {
-                provider = providers[0];
-                return true;
+                provider = AssetDatabase.LoadAssetAtPath<HandGhostProvider>(DefaultGhostProviderPath);
             }
-
-            string[] assets = AssetDatabase.FindAssets($"t:{nameof(HandGhostProvider)}");
-            if (assets != null && assets.Length > 0)
-            {
-                string pathPath = AssetDatabase.GUIDToAssetPath(assets[0]);
-                provider = AssetDatabase.LoadAssetAtPath<HandGhostProvider>(pathPath);
-            }
-
-
             return provider != null;
+        }
+
+        public static void SetLastDefaultProvider(HandGhostProvider provider)
+        {
+            EditorPrefs.SetString(PrefKey, AssetDatabase.GetAssetPath(provider));
         }
     }
 }

@@ -232,7 +232,8 @@ namespace Oculus.Interaction.Editor.QuickActions
             {
                 foreach (var controller in GetControllers())
                 {
-                    if (TryGetInteractorParent(controller.transform, out Transform parent))
+                    Hand hand = controller.gameObject.GetComponent<Hand>();
+                    if (!hand && TryGetInteractorParent(controller.transform, out Transform parent))
                     {
                         var group = parent.GetComponent<InteractorGroup>();
                         var result = AddInteractorsToController(

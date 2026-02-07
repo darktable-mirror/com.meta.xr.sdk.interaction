@@ -27,10 +27,10 @@ namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
     /// This interactor allows sending use-strength values to an interactable to create use interactions.
-    /// e.g. Pressing a trigger, squeezing a ball, etc.
-    /// In order to calculate the usage strength of a finger it uses a IFingerUseAPI.
-    /// This class is also an IHandGrabState, so it can be attached to a SyntheticHand to drive the fingers rotations, it will
-    /// lerp between the RelaxedHandGrabPose and TightHandGrabPose provided by the interactable depending on the progress of the action.
+    /// For example, pressing a trigger, squeezing a ball, etc. In order to calculate the usage strength of a finger it uses a
+    /// <see cref="IFingerUseAPI"/>. This class is also an <see cref="IHandGrabState"/>, so it can be attached to a
+    /// <see cref="SyntheticHand"/> to drive the fingers rotations, lerping between the relaxed hand pose and the tight hand pose
+    /// provided by the interactable depending on the progress of the action.
     /// </summary>
     public class HandGrabUseInteractor : Interactor<HandGrabUseInteractor, HandGrabUseInteractable>
         , IHandGrabState
@@ -41,6 +41,11 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("The hand to use.")]
         [SerializeField, Optional, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// The <see cref="IHand"/> used for both grabbing and using. Though HandGrabUseInteractor is not an
+        /// <see cref="IHandGrabInteractor"/>, this property is contractually similar to <see cref="IHandGrabInteractor.Hand"/>.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -49,6 +54,13 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("API that gets the finger use strength.")]
         [SerializeField, Interface(typeof(IFingerUseAPI))]
         private UnityEngine.Object _useAPI;
+
+        /// <summary>
+        /// The <see cref="IFingerUseAPI"/> invoked by this interactor to determine the "finger use strength" of the
+        /// <see cref="Hand"/>'s fingers. "Strength" in this context is a measure of of how similar/different the finger's state is
+        /// to what the system considers "using"; a related overview of "strength" can be found in the documentation for
+        /// <see cref="IHand.GetFingerPinchStrength(HandFinger)"/>.
+        /// </summary>
         public IFingerUseAPI UseAPI { get; private set; }
 
         private HandPose _relaxedHandPose = new HandPose();
@@ -63,13 +75,51 @@ namespace Oculus.Interaction.HandGrab
         private bool _handUseShouldSelect;
         private bool _handUseShouldUnselect;
 
+        /// <summary>
+        /// The <see cref="HandGrab.HandGrabTarget"/> used by this interactor when grabbing.
+        /// </summary>
         public HandGrabTarget HandGrabTarget { get; } = new HandGrabTarget();
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.IsGrabbing"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool IsGrabbing => SelectedInteractable != null;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float WristStrength => 0f;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.FingersStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float FingersStrength => IsGrabbing ? 1f : 0f;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristToGrabPoseOffset"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Pose WristToGrabPoseOffset => Pose.identity;
 
+        /// <summary>
+        /// An event which could indicate that the current interactor (which would be passed to the event as an
+        /// <see cref="IHandGrabState"/>) began grabbing. In the current implementation, this event is never invoked. Instead,
+        /// <see cref="Interactor{TInteractor, TInteractable}.WhenStateChanged"/> can be used to respond to the beginning of a grab;
+        /// when that event is called with its argument's <see cref="InteractorStateChangeArgs.NewState"/> property set to
+        /// <see cref="InteractorState.Select"/>, a grab interaction has started.
+        /// </summary>
         public Action<IHandGrabState> WhenHandGrabStarted { get; set; } = delegate { };
+
+        /// <summary>
+        /// An event which could indicate that the current interactor (which would be passed to the event as an
+        /// <see cref="IHandGrabState"/>) stopped grabbing. In the current implementation, this event is never invoked. Instead,
+        /// <see cref="Interactor{TInteractor, TInteractable}.WhenStateChanged"/> can be used to respond to the beginning of a grab;
+        /// when that event is called with its argument's <see cref="InteractorStateChangeArgs.PreviousState"/> property set to
+        /// <see cref="InteractorState.Select"/>, a grab interaction has ended.
+        /// </summary>
         public Action<IHandGrabState> WhenHandGrabEnded { get; set; } = delegate { };
 
         protected override bool ComputeShouldSelect()
@@ -92,7 +142,7 @@ namespace Oculus.Interaction.HandGrab
 
         protected override void Start()
         {
-            this.BeginStart(ref _started, ()=> base.Start());
+            this.BeginStart(ref _started, () => base.Start());
             this.AssertField(UseAPI, nameof(UseAPI));
             this.EndStart(ref _started);
         }
@@ -246,7 +296,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Returns the fingers that are currently grabbing.
+        /// Implementation of <see cref="IHandGrabState.GrabbingFingers"/>; for details, please refer to the related documentation
+        /// provided for that interface.
         /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
@@ -282,7 +333,9 @@ namespace Oculus.Interaction.HandGrab
         #region Inject
 
         /// <summary>
-        /// Adds all required scripts for a <cref="HandGrabUseInteractor" /> to a dynamically instantiated GameObject.
+        /// Adds all required scripts for a <see cref="HandGrabUseInteractor" /> to a dynamically instantiated GameObject.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
         /// </summary>
         public void InjectAllHandGrabUseInteractor(IFingerUseAPI useApi)
         {
@@ -290,7 +343,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds an <cref="IFingerUseAPI" /> to a dynamically instantiated GameObject.
+        /// Adds an <see cref="IFingerUseAPI"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectUseApi(IFingerUseAPI useApi)
         {
@@ -299,7 +353,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds an <cref="IHand" /> to a dynamically instantiated GameObject.
+        /// Adds an <see cref="IHand"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalHand(IHand hand)
         {

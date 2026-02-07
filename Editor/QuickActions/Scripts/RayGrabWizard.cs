@@ -117,19 +117,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         private void FixCollider()
         {
-            if (Utils.TryEncapsulateRenderers(Target,
-                out Bounds localBounds))
-            {
-                var boxCollider = AddComponent<BoxCollider>(Target);
-                boxCollider.center = localBounds.center;
-                boxCollider.size = localBounds.size;
-                _collider = boxCollider;
-            }
-            else
-            {
-                _collider = AddComponent<SphereCollider>(Target);
-            }
-            _collider.isTrigger = true;
+            _collider = Utils.GenerateCollider(Target);
         }
 
         protected override void Create()

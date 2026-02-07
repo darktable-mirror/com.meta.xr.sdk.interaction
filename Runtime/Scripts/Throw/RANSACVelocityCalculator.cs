@@ -39,7 +39,7 @@ namespace Oculus.Interaction.Throw
 
         private float _previousPositionId;
 
-        private RANSACOffsettedVelocity _ransac = new RANSACOffsettedVelocity(8, 2, 2);
+        private RANSACOffsettedVelocity _ransac = new RANSACOffsettedVelocity(8, 2);
 
         protected virtual void Awake()
         {
@@ -50,7 +50,7 @@ namespace Oculus.Interaction.Throw
         {
             this.AssertField(PoseInputDevice, nameof(PoseInputDevice));
 
-            _ransac.Initialize(Pose.identity, _timeProvider());
+            _ransac.Initialize();
         }
 
         private void Update()
@@ -67,8 +67,6 @@ namespace Oculus.Interaction.Throw
 
         private void ProcessInput()
         {
-            float time = _timeProvider();
-
             PoseInputDevice.GetRootPose(out Pose rootPose);
 
             bool isHighConfidence = PoseInputDevice.IsInputValid
@@ -109,8 +107,14 @@ namespace Oculus.Interaction.Throw
         {
             private Pose _offset = Pose.identity;
 
-            public RANSACOffsettedVelocity(int samplesCount = 8, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
-                : base(samplesCount, samplesDeadZone, minHighConfidenceSamples)
+            [Obsolete("The minHighConfidenceSamples parameter will be ignored. Use the constructor without it")]
+            public RANSACOffsettedVelocity(int samplesCount = 10, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
+                : base(samplesCount, samplesDeadZone)
+            {
+            }
+
+            public RANSACOffsettedVelocity(int samplesCount = 10, int samplesDeadZone = 2)
+                : base(samplesCount, samplesDeadZone)
             {
             }
 

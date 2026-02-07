@@ -29,18 +29,47 @@ namespace Oculus.Interaction.HandGrab
     public static class HandGrabUtils
     {
         /// <summary>
-        /// Serializable data-only version of the HandGrabInteractable so it can be stored when they
-        /// are generated at Play-Mode (where Hand-tracking works).
+        /// Serializable data-only version of the <see cref="HandGrabInteractable"/> so it can be stored when they
+        /// are generated at Play-Mode (where Hand-tracking works). This can be used by Unity Editor-based tools such as the
+        /// HandGrabPoseWizard in order to persist state collected during Play-Mode for use after that Play-Mode session.
         /// </summary>
         [System.Serializable]
         public struct HandGrabInteractableData
         {
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.HandGrabPoses"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public List<HandGrabPoseData> poses;
+
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.SupportedGrabTypes"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public GrabTypeFlags grabType;
+
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.HandAlignment"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public HandAlignType handAlignment;
 
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.ScoreModifier"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public PoseMeasureParameters scoringModifier;
+
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.PinchGrabRules"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public GrabbingRule pinchGrabRules;
+
+            /// <summary>
+            /// Copy of the source interactor's <see cref="HandGrabInteractable.PalmGrabRules"/>; for details, please refer to the
+            /// related documentation provided for that property.
+            /// </summary>
             public GrabbingRule palmGrabRules;
         }
 

@@ -215,7 +215,8 @@ namespace Oculus.Interaction.Editor.QuickActions
                 result = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadMainAssetAtPath(
                     AssetDatabase.GUIDToAssetPath(template.AssetGUID))) as GameObject;
 
-            } else
+            }
+            else
             {
                 result = Object.Instantiate(AssetDatabase.LoadMainAssetAtPath(
                     AssetDatabase.GUIDToAssetPath(template.AssetGUID))) as GameObject;

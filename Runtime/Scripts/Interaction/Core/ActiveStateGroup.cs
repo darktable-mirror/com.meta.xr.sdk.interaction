@@ -25,10 +25,15 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// A group of IActiveStates that are evaluated with a given logical operator.
+    /// Manages a collection of <see cref="IActiveState"/> instances and evaluates their combined state using a specified logical operator.
+    /// This class is used to aggregate multiple active states, enabling complex interaction logic by combining various conditions.
     /// </summary>
     public class ActiveStateGroup : MonoBehaviour, IActiveState
     {
+        /// <summary>
+        /// Defines the logical operators that can be applied to the active states within the group. Each operator changes how the group's active state is determined.
+        /// This can define whether all states must be active (AND), any state must be active (OR), or if exactly one state must be active (XOR)
+        /// </summary>
         public enum ActiveStateGroupLogicOperator
         {
             AND = 0,
@@ -60,7 +65,9 @@ namespace Oculus.Interaction
         {
             this.AssertCollectionItems(ActiveStates, nameof(ActiveStates));
         }
-
+        /// <summary>
+        /// Evaluates the combined state of all active states in the group based on the specified logical operator to determine if the group should be considered active.
+        /// </summary>
         public bool Active
         {
             get
@@ -70,29 +77,29 @@ namespace Oculus.Interaction
                     return false;
                 }
 
-                switch(_logicOperator)
+                switch (_logicOperator)
                 {
                     case ActiveStateGroupLogicOperator.AND:
-                        foreach(IActiveState activeState in ActiveStates)
+                        foreach (IActiveState activeState in ActiveStates)
                         {
-                            if(!activeState.Active) return false;
+                            if (!activeState.Active) return false;
                         }
                         return true;
 
                     case ActiveStateGroupLogicOperator.OR:
-                        foreach(IActiveState activeState in ActiveStates)
+                        foreach (IActiveState activeState in ActiveStates)
                         {
-                            if(activeState.Active) return true;
+                            if (activeState.Active) return true;
                         }
                         return false;
 
                     case ActiveStateGroupLogicOperator.XOR:
                         bool foundActive = false;
-                        foreach(IActiveState activeState in ActiveStates)
+                        foreach (IActiveState activeState in ActiveStates)
                         {
-                            if(activeState.Active)
+                            if (activeState.Active)
                             {
-                                if(foundActive) return false;
+                                if (foundActive) return false;
                                 foundActive = true;
                             }
                         }
@@ -118,18 +125,28 @@ namespace Oculus.Interaction
         }
 
         #region Inject
-
+        /// <summary>
+        /// Injects a list of <see cref="IActiveState"/> states into the group.
+        /// </summary>
+        /// <param name="activeStates">The list of active states to inject.</param>
         public void InjectAllActiveStateGroup(List<IActiveState> activeStates)
         {
             InjectActiveStates(activeStates);
         }
-
+        /// <summary>
+        /// Injects a list of <see cref="IActiveState"/> states into the group and converts them for internal use.
+        /// </summary>
+        /// <param name="activeStates">The list of active states to set.</param>
         public void InjectActiveStates(List<IActiveState> activeStates)
         {
             ActiveStates = activeStates;
             _activeStates = activeStates.ConvertAll(activeState => activeState as UnityEngine.Object);
         }
-
+        /// <summary>
+        /// Injects an optional logic operator into the <see cref="ActiveStateGroup"/>. This operator is used to determine how the individual active states in the
+        /// group should be combined to evaluate the group's overall active state
+        /// </summary>
+        /// <param name="logicOperator">The logic operator to be applied to the group's active state.</param>
         public void InjectOptionalLogicOperator(ActiveStateGroupLogicOperator logicOperator)
         {
             _logicOperator = logicOperator;

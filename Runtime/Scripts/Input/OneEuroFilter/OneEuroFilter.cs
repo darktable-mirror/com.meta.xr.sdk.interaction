@@ -24,13 +24,26 @@ using UnityEngine.Assertions;
 namespace Oculus.Interaction.Input
 {
     /// <summary>
-    /// The One Euro Filter, a speed-based lowpass filter with adaptive cutoff.
-    /// Based on https://hal.inria.fr/hal-00670496/document
+    /// The Interaction SDK's canonical implementation of <see cref="IOneEuroFilter{TData}"/>,
+    /// based on the paper https://hal.inria.fr/hal-00670496/document. An academic relative of the
+    /// [$-family of gesture recognizers](https://depts.washington.edu/acelab/proj/dollar/impact.html), the
+    /// [One Euro filter](https://dl.acm.org/doi/10.1145/2207676.2208639) is designed to make effective and efficient
+    /// noise reduction in signal processing accessible to non-domain experts. Thus, this filter focuses on balancing
+    /// result quality (bettering more naive approaches) with developer ease-of-use (contrasted with more
+    /// sophisticated techniques such as Kalman filters).
     /// </summary>
     public partial class OneEuroFilter : IOneEuroFilter<float>
     {
+        /// <summary>
+        /// Default sampling rate expected by the OneEuroFilter. This is used to determine the default timestep
+        /// (second argument) for <see cref="Step(float, float)"/>.
+        /// </summary>
         public const float _DEFAULT_FREQUENCY_HZ = 60f;
 
+        /// <summary>
+        /// Implementation of <see cref="IOneEuroFilter{TData}.Value"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float Value { get; private set; }
 
         private OneEuroFilterPropertyBlock _properties;
@@ -48,6 +61,10 @@ namespace Oculus.Interaction.Input
             SetProperties(OneEuroFilterPropertyBlock.Default);
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IOneEuroFilter{TData}.SetProperties(in OneEuroFilterPropertyBlock)"/>; for details, please refer
+        /// to the related documentation provided for that interface.
+        /// </summary>
         public void SetProperties(in OneEuroFilterPropertyBlock properties)
         {
             Assert.IsTrue(properties.MinCutoff >= 0, $"{nameof(properties.MinCutoff)} must be >= 0");
@@ -57,6 +74,10 @@ namespace Oculus.Interaction.Input
             _properties = properties;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IOneEuroFilter{TData}.Step(TData, float)"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public float Step(float newValue, float deltaTime)
         {
             if (deltaTime > 0)
@@ -72,6 +93,10 @@ namespace Oculus.Interaction.Input
             return Value;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IOneEuroFilter{TData}.Reset"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public void Reset()
         {
             Value = default;

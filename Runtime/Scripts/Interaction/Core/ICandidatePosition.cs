@@ -22,8 +22,18 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// This interface characterizes a type which encapsulates the world space position of an interaction candidate. This is
+    /// used to allow generalized spatial comparison operations (such as <see cref="ICandidateComparer"/>) to operate on different
+    /// types of candidates such as <see cref="RayInteractor.RayCandidateProperties"/>.
+    /// </summary>
     public interface ICandidatePosition
     {
+        /// <summary>
+        /// The position relative to which this candidate should be evaluated. Note that this is not necessarily the position of the
+        /// candidate's transform, but rather the position most relevant to the interaction for which this is a candidate. For example,
+        /// <see cref="RayInteractor.RayCandidateProperties"/> set this value to the position of the raycast hit for this interaction.
+        /// </summary>
         Vector3 CandidatePosition { get; }
     }
 }

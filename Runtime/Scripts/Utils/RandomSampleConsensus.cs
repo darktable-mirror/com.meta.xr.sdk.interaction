@@ -46,20 +46,20 @@ namespace Oculus.Interaction
         /// <returns>The score representing the model's agreement with the data.</returns>
         public delegate float EvaluateModelScore(TModel model, TModel[,] modelSet);
 
-        private TModel[,] _modelSet;
-        private int _dataPointsCount;
-        private int _exclusionZone;
+        private readonly TModel[,] _modelSet;
+        private readonly int _exclusionZone;
+        private readonly int _maxDataPoints;
 
         /// <summary>
         /// Initializes a new instance of the RandomSampleConsensus class.
         /// </summary>
-        /// <param name="dataPoints">The total number of sample points.</param>
+        /// <param name="maxDataPoints">The total number of sample points.</param>
         /// <param name="exclusionZone">The threshold to avoid selecting samples too close to each other.</param>
-        public RandomSampleConsensus(int dataPoints = 8, int exclusionZone = 2)
+        public RandomSampleConsensus(int maxDataPoints = 10, int exclusionZone = 2)
         {
-            _dataPointsCount = dataPoints;
+            _maxDataPoints = maxDataPoints;
             _exclusionZone = exclusionZone;
-            _modelSet = new TModel[_dataPointsCount, _dataPointsCount];
+            _modelSet = new TModel[maxDataPoints, maxDataPoints];
         }
 
         /// <summary>
@@ -70,21 +70,36 @@ namespace Oculus.Interaction
         /// <returns>The model that best fits the data according to the RANSAC algorithm.</returns>
         public TModel FindOptimalModel(GenerateModel modelGenerator, EvaluateModelScore modelScorer)
         {
-            for (int i = 0; i < _dataPointsCount; ++i)
+            return FindOptimalModel(modelGenerator, modelScorer, _maxDataPoints);
+        }
+
+        /// <summary>
+        /// Calculates the best fitting model based on the RANSAC algorithm.
+        /// </summary>
+        /// <param name="modelGenerator">The function to generate models from data points.</param>
+        /// <param name="modelScorer">The function to evaluate the agreement score of a model.</param>
+        /// <param name="dataPointsCount">The number of data points to evaluate.</param>
+        /// <returns>The model that best fits the data according to the RANSAC algorithm.</returns>
+        public TModel FindOptimalModel(GenerateModel modelGenerator,
+            EvaluateModelScore modelScorer, int dataPointsCount)
+        {
+            for (int i = 0; i < dataPointsCount; ++i)
             {
-                for (int j = i + 1; j < _dataPointsCount; ++j)
+                for (int j = i + 1; j < dataPointsCount; ++j)
                 {
-                    _modelSet[i, j] = modelGenerator(i + _exclusionZone, j + _exclusionZone);
+                    _modelSet[i, j] = modelGenerator(
+                        (i + _exclusionZone) % dataPointsCount,
+                        (j + _exclusionZone) % dataPointsCount);
                 }
             }
 
             TModel bestModel = default;
             float bestScore = float.PositiveInfinity;
 
-            for (int i = 0; i < _dataPointsCount; ++i)
+            for (int i = 0; i < dataPointsCount; ++i)
             {
-                int y = Random.Range(0, _dataPointsCount - 1);
-                int x = Random.Range(y + 1, _dataPointsCount);
+                int y = Random.Range(0, dataPointsCount - 1);
+                int x = Random.Range(y + 1, dataPointsCount);
 
                 TModel model = _modelSet[y, x];
                 float score = modelScorer(model, _modelSet);

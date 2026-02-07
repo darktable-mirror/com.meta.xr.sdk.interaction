@@ -48,6 +48,11 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("The Rigidbody of the object.")]
         [SerializeField]
         private Rigidbody _rigidbody;
+
+        /// <summary>
+        /// The Unity Rigidbody used for collision detection. The returned value is from the _rigidbody field, which is set from the
+        /// Unity Editor.
+        /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
@@ -64,6 +69,11 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("Forces a release on all other grabbing interactors when grabbed by a new interactor.")]
         [SerializeField]
         private bool _resetGrabOnGrabsUpdated = true;
+
+        /// <summary>
+        /// Related to <see cref="GrabInteractable.ResetGrabOnGrabsUpdated"/>; forces a release on all other grabbing interactors when
+        /// grabbed by a new interactor.
+        /// </summary>
         public bool ResetGrabOnGrabsUpdated
         {
             get
@@ -91,6 +101,11 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("Defines the slippiness threshold so the interactor can slide along the interactable based on the" +
             "strength of the grip. GrabSurfaces are required to slide. At min slippiness = 0, the interactor never moves.")]
         private float _slippiness = 0f;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.Slippiness"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float Slippiness
         {
             get
@@ -142,6 +157,11 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("Determines when the hand will be aligned with the object.")]
         [SerializeField]
         private HandAlignType _handAligment = HandAlignType.AlignOnGrab;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.HandAlignment"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public HandAlignType HandAlignment
         {
             get
@@ -162,19 +182,49 @@ namespace Oculus.Interaction.HandGrab
         [Optional(OptionalAttribute.Flag.DontHide)]
         [UnityEngine.Serialization.FormerlySerializedAs("_handGrabPoints")]
         private List<HandGrabPose> _handGrabPoses = new List<HandGrabPose>();
+
+        /// <summary>
+        /// Retrieves the list of <see cref="HandGrabPose"/>s which can be used to grab this interactable. This returns the value of the
+        /// _handGrabPoses field, which is typically set from the Unity Editor.
+        /// </summary>
         public List<HandGrabPose> HandGrabPoses => _handGrabPoses;
 
         /// <summary>
-        /// General getter for the transform of the object this interactable refers to.
+        /// Implementation of <see cref="IRelativeToRef.RelativeTo"/>; for details, please refer to the related documentation
+        /// provided for that interface.
         /// </summary>
         public Transform RelativeTo => _rigidbody.transform;
 
+        /// <summary>
+        /// Returns the <see cref="PoseMeasureParameters"/> used in the scoring mechanism which selects which of the available
+        /// hand grab poses should be used for interaction.
+        /// </summary>
         public PoseMeasureParameters ScoreModifier => _scoringModifier;
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.SupportedGrabTypes"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public GrabTypeFlags SupportedGrabTypes => _supportedGrabTypes;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.PinchGrabRules"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public GrabbingRule PinchGrabRules => _pinchGrabRules;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.PalmGrabRules"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public GrabbingRule PalmGrabRules => _palmGrabRules;
 
+        /// <summary>
+        /// The list of Unity Colliders associated with this interactable. This list is automatically populated during the
+        /// MonoBehaviour's start-up process and will contain a reference to every Collider in <see cref="Rigidbody"/>'s hierarchy
+        /// at that time. This list is not allowed to be empty, meaning there must be at least one Collider in
+        /// <see cref="Rigidbody"/>'s hierarchy at the time the DistanceHandGrabInteractable first becomes active.
+        /// </summary>
         public Collider[] Colliders { get; private set; }
 
         private GrabPoseFinder _grabPoseFinder;
@@ -221,10 +271,9 @@ namespace Oculus.Interaction.HandGrab
         #region pose moving
 
         /// <summary>
-        /// When you grab the object, this determines where the object currently is and where it should move.
+        /// Implementation of <see cref="IHandGrabInteractable.GenerateMovement(in Pose, in Pose)"/>; for details, please refer to
+        /// the related documentation provided for that interface.
         /// </summary>
-        /// <param name="from">The starting position.</param>
-        /// <param name="to">The ending position.</param>
         public IMovement GenerateMovement(in Pose from, in Pose to)
         {
             IMovement movement = MovementProvider.CreateMovement();
@@ -234,10 +283,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
+        /// Obsolete: this was used to apply velocities from an <see cref="Throw.IThrowVelocityCalculator"/>, which is deprecated.
+        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
         /// </summary>
-        /// <param name="linearVelocity">The linear velocity to apply.</param>
-        /// <param name="angularVelocity">The angular velocity to apply.</param>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
@@ -250,12 +298,9 @@ namespace Oculus.Interaction.HandGrab
 
         #endregion
         /// <summary>
-        /// Determines the best pose for the hand to snap to.
+        /// Implementation of <see cref="IHandGrabInteractable.CalculateBestPose(Pose, float, Handedness, ref HandGrabResult)"/>;
+        /// for details, please refer to the related documentation provided for that interface.
         /// </summary>
-        /// <param name="userPose">The pose of the hand.</param>
-        /// <param name="handScale">The scale of the hand.</param>
-        /// <param name="handedness">The handedness of the hand.</param>
-        /// <param name="result">The best pose.</param>
         public bool CalculateBestPose(Pose userPose, float handScale, Handedness handedness,
             ref HandGrabResult result)
         {
@@ -263,6 +308,11 @@ namespace Oculus.Interaction.HandGrab
             return true;
         }
 
+        /// <summary>
+        /// Implementation of
+        /// <see cref="IHandGrabInteractable.CalculateBestPose(in Pose, in Pose, Transform, float, Handedness, ref HandGrabResult)"/>;
+        /// for details, please refer to the related documentation provided for that interface.
+        /// </summary>
         public void CalculateBestPose(in Pose userPose, in Pose offset, Transform relativeTo,
             float handScale, Handedness handedness,
             ref HandGrabResult result)
@@ -280,10 +330,15 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractable.UsesHandPose"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool UsesHandPose => _grabPoseFinder.UsesHandPose;
 
         /// <summary>
-        /// Checks if the pose supports grabbing with the given hand.
+        /// Implementation of <see cref="IHandGrabInteractable.SupportsHandedness(Handedness)"/>; for details, please refer to the
+        /// related documentation provided for that interface.
         /// </summary>
         public bool SupportsHandedness(Handedness handedness)
         {
@@ -291,9 +346,11 @@ namespace Oculus.Interaction.HandGrab
         }
 
         #region Inject
-
         /// <summary>
-        /// Adds all required scripts for <cref="HandGrabInteractable" /> to a dynamically instantiated GameObject.
+        /// Convenience method combining <see cref="InjectSupportedGrabTypes(GrabTypeFlags)"/>,
+        /// <see cref="InjectRigidbody(Rigidbody)"/>, <see cref="InjectPinchGrabRules(GrabbingRule)"/>, and
+        /// <see cref="InjectPalmGrabRules(GrabbingRule)"/>. This method exists to support Interaction SDK's dependency injection
+        /// pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllHandGrabInteractable(GrabTypeFlags supportedGrabTypes,
             Rigidbody rigidbody,
@@ -306,7 +363,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds supported grab types to a dynamically instantiated GameObject.
+        /// Adds a <see cref="GrabTypeFlags"/> as <see cref="SupportedGrabTypes"/> in a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSupportedGrabTypes(GrabTypeFlags supportedGrabTypes)
         {
@@ -314,7 +373,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds pinch grab rules to a dynamically instantiated GameObject.
+        /// Adds a <see cref="GrabbingRule"/> as <see cref="PinchGrabRules"/> to a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectPinchGrabRules(GrabbingRule pinchGrabRules)
         {
@@ -322,7 +383,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds palm grab rules to a dynamically instantiated GameObject.
+        /// Adds a <see cref="GrabbingRule"/> as <see cref="PalmGrabRules"/> to a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectPalmGrabRules(GrabbingRule palmGrabRules)
         {
@@ -330,7 +393,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// Adds a Unity Rigidbody as <see cref="Rigidbody"/> to a dynamically instantiated DistanceHandGrabInteractable. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
@@ -338,7 +402,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a score modifier to a dynamically instantiated GameObject.
+        /// Adds a list of <see cref="DistanceHandGrabInteractor"/> as <see cref="HandGrabPoses"/> to a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalScoreModifier(PoseMeasureParameters scoreModifier)
         {
@@ -346,7 +412,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a physics grabbable to a dynamically instantiated GameObject.
+        /// Obsolete: adds a <see cref="PhysicsGrabbable"/> to a dynamically instantiated GameObject. This functionality is now
+        /// provided as part of <see cref="Grabbable"/> and no longer needs to be handled independently. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
@@ -355,7 +423,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds hand grab poses to a dynamically instantiated GameObject.
+        /// Adds a list of <see cref="DistanceHandGrabInteractor"/> as <see cref="HandGrabPoses"/> to a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalHandGrabPoses(List<HandGrabPose> handGrabPoses)
         {
@@ -363,7 +433,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a movement provider to a dynamically instantiated GameObject.
+        /// Adds an <see cref="IMovementProvider"/> as <see cref="MovementProvider"/> to a dynamically instantiated
+        /// DistanceHandGrabInteractable. This method exists to support Interaction SDK's dependency injection pattern and is not
+        /// needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalMovementProvider(IMovementProvider provider)
         {

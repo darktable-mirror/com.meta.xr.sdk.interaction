@@ -69,7 +69,9 @@ namespace Oculus.Interaction.Input
                 _historyIndex = (_historyIndex + 1) % _historyLength;
                 for (int i = 0; i < _jointHistory.Length; i++)
                 {
+#pragma warning disable 0618
                     _jointHistory[i][_historyIndex] = data.Joints[i];
+#pragma warning restore 0618
                 }
             }
 
@@ -77,7 +79,9 @@ namespace Oculus.Interaction.Input
             int index = (_historyIndex + _historyLength - _historyOffset) % _historyLength;
             for (int i = 0; i < _jointHistory.Length; i++)
             {
+#pragma warning disable 0618
                 data.Joints[i] = _jointHistory[i][index];
+#pragma warning restore 0618
             }
         }
         #endregion

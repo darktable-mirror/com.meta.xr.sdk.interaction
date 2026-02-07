@@ -31,7 +31,11 @@ namespace Oculus.Interaction
         private IHand Hand { get; set; }
 
 
+#if ISDK_OPENXR_HAND
+        private IFingerAPI _grabAPI = new PalmGrabAPI();
+#else
         private IFingerAPI _grabAPI = new FingerPalmGrabAPI();
+#endif
 
         private int _lastDataVersion = -1;
         protected bool _started;

@@ -22,31 +22,34 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Surfaces
 {
+    /// <summary>
+    /// This interface suggests that an implementing type is intended to serve as a TClipper type in an
+    /// <see cref="IClippedSurface{TClipper}"/>. Specifically, this clipper type limits allowable results to a certain segment
+    /// of a cylinder.
+    /// </summary>
     public interface ICylinderClipper
     {
         /// <summary>
-        /// Get the segment defining a portion of a cylinder surface
+        /// Attempts to retrieve the cylinder segment corresponding to the allowed region of the clipped surface.
         /// </summary>
-        /// <param name="segment">The segment defining the clip area
-        /// of a cylinder</param>
-        /// <returns>True if clipping should be performed</returns>
+        /// <param name="segment">The cylinder segment to which the underlying <see cref="ISurface"/> should be clipped</param>
+        /// <returns>True if clipping should be performed, false otherwise</returns>
         public bool GetCylinderSegment(out CylinderSegment segment);
     }
 
     /// <summary>
-    /// Uses a bounding box to perform clipping
+    /// This interface suggests than an implementing type is intended to serve as a TClipper type in an
+    /// <see cref="IClippedSurface{TClipper}"/>. Specifically, this clipper type limits allowable results to those that lie within
+    /// a certain spatial bounding box.
     /// </summary>
     public interface IBoundsClipper
     {
         /// <summary>
-        /// Get the bounding box in the local space of a
-        /// provided transform.
+        /// Attempts to retrieve the bounding box corresponding to the allowed region of the clipped surface
         /// </summary>
-        /// <param name="localTo">The transform the bounds
-        /// will be local to</param>
-        /// <param name="bounds">The bounding box in local space of
-        /// <paramref name="localTo"/></param>
-        /// <returns>True if clipping should be performed</returns>
+        /// <param name="localTo">The transform defining the space in which the returned bounds should be expressed</param>
+        /// <param name="bounds">The bounding box, expressed in the local space defined by <paramref name="localTo"/></param>
+        /// <returns>True if clipping should be performed, false otherwise</returns>
         public bool GetLocalBounds(Transform localTo, out Bounds bounds);
     }
 }

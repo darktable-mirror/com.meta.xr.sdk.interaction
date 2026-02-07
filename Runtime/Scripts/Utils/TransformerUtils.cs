@@ -40,7 +40,8 @@ namespace Oculus.Interaction
 
             public static ConstrainedAxis Unconstrained => new ConstrainedAxis()
             {
-                ConstrainAxis = false, AxisRange = new FloatRange() { Min = 1, Max = 1 }
+                ConstrainAxis = false,
+                AxisRange = new FloatRange() { Min = 1, Max = 1 }
             };
         }
 
@@ -297,15 +298,17 @@ namespace Oculus.Interaction
             Vector3 position, Vector3 origin, Vector3 direction,
             FloatConstraint min, FloatConstraint max)
         {
-            if (!min.Constrain  && !max.Constrain) return position;
+            if (!min.Constrain && !max.Constrain) return position;
 
             float distanceAlongDirection = Vector3.Dot(position - origin, direction);
 
             float distanceConstrained = distanceAlongDirection;
-            if(min.Constrain) {
+            if (min.Constrain)
+            {
                 distanceConstrained = Mathf.Max(distanceConstrained, min.Value);
             }
-            if(max.Constrain) {
+            if (max.Constrain)
+            {
                 distanceConstrained = Mathf.Min(distanceConstrained, max.Value);
             }
 

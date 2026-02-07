@@ -24,10 +24,23 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Base class from which you should inherit if you are creating an interactor group. Interactor groups are collections of
+    /// <see cref="IInteractor"/>s which control the interactors within them, managing their execution and selecting which
+    /// interactors are permitted to adopt which states. Information on the role and usage of interactor groups can be found in
+    /// [the documentation](https://developer.oculus.com/documentation/unity/unity-isdk-interactor-group/).
+    /// </summary>
     public abstract class InteractorGroup : MonoBehaviour, IInteractor
     {
         [SerializeField, Interface(typeof(IInteractor))]
         protected List<UnityEngine.Object> _interactors;
+        /// <summary>
+        /// The list of <see cref="IInteractor"/>s contained in and controlled by this interactor group. Each interactor can only be
+        /// in a single group to avoid conflicts from having multiple groups attempting to control the same interactor. This field is
+        /// initialized during the MonoBehaviour start-up process from values set in the Unity Editor or through
+        /// <see cref="InjectInteractors(List{IInteractor})"/>. Modifying the set of interactors in a group at runtime is not
+        /// supported.
+        /// </summary>
         public IReadOnlyList<IInteractor> Interactors;
 
         [SerializeField, Interface(typeof(IActiveState)), Optional]
@@ -40,6 +53,13 @@ namespace Oculus.Interaction
 
         [SerializeField]
         private int _maxIterationsPerFrame = 3;
+
+        /// <summary>
+        /// This is an internal API which sets or retrieves the maximum number of times the interactor group will execute its
+        /// processing loop (assessing and enacting changes in the groups <see cref="InteractorState"/>, among other effects)
+        /// within a single frame. The implications of this are complex, and depending on or modifying this value is not
+        /// recommended.
+        /// </summary>
         public int MaxIterationsPerFrame
         {
             get
@@ -52,31 +72,110 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.Data"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public object Data => null;
 
+        /// <summary>
+        /// Implementation of <see cref="IUpdateDriver.IsRootDriver"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool IsRootDriver { get; set; } = true;
 
         #region Abstract
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldHover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool ShouldHover { get; }
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldUnhover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool ShouldUnhover { get; }
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldSelect"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool ShouldSelect { get; }
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldUnselect"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool ShouldUnselect { get; }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Hover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract void Hover();
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Unhover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract void Unhover();
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Select"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract void Select();
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldUnselect"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract void Unselect();
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasCandidate"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool HasCandidate { get; }
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasInteractable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public abstract bool HasInteractable { get; }
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasSelectedInteractable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public abstract bool HasSelectedInteractable { get; }
 
         public abstract object CandidateProperties { get; }
         #endregion
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenStateChanged"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<InteractorStateChangeArgs> WhenStateChanged = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenPreprocessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenPreprocessed = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenProcessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenProcessed = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenPostprocessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenPostprocessed = delegate { };
 
         protected delegate bool InteractorPredicate(IInteractor interactor, int index);
@@ -91,6 +190,11 @@ namespace Oculus.Interaction
 
 
         private InteractorState _state = InteractorState.Disabled;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.State"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public InteractorState State
         {
             get
@@ -109,6 +213,11 @@ namespace Oculus.Interaction
         }
 
         private UniqueIdentifier _identifier;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.Identifier"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public int Identifier => _identifier.ID;
 
         protected bool _started;
@@ -260,7 +369,10 @@ namespace Oculus.Interaction
             return a.HasCandidate ? -1 : 1;
         }
 
-
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Preprocess"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Preprocess()
         {
             if (!UpdateActiveState())
@@ -277,6 +389,10 @@ namespace Oculus.Interaction
             WhenPreprocessed();
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Process"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Process()
         {
             for (int i = 0; Interactors != null && i < Interactors.Count; i++)
@@ -286,6 +402,10 @@ namespace Oculus.Interaction
             WhenProcessed();
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Postprocess"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Postprocess()
         {
             for (int i = 0; Interactors != null && i < Interactors.Count; i++)
@@ -295,6 +415,10 @@ namespace Oculus.Interaction
             WhenPostprocessed();
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ProcessCandidate"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void ProcessCandidate()
         {
             if (!UpdateActiveState())
@@ -313,6 +437,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Enable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Enable()
         {
             if (!UpdateActiveState())
@@ -331,6 +459,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.Disable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Disable()
         {
             for (int i = 0; Interactors != null && i < Interactors.Count; i++)
@@ -385,6 +517,10 @@ namespace Oculus.Interaction
             Drive();
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IUpdateDriver.Drive"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual void Drive()
         {
             Preprocess();
@@ -452,23 +588,41 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+        /// <summary>
+        /// Convenience method that injects all required dependencies for a dynamically instantiated InteractorGroup; because
+        /// only one dependency is required, this method simlpy wraps <see cref="InjectInteractors(List{IInteractor})"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity
+        /// Editor-based usage.
+        /// </summary>
         public void InjectAllInteractorGroupBase(List<IInteractor> interactors)
         {
             InjectInteractors(interactors);
         }
 
+        /// <summary>
+        /// Adds a list of <see cref="IInteractor"/>s to a dynamically instantiated InteractorGroup. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectInteractors(List<IInteractor> interactors)
         {
             Interactors = interactors;
             _interactors = interactors.ConvertAll(i => i as UnityEngine.Object);
         }
 
+        /// <summary>
+        /// Adds an <see cref="IActiveState"/> to a dynamically instantiated InteractorGroup. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalActiveState(IActiveState activeState)
         {
             ActiveState = activeState;
             _activeState = activeState as UnityEngine.Object;
         }
 
+        /// <summary>
+        /// Adds an <see cref="ICandidateComparer"/> to a dynamically instantiated InteractorGroup. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
         public void InjectOptionalCandidateComparer(ICandidateComparer candidateComparer)
         {
             CandidateComparer = candidateComparer;

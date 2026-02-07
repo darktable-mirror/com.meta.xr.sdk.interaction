@@ -30,6 +30,9 @@ namespace Oculus.Interaction.Input.UnityXR
     /// </summary>
     public abstract class FromOpenXRHandDataSource : DataSource<HandDataAsset>
     {
+#if ISDK_OPENXR_HAND
+// class should only exist if !ISDK_OPENXR_HAND
+#else
         [Serializable]
         public class OpenXRHandDataAsset : ICopyFrom<OpenXRHandDataAsset>
         {
@@ -114,6 +117,7 @@ namespace Oculus.Interaction.Input.UnityXR
         }
 
         protected abstract OpenXRHandDataAsset OpenXRData { get; }
+#endif
         private readonly static float DefaultSkeletonIndexMagnitude = HandSkeleton.DefaultLeftSkeleton[(int)HandJointId.HandIndex2].pose.position
             .magnitude;
 
@@ -124,11 +128,20 @@ namespace Oculus.Interaction.Input.UnityXR
         private UnityEngine.Object _hmdData;
         private IHmd HmdData;
 
+#if ISDK_OPENXR_HAND
+        protected readonly HandDataAsset _dataAsset = new();
+#else
         private readonly HandDataAsset _dataAsset = new();
+#endif
 
         // Meta Hand Aim Mocking
+#if ISDK_OPENXR_HAND
+        protected bool _shouldMockHandTrackingAim = false;
+        private PinchGrabAPI _fingerGrabAPI;
+#else
         private HandJointCache _jointCache;
         private FingerPinchGrabAPI _fingerGrabAPI;
+#endif
 
         protected virtual void Awake()
         {
@@ -144,6 +157,26 @@ namespace Oculus.Interaction.Input.UnityXR
 
         protected override void UpdateData()
         {
+#if ISDK_OPENXR_HAND
+            // Legacy local rotations
+            for (int i = 0; i < Constants.NUM_HAND_JOINTS; i++)
+            {
+                int parent = (int)HandJointUtils.JointParentList[i];
+                _dataAsset.Joints[i] = parent < 0 ? Quaternion.identity :
+                    Quaternion.Inverse(_dataAsset.JointPoses[parent].rotation) *
+                    _dataAsset.JointPoses[i].rotation;
+            }
+
+            UpdateHandScale(
+                _dataAsset.JointPoses[(int)HandJointId.HandIndex1].position, // IndexProximal
+                _dataAsset.JointPoses[(int)HandJointId.HandIndex2].position); // IndexIntermediate
+
+            // if XR_FB_hand_tracking_aim is unavailable
+            if (_dataAsset.IsDataValidAndConnected && _shouldMockHandTrackingAim)
+            {
+                PopulateMockHandTrackingAim(_dataAsset.JointPoses[0]);
+            }
+#else
             var openXRData = OpenXRData;
             _dataAsset.CopyFrom(openXRData);
 
@@ -156,6 +189,7 @@ namespace Oculus.Interaction.Input.UnityXR
             {
                 PopulateMockHandTrackingAim(openXRData.JointPoses[0]);
             }
+#endif
         }
 
         private void UpdateHandScale(Vector3 indexProximal, Vector3 indexIntermediate)
@@ -165,6 +199,14 @@ namespace Oculus.Interaction.Input.UnityXR
                 indexProximal,
                 indexIntermediate);
             _dataAsset.HandScale = indexDistance / DefaultSkeletonIndexMagnitude;
+#if ISDK_OPENXR_HAND
+            // normalize joint poses
+            var unscaleFactor = 1 / _dataAsset.HandScale;
+            for (int i = 0; i < Constants.NUM_HAND_JOINTS; i++)
+            {
+                _dataAsset.JointPoses[i].position *= unscaleFactor;
+            }
+#endif
         }
 
         private void PopulateMockHandTrackingAim(Pose xrPalmPose)
@@ -174,6 +216,11 @@ namespace Oculus.Interaction.Input.UnityXR
             _dataAsset.PointerPoseOrigin = PoseOrigin.SyntheticPose;
             _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
 
+#if ISDK_OPENXR_HAND
+            var localJointPoses = _dataAsset.JointPoses;
+            _fingerGrabAPI ??= new PinchGrabAPI(HmdData);
+            _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root, _dataAsset.HandScale);
+#else
             // Update Joint Cache
             _jointCache ??= new HandJointCache(_dataAsset.Config.HandSkeleton);
             _jointCache.Update(_dataAsset, CurrentDataVersion);
@@ -181,6 +228,7 @@ namespace Oculus.Interaction.Input.UnityXR
 
             _fingerGrabAPI ??= new FingerPinchGrabAPI(HmdData);
             _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root);
+#endif
             PopulateMockHandTrackingAimFinger(HandFinger.Index);
             PopulateMockHandTrackingAimFinger(HandFinger.Middle);
             PopulateMockHandTrackingAimFinger(HandFinger.Ring);

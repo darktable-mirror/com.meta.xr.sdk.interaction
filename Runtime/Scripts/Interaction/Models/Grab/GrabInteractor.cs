@@ -28,13 +28,14 @@ using Oculus.Interaction.Grab;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Enables grab for objects within arm's reach that have a <cref="GrabInteractable" />.
-    /// It works with both controllers and hands, but for hands it's better to use <see cref="HandGrabInteractor"/>.
+    /// The <see cref="GrabInteractor"/> class facilitates interaction with objects that have a <see cref="GrabInteractable"/> component.
+    /// It supports interaction via both controllers and hands, though the HandGrabInteractor is recommended for hand interactions.
+    /// This class provides advanced control over grab interactions, including forced selection and release, and dynamic component injection.
     /// </summary>
     public class GrabInteractor : PointerInteractor<GrabInteractor, GrabInteractable>, IRigidbodyRef
     {
         /// <summary>
-        /// The selection mechanism that broadcasts select and release events. For example, a <cref="ControllerSelector" />.
+        /// The selection mechanism that broadcasts select and release events. For example, a <see cref="ControllerSelector" />.
         /// </summary>
         [Tooltip("The selection mechanism that broadcasts select and release events. For example, a ControllerSelector.")]
         [SerializeField, Interface(typeof(ISelector))]
@@ -152,7 +153,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Forces the controller to select a certain interactable even if it's not the closest.
+        /// Forces the controller to select a specific <see cref="GrabInteractable"/> even if it is not the closest available option.
+        /// This method overrides the default selection process, allowing for programmatic control over which interactable is selected.
         /// </summary>
         public void ForceSelect(GrabInteractable interactable)
         {
@@ -164,7 +166,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Forces the controller to unselect the currently selected interactable.
+        /// Forces the controller to unselect the currently selected <see cref="GrabInteractable"/>.
+        /// This method clears any overrides set by <see cref="ForceSelect"/> and reverts to the default selection behavior.
         /// </summary>
         public void ForceRelease()
         {
@@ -182,6 +185,9 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// This method unselects the currently selected interactable, and in addition reverts any selection overrides if necessary.
+        /// </summary>
         public override void Unselect()
         {
             if (State == InteractorState.Select
@@ -298,8 +304,10 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Adds a <cref="ISelector"/> and Rigidbody to a dynamically instantiated GameObject.
+        /// Injects both a <see cref="ISelector"/> and a Rigidbody into a dynamically instantiated GameObject.
         /// </summary>
+        /// <param name="selector">The selector component to be added.</param>
+        /// <param name="rigidbody">The Rigidbody component to be added.</param>
         public void InjectAllGrabInteractor(ISelector selector, Rigidbody rigidbody)
         {
             InjectSelector(selector);
@@ -307,8 +315,9 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds an <cref="ISelector"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="ISelector"/> to a dynamically instantiated GameObject.
         /// </summary>
+        /// <param name="selector">The external selector component to be added.</param>
         public void InjectSelector(ISelector selector)
         {
             _selector = selector as UnityEngine.Object;
@@ -316,7 +325,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// Adds a Rigidbody to a dynamically instantiated GameObject,
+        /// enhancing the physical interaction capabilities by providing an external Rigidbody component.
         /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
@@ -324,7 +334,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a grab center to a dynamically instantiated GameObject.
+        /// Optionally adds a grab center to a dynamically instantiated GameObject,
+        /// allowing for precise control over the center of grabbing operations by providing an external grab center transform.
         /// </summary>
         public void InjectOptionalGrabCenter(Transform grabCenter)
         {
@@ -332,7 +343,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Adds a grab target to a dynamically instantiated GameObject.
+        /// Optionally adds a grab target to a dynamically instantiated GameObject,
+        /// enabling targeted grabbing operations by providing an external grab target transform.
         /// </summary>
         public void InjectOptionalGrabTarget(Transform grabTarget)
         {

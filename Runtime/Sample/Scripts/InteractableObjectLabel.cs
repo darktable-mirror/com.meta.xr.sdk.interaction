@@ -221,7 +221,7 @@ public class InteractableObjectLabel : MonoBehaviour
                 _currentState = LabelState.Used;
                 break;
             case InteractableState.Normal:
-                if(_currentState == LabelState.Used)
+                if (_currentState == LabelState.Used)
                 {
                     _currentState = LabelState.Hidden;
                 }
@@ -245,7 +245,7 @@ public class InteractableObjectLabel : MonoBehaviour
             for (int i = 0; i < labelPositions.Count; i++)
             {
                 var y = labelPositions[i].position.y;
-                if(y > selectedY)
+                if (y > selectedY)
                 {
                     selectedIndex = i;
                     selectedY = y;

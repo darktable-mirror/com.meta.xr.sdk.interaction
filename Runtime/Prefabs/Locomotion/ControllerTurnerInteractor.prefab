@@ -67,7 +67,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interactor: {fileID: 5127053257159790556}
   _axis: {fileID: 5127053257159790556}
-  _turnMethod: 0
+  _turnMethod: 1
   _snapTurnDegrees: 45
   _smoothTurnCurve:
     serializedVersion: 2

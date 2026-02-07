@@ -34,9 +34,27 @@ namespace Oculus.Interaction.HandGrab.Recorder
         [SerializeField]
         private HandGrabInteractor _rightHand;
 
+#if ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
         [SerializeField]
         [Tooltip("Prototypes of the static hands (ghosts) that visualize holding poses")]
         private HandGhostProvider _ghostProvider;
+
+        private HandGhostProvider GhostProvider
+        {
+#if ISDK_OPENXR_HAND
+            get => _handGhostProvider;
+#else
+            get => _ghostProvider;
+#endif
+        }
+
+#if ISDK_OPENXR_HAND
+        [SerializeField]
+        [Tooltip("Prototypes of the static hands (ghosts) that visualize holding poses")]
+        private HandGhostProvider _handGhostProvider;
+#endif
 
         [SerializeField, Optional]
         private TimerUIControl _timerControl;
@@ -313,11 +331,11 @@ namespace Oculus.Interaction.HandGrab.Recorder
 
         private void AttachGhost(HandGrabPose point, float referenceScale)
         {
-            if (_ghostProvider == null)
+            if (GhostProvider == null)
             {
                 return;
             }
-            HandGhost ghostPrefab = _ghostProvider.GetHand(point.HandPose.Handedness);
+            HandGhost ghostPrefab = GhostProvider.GetHand(point.HandPose.Handedness);
             HandGhost ghost = GameObject.Instantiate(ghostPrefab, point.transform);
             ghost.transform.localScale = Vector3.one * (referenceScale / point.transform.lossyScale.x);
             ghost.SetPose(point);

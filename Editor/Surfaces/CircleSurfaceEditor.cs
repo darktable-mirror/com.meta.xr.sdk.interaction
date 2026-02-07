@@ -47,8 +47,11 @@ namespace Oculus.Interaction.Editor
             }
 
             Transform transform = planeSurface.Transform;
-            float radius = _radiusProperty.floatValue * transform.lossyScale.x;
-            Handles.DrawWireDisc(transform.position, -transform.forward, radius, EditorConstants.LINE_THICKNESS);
+            float radius = _radiusProperty.floatValue;
+            var prevMatrix = Handles.matrix;
+            Handles.matrix = transform.localToWorldMatrix;
+            Handles.DrawWireDisc(Vector3.zero, Vector3.back, radius, EditorConstants.LINE_THICKNESS);
+            Handles.matrix = prevMatrix;
         }
     }
 }

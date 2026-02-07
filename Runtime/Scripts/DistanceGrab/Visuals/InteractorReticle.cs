@@ -31,7 +31,7 @@ namespace Oculus.Interaction.DistanceReticles
         [Tooltip("Should the reticle be visible when you're selecting an object?")]
         [SerializeField]
         private bool _visibleDuringSelect = false;
-        private bool VisibleDuringSelect
+        public bool VisibleDuringSelect
         {
             get
             {

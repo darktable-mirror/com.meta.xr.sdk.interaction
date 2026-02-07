@@ -121,7 +121,7 @@ namespace Oculus.Interaction
                 {
                     // Same color scheme for both themes, No changes. Or apply any future theme adjustments here.
                 }
-                else if(image.CompareTag("QDSUISecondaryButton") || image.CompareTag("QDSUIToggleButton"))
+                else if (image.CompareTag("QDSUISecondaryButton") || image.CompareTag("QDSUIToggleButton"))
                 {
                     // Colors are applied though animation clips.
                     // Apply the backplate color of the button for plated button.

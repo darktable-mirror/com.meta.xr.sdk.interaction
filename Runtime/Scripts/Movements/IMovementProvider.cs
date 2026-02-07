@@ -19,9 +19,19 @@
  */
 
 namespace Oculus.Interaction
-{
+{   /// <summary>
+    /// Creates instances of IMovement through the <see cref="CreateMovement"/> method. This interface acts as a factory, and allows for the dynamic creation of custom movement behaviors for Interactables<see cref="IInteractable"/> when selected by an Interactor<see cref="IInteractor"/>.
+    /// </summary>
     public interface IMovementProvider
     {
+        /// <summary>
+        /// Creates and returns an instance of IMovement. The instance is used to generate movement when an Interactable is Selected <see cref="Interactor.InteractableSelected"/>
+        /// </summary>
+        /// <remarks>
+        /// For an example implementation, see <see cref="ObjectPullProvider.CreateMovement"/>
+        /// For example usage, see <see cref="RayInteractable.GenerateMovement"/>
+        /// </remarks>
+        /// <returns>An instance of IMovement configured for the selected Interactable.</returns>
         IMovement CreateMovement();
     }
 }

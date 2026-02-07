@@ -118,7 +118,7 @@ namespace Oculus.Interaction.Surfaces
                 var clampPoint = ClampPoint(hit.Point, bound);
                 var distance = Vector3.Distance(point, clampPoint);
 
-                if(maxDistance <= 0 || distance <= maxDistance)
+                if (maxDistance <= 0 || distance <= maxDistance)
                 {
                     points.Add((clampPoint, distance));
                 }
@@ -129,7 +129,7 @@ namespace Oculus.Interaction.Surfaces
             for (var i = 1; i < points.Count; i++)
             {
                 var p = points[i];
-                if(p.Item2 < minPoint.Item2)
+                if (p.Item2 < minPoint.Item2)
                 {
                     minPoint = p;
                 }
@@ -144,7 +144,7 @@ namespace Oculus.Interaction.Surfaces
             if (BackingSurface.Raycast(ray, out hit, maxDistance))
             {
                 var bounds = GetLocalBounds();
-                foreach(var bound in bounds)
+                foreach (var bound in bounds)
                 {
                     if (bound.Contains(Transform.InverseTransformPoint(hit.Point)))
                     {

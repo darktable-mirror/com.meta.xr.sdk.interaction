@@ -23,9 +23,27 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Input
 {
+    /// <summary>
+    /// Interaction SDK's fundamental concept of a head-mounted display device, such as a VR headset. This interface encapsulates
+    /// the core capabilities common to all HMDs supported by the Interaction SDK. Where possible, you should use this
+    /// interface instead of concrete alternatives such as <see cref="Hmd"/>, which are less general and portable.
+    /// </summary>
     public interface IHmd
     {
+        /// <summary>
+        /// Attempts to retrieve the world-space pose (position and orientation) of the HMD. If a valid HMD pose is available,
+        /// it will be stored in the pose argument and this method will return true; otherwise, the pose argument will be set to
+        /// the identity pose and the method will return false.
+        /// </summary>
+        /// <param name="pose">The struct to be populated with the HMD pose</param>
+        /// <returns>True if the out argument was populated with a valid HMD pose, false otherwise</returns>
         bool TryGetRootPose(out Pose pose);
+
+        /// <summary>
+        /// Event signaled when the HMD is updated with the latest data available from the system. For situations where only the
+        /// most up-to-date HMD pose data will suffice, <see cref="TryGetRootPose(out Pose)"/> can be called from within a handler
+        /// to this event.
+        /// </summary>
         event Action WhenUpdated;
     }
 }

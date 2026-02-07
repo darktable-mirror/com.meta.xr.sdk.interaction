@@ -20,8 +20,25 @@
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// The <see cref="IActiveState"/> interface defines the contract for components that can represent an active state
+    /// within the Interaction SDK. Implementing classes are responsible for determining whether they are currently
+    /// in an "active" state, which can be used to trigger various interactions, events, or behaviors.
+    /// </summary>
+    /// <remarks> The <see cref="IActiveState"/> interface is a fundamental part of the Interaction SDK, providing a standardized
+    /// way to represent and query active conditions. It is commonly used in conjunction with other components, such as
+    /// <see cref="ActiveStateGroup"/>, <see cref="ActiveStateNot"/>, and <see cref="ActiveStateUnityEventWrapper"/>, to build complex interaction logic based on multiple conditions. </remarks>
     public interface IActiveState
     {
+        /// <summary>
+        /// Evaluates the current state of the component and returns whether it is active.
+        /// </summary>
+        /// <remarks>
+        /// The logic for determining the active state is defined by the implementing class. This method is typically
+        /// used in interaction scripts to check whether a certain condition is met before triggering an event or action.
+        /// For example implementations, please refer to <see cref="HandActiveState.Active"/> and <see cref="ActiveStateGroup.Active"/>.
+        /// </remarks>
+        /// <returns>Returns true if the component is currently active; otherwise, returns false.</returns>
         bool Active { get; }
     }
 }

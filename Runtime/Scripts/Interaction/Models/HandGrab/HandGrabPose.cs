@@ -35,6 +35,28 @@ namespace Oculus.Interaction.HandGrab
     /// </summary>
     public class HandGrabPose : MonoBehaviour
     {
+        internal enum OVROffsetMode
+        {
+            /// <summary>
+            /// Pose was not upgraded to OpenXR, and offset will not be applied
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// Pose has been upgraded to OpenXR, and an offset will be applied
+            /// to the transform rotation for compatibility.
+            /// </summary>
+            Apply,
+
+            /// <summary>
+            /// Pose was upgraded to OpenXR but the offset will be ignored.
+            /// </summary>
+            Ignore,
+        }
+
+        private static readonly Pose OVR_OFFSET_LH = new Pose(Vector3.zero, Quaternion.Euler(0, 90, 180));
+        private static readonly Pose OVR_OFFSET_RH = new Pose(Vector3.zero, Quaternion.Euler(0, 90, 0));
+
         [SerializeField, Optional, Interface(typeof(IGrabSurface))]
         private UnityEngine.Object _surface = null;
         private IGrabSurface _snapSurface;
@@ -59,14 +81,41 @@ namespace Oculus.Interaction.HandGrab
         [InspectorName("Hand Pose")]
         private HandPose _handPose = new HandPose();
 
+        [SerializeField, Optional]
+        [HideInInspector]
+        private HandPose _targetHandPose = new HandPose();
 
         [SerializeField]
         [HideInInspector]
         private HandGhostProvider _ghostProvider;
 
+        [SerializeField]
+        [HideInInspector]
+        private HandGhostProvider _handGhostProvider;
+
+        [SerializeField]
+        [HideInInspector]
+        private OVROffsetMode _ovrOffsetMode = OVROffsetMode.None;
+
+#if !ISDK_OPENXR_HAND
+        private bool _ovrOffsetAppliedToTransform = false;
+        private bool ShouldApplyOVROffset =>
+            _ovrOffsetMode == OVROffsetMode.Apply &&
+            !_ovrOffsetAppliedToTransform;
+#endif
+
         public HandPose HandPose
         {
+#if ISDK_OPENXR_HAND
+            get => _usesHandPose ? _targetHandPose : null;
+#else
             get => _usesHandPose ? _handPose : null;
+#endif
+        }
+
+        internal static Pose GetOVROffset(Handedness handedness)
+        {
+            return handedness == Handedness.Left ? OVR_OFFSET_LH : OVR_OFFSET_RH;
         }
 
         /// <summary>
@@ -89,11 +138,11 @@ namespace Oculus.Interaction.HandGrab
             {
                 if (_relativeTo != null)
                 {
-                    return PoseUtils.DeltaScaled(_relativeTo, transform);
+                    return PoseUtils.DeltaScaled(_relativeTo, WorldPose);
                 }
                 else
                 {
-                    return transform.GetPose(Space.Self);
+                    return LocalPose;
                 }
             }
         }
@@ -102,6 +151,58 @@ namespace Oculus.Interaction.HandGrab
         /// Reference transform of the HandGrabPose
         /// </summary>
         public Transform RelativeTo => _relativeTo;
+
+        private Pose LocalPose
+        {
+            get
+            {
+                Pose result = transform.GetPose(Space.Self);
+#if !ISDK_OPENXR_HAND
+                if (ShouldApplyOVROffset)
+                {
+                    result.Premultiply(GetOVROffset(HandPose.Handedness));
+                }
+#endif
+                return result;
+            }
+        }
+
+        private Pose WorldPose
+        {
+            get
+            {
+                Pose result = transform.GetPose(Space.World);
+#if !ISDK_OPENXR_HAND
+                if (ShouldApplyOVROffset)
+                {
+                    result.Premultiply(GetOVROffset(HandPose.Handedness));
+                }
+#endif
+                return result;
+            }
+        }
+
+        protected virtual void Awake()
+        {
+#if !ISDK_OPENXR_HAND
+            if (ShouldApplyOVROffset)
+            {
+                Matrix4x4 unmodified = transform.localToWorldMatrix;
+                Pose localPose = transform.GetPose(Space.Self);
+                localPose.Premultiply(GetOVROffset(HandPose.Handedness));
+                transform.SetPose(localPose, Space.Self);
+                _ovrOffsetAppliedToTransform = true;
+
+                foreach (Transform child in transform)
+                {
+                    // Restore children to previous pose
+                    child?.SetPositionAndRotation(
+                        unmodified.MultiplyPoint(child.localPosition),
+                        unmodified.rotation * child.localRotation);
+                }
+            }
+#endif
+        }
 
         #region editor events
         protected virtual void Reset()
@@ -185,8 +286,13 @@ namespace Oculus.Interaction.HandGrab
 
         public void InjectOptionalHandPose(HandPose handPose)
         {
+#if ISDK_OPENXR_HAND
+            _targetHandPose = handPose;
+            _usesHandPose = _targetHandPose != null;
+#else
             _handPose = handPose;
             _usesHandPose = _handPose != null;
+#endif
         }
 
         #endregion

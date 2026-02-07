@@ -20,6 +20,7 @@
 
 using Oculus.Interaction.HandGrab.Visuals;
 using Oculus.Interaction.Input;
+using Oculus.Interaction.Utils;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -74,6 +75,26 @@ namespace Oculus.Interaction.HandGrab.Editor
         [SerializeField]
         private HandGhostProvider _ghostProvider;
 
+        private HandGhostProvider GhostProvider
+        {
+#if ISDK_OPENXR_HAND
+            get => _handGhostProvider;
+#else
+            get => _ghostProvider;
+#endif
+        }
+
+#if ISDK_OPENXR_HAND
+        /// <summary>
+        /// References the hand prototypes used to represent the HandGrabInteractables. These are the
+        /// static hands placed around the interactable to visualize the different holding hand-poses.
+        /// Not mandatory.
+        /// </summary>
+        [SerializeField]
+        [InspectorName("Ghost Provider")]
+        private HandGhostProvider _handGhostProvider;
+#endif
+
         /// <summary>
         /// This ScriptableObject stores the HandGrabInteractables generated at Play-Mode so it survives
         /// the Play-Edit cycle.
@@ -105,9 +126,13 @@ namespace Oculus.Interaction.HandGrab.Editor
             _richTextStyle = EditorGUIUtility.GetBuiltinSkin(EditorGUIUtility.isProSkin ? EditorSkin.Scene : EditorSkin.Inspector).label;
             _richTextStyle.richText = true;
             _richTextStyle.wordWrap = true;
-            if (_ghostProvider == null)
+            if (GhostProvider == null)
             {
+#if ISDK_OPENXR_HAND
+                HandGhostProviderUtils.TryGetDefaultProvider(out _handGhostProvider);
+#else
                 HandGhostProviderUtils.TryGetDefaultProvider(out _ghostProvider);
+#endif
             }
         }
 
@@ -130,7 +155,15 @@ namespace Oculus.Interaction.HandGrab.Editor
             GUILayout.Label("GameObject to record the hand grab poses for:");
             GenerateObjectField(ref _item);
             GUILayout.Label("Prefabs provider for the hands (ghosts) to visualize the recorded poses:");
-            GenerateObjectField(ref _ghostProvider);
+
+#if ISDK_OPENXR_HAND
+            if (HandAnimationUtils.GenerateObjectField(ref _handGhostProvider))
+#else
+            if (HandAnimationUtils.GenerateObjectField(ref _ghostProvider))
+#endif
+            {
+                HandGhostProviderUtils.SetLastDefaultProvider(GhostProvider);
+            }
 
             GUILayout.Space(20);
             GUILayout.Label("<size=20>2</size>\nGo to <b>Play Mode</b> and record as many poses as you need.", _richTextStyle);
@@ -222,11 +255,11 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private void AttachGhost(HandGrabPose point)
         {
-            if (_ghostProvider == null)
+            if (GhostProvider == null)
             {
                 return;
             }
-            HandGhost ghostPrefab = _ghostProvider.GetHand(Hand.Handedness);
+            HandGhost ghostPrefab = GhostProvider.GetHand(Hand.Handedness);
             HandGhost ghost = GameObject.Instantiate(ghostPrefab, point.transform);
             ghost.SetPose(point);
         }

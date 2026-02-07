@@ -79,6 +79,9 @@ namespace Oculus.Interaction.Utils
 
         private static readonly List<HandJointId> INDEX_MASK = new List<HandJointId>()
         {
+#if ISDK_OPENXR_HAND
+            HandJointId.HandIndex0,
+#endif
             HandJointId.HandIndex1,
             HandJointId.HandIndex2,
             HandJointId.HandIndex3,
@@ -87,7 +90,9 @@ namespace Oculus.Interaction.Utils
 
         private static readonly List<HandJointId> THUMB_MASK = new List<HandJointId>()
         {
+#if !ISDK_OPENXR_HAND
             HandJointId.HandThumb0,
+#endif
             HandJointId.HandThumb1,
             HandJointId.HandThumb2,
             HandJointId.HandThumb3,

@@ -23,24 +23,30 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Defines a raycast interaction suitable to use at both short and long ranges. The origin and direction of the ray can be set by
+    /// anything, but are typically associated with the motion of a <see cref="Input.IController"/> or <see cref="Input.IHand"/>.
+    /// The interactable type for this interactor is <see cref="RayInteractable"/>.
+    /// </summary>
     public class RayInteractor : PointerInteractor<RayInteractor, RayInteractable>
     {
         /// <summary>
-        /// A selector indicating when the Interactor should select or unselect the best available interactable.
+        /// A selector indicating when the interactor should select or unselect the best available interactable.
         /// </summary>
         [Tooltip("A selector indicating when the Interactor should select or unselect the best available interactable.")]
         [SerializeField, Interface(typeof(ISelector))]
         private UnityEngine.Object _selector;
 
         /// <summary>
-        /// The origin of the ray.
+        /// The origin of the ray. The position of this Transform is used as the ray's origin, and the ray's direction is set to
+        /// the Transform's forward direction.
         /// </summary>
         [Tooltip("The origin of the ray.")]
         [SerializeField]
         private Transform _rayOrigin;
 
         /// <summary>
-        /// The maximum length of the ray.
+        /// The maximum length of the ray, in meters in world space.
         /// </summary>
         [Tooltip("The maximum length of the ray.")]
         [SerializeField]
@@ -60,11 +66,36 @@ namespace Oculus.Interaction
         private SurfaceHit _movedHit;
         private Pose _movementHitDelta = Pose.identity;
 
+        /// <summary>
+        /// The position, in world space, from which the interactor's raycast will begin. This position is derived from the
+        /// Transform provided as _rayOrigin, which can be set either in the Unity Editor or programmatically using
+        /// <see cref="InjectRayOrigin(Transform)"/>.
+        /// </summary>
         public Vector3 Origin { get; protected set; }
+
+        /// <summary>
+        /// The rotation, in world space, of the interactor's raycast. This rotation is derived from the Transform provided as
+        /// _rayOrigin, which can be set either in the Unity Editor or programmatically using <see cref="InjectRayOrigin(Transform)"/>.
+        /// </summary>
         public Quaternion Rotation { get; protected set; }
+
+        /// <summary>
+        /// The forward direction, in world space, of the interactor's raycast. This is derived from the Transform provided as
+        /// _rayOrigin, which can be set either in the Unity Editor or programmatically using <see cref="InjectRayOrigin(Transform)"/>.
+        /// </summary>
         public Vector3 Forward { get; protected set; }
+
+        /// <summary>
+        /// The end position, in world space, of the interactor's raycast. This is discovered as part of the raycast process and will
+        /// lie on the hit <see cref="RayInteractable"/> if one was hit, or at
+        /// `<see cref="Origin"/> + <see cref="Forward"/> * <see cref="MaxRayLength"/>` if nothing was hit.
+        /// </summary>
         public Vector3 End { get; set; }
 
+        /// <summary>
+        /// The maximum allowable length of the ray, in meters in world space. <see cref="RayInteractable"/>s intersected by the ray
+        /// at points more distant from the <see cref="Origin"/> than this will be ignored.
+        /// </summary>
         public float MaxRayLength
         {
             get
@@ -77,7 +108,15 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// If the most recent raycast hit a <see cref="RayInteractable"/>, information about that hit will be exposed here. Otherwise,
+        /// this property will be null.
+        /// </summary>
         public SurfaceHit? CollisionInfo { get; protected set; }
+
+        /// <summary>
+        /// The ray which is used when raycasting for interaction. This is derived from <see cref="Origin"/> and <see cref="Forward"/>.
+        /// </summary>
         public Ray Ray { get; protected set; }
 
         protected override void Awake()
@@ -96,16 +135,42 @@ namespace Oculus.Interaction
 
         protected override void DoPreprocess()
         {
-            Origin = _rayOrigin.transform.position;
-            Rotation = _rayOrigin.transform.rotation;
-            Forward = Rotation * Vector3.forward;
+            var rayTransform = _rayOrigin.transform;
+            Origin = rayTransform.position;
+            Rotation = rayTransform.rotation;
+            Forward = rayTransform.forward;
+            End = Origin + MaxRayLength * Forward;
             Ray = new Ray(Origin, Forward);
         }
 
+        /// <summary>
+        /// Data type encapsulating information about the candidate selection process.
+        /// </summary>
+        /// <remarks>
+        /// This can be passed to candidate comparison mechanisms such as <see cref="ICandidateComparer"/> or be used for
+        /// visualizations. It also has potential applications for debugging.
+        /// </remarks>
         public class RayCandidateProperties : ICandidatePosition
         {
+            /// <summary>
+            /// The <see cref="RayInteractable"/> candidate associated with these properties. The name ClosestInteractable refers
+            /// to the fact that this interactable is the closest to the interactor out of all the interactables considered.
+            /// </summary>
             public RayInteractable ClosestInteractable { get; }
+
+            /// <summary>
+            /// Implementation of <see cref="ICandidatePosition.CandidatePosition"/>; for details, please refer to the related
+            /// documentation provided for that interface.
+            /// </summary>
             public Vector3 CandidatePosition { get; }
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="closestInteractable">The <see cref="RayInteractable"/> characterized as a candidate in this type</param>
+            /// <param name="candidatePosition">
+            /// The position from which <paramref name="closestInteractable"/>'s candidacy should be considered
+            /// </param>
             public RayCandidateProperties(RayInteractable closestInteractable, Vector3 candidatePosition)
             {
                 ClosestInteractable = closestInteractable;
@@ -113,6 +178,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="Interactor{TInteractor, TInteractable}.CandidateProperties"/>; for details, please refer to
+        /// the related documentation provided for that property.
+        /// </summary>
         public override object CandidateProperties => _rayCandidateProperties;
 
         protected override RayInteractable ComputeCandidate()
@@ -232,7 +301,9 @@ namespace Oculus.Interaction
 
         #region Inject
         /// <summary>
-        /// Sets all required values for a <cref="RayInteractor" /> on a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated RayInteractor; effectively wraps
+        /// <see cref="InjectSelector(ISelector)"/> and <see cref="InjectRayOrigin(Transform)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllRayInteractor(ISelector selector, Transform rayOrigin)
         {
@@ -241,7 +312,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a selector for a dynamically instantiated GameObject.
+        /// Sets an <see cref="ISelector"/> for a dynamically instantiated RayInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSelector(ISelector selector)
         {
@@ -250,7 +322,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a ray origin for a dynamically instantiated GameObject.
+        /// Sets a Unity Transform representing the raycast origin and direction for a dynamically instantiated RayInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectRayOrigin(Transform rayOrigin)
         {
@@ -258,13 +331,13 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets an equal distance threshold for a dynamically instantiated GameObject.
+        /// Sets the equal distance threshold for a dynamically instantiated RayInteractor. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalEqualDistanceThreshold(float equalDistanceThreshold)
         {
             _equalDistanceThreshold = equalDistanceThreshold;
         }
-
         #endregion
     }
 }

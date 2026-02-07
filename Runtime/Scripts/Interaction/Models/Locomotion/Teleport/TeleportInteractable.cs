@@ -27,12 +27,6 @@ namespace Oculus.Interaction.Locomotion
     {
         public Transform relativeTo;
 
-        public float SnapRadius
-        {
-            get;
-            set;
-        }
-
         public Vector3 Point
         {
             get
@@ -61,7 +55,7 @@ namespace Oculus.Interaction.Locomotion
 
         private Pose _localPose;
 
-        public TeleportHit(Transform relativeTo, Vector3 position, Vector3 normal, float snapRadius = 0f)
+        public TeleportHit(Transform relativeTo, Vector3 position, Vector3 normal)
         {
             this.relativeTo = relativeTo;
             Pose worldSpacePose = new Pose(position, Quaternion.LookRotation(normal));
@@ -73,7 +67,6 @@ namespace Oculus.Interaction.Locomotion
             {
                 this._localPose = PoseUtils.Delta(relativeTo.GetPose(), worldSpacePose);
             }
-            SnapRadius = snapRadius;
         }
 
         public static readonly TeleportHit DEFAULT =
@@ -149,7 +142,7 @@ namespace Oculus.Interaction.Locomotion
         public ISurface Surface { get; private set; }
         public IBounds SurfaceBounds { get; private set; }
 
-        [Header("Target", order =-1)]
+        [Header("Target", order = -1)]
         [SerializeField, Optional]
         [Tooltip("A specific point in space where the player should teleport to.")]
         private Transform _targetPoint;
@@ -247,8 +240,7 @@ namespace Oculus.Interaction.Locomotion
             Ray ray = new Ray(from, dir);
             if (Surface.Raycast(ray, out SurfaceHit surfaceHit, dir.magnitude))
             {
-                hit = new TeleportHit(this.transform, surfaceHit.Point, surfaceHit.Normal,
-                    _equalDistanceToBlockerOverride);
+                hit = new TeleportHit(this.transform, surfaceHit.Point, surfaceHit.Normal);
                 return true;
             }
 

@@ -24,11 +24,19 @@ namespace Oculus.Interaction.Input
 {
     public partial class OneEuroFilter
     {
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `float` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `float`</returns>
         public static IOneEuroFilter<float> CreateFloat()
         {
             return new OneEuroFilter();
         }
 
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `Vector2` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `Vector2`</returns>
         public static IOneEuroFilter<Vector2> CreateVector2()
         {
             return new OneEuroFilterMulti<Vector2>(2,
@@ -36,6 +44,10 @@ namespace Oculus.Interaction.Input
                 (value, index) => value[index]);
         }
 
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `Vector3` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `Vector3`</returns>
         public static IOneEuroFilter<Vector3> CreateVector3()
         {
             return new OneEuroFilterMulti<Vector3>(3,
@@ -43,6 +55,10 @@ namespace Oculus.Interaction.Input
                 (value, index) => value[index]);
         }
 
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `Vector4` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `Vector4`</returns>
         public static IOneEuroFilter<Vector4> CreateVector4()
         {
             return new OneEuroFilterMulti<Vector4>(4,
@@ -50,6 +66,10 @@ namespace Oculus.Interaction.Input
                 (value, index) => value[index]);
         }
 
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `Quaternion` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `Quaternion`</returns>
         public static IOneEuroFilter<Quaternion> CreateQuaternion()
         {
             return new OneEuroFilterMulti<Quaternion>(4,
@@ -57,11 +77,15 @@ namespace Oculus.Interaction.Input
                 (value, index) => value[index]);
         }
 
+        /// <summary>
+        /// Factory method for creating One Euro filter instances to filter `Pose` signals.
+        /// </summary>
+        /// <returns>A new instance of an <see cref="IOneEuroFilter{TData}"/> for `Pose`</returns>
         public static IOneEuroFilter<Pose> CreatePose()
         {
             return new OneEuroFilterMulti<Pose>(7,
                 (values) => new Pose(new Vector3(values[0], values[1], values[2]), new Quaternion(values[3], values[4], values[5], values[6]).normalized),
-                (value, index) => (index > 2)? value.rotation[index-3] : value.position[index]);
+                (value, index) => (index > 2) ? value.rotation[index - 3] : value.position[index]);
         }
     }
 }

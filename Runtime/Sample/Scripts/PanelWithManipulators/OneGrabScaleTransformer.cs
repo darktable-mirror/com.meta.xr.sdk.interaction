@@ -49,16 +49,16 @@ namespace Oculus.Interaction.Samples
         [SerializeField, Tooltip("Constraints for allowable values on different axes")]
         private OneGrabScaleConstraints _constraints =
             new OneGrabScaleConstraints()
-        {
-            IgnoreFixedAxes = false,
-            ConstrainXYAspectRatio = false,
-            MinX = new FloatConstraint(),
-            MaxX = new FloatConstraint(),
-            MinY = new FloatConstraint(),
-            MaxY = new FloatConstraint(),
-            MinZ = new FloatConstraint(),
-            MaxZ = new FloatConstraint()
-        };
+            {
+                IgnoreFixedAxes = false,
+                ConstrainXYAspectRatio = false,
+                MinX = new FloatConstraint(),
+                MaxX = new FloatConstraint(),
+                MinY = new FloatConstraint(),
+                MaxY = new FloatConstraint(),
+                MinZ = new FloatConstraint(),
+                MaxZ = new FloatConstraint()
+            };
 
         public OneGrabScaleConstraints Constraints
         {

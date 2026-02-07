@@ -23,10 +23,15 @@ using System.Collections.Generic;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This interactor group allows many Interactors to be in Hover state
-    /// but upon selection, the one with the highest priority will be the
-    /// one Selecting and the rest will be disabled until it unselects.
+    /// Manages a group of interactors where multiple interactors can be in the Hover state,
+    /// but only the highest-priority interactor can transition to the Select state.
+    /// Other interactors are disabled until the selecting interactor unselects.
     /// </summary>
+    /// <remarks>
+    /// In typical setups, you will add this class to manage hand or controller interactors. The group typically includes interactors such as the <see cref="PokeInteractor"/> and <see cref="GrabInteractor"/>.
+    /// By default, the priority of interactors is determined by their index in the <see cref="InteractorGroup.Interactors"/> collection,
+    /// a lower index corresponds to a higher priority. However, if a custom <see cref="CandidateComparer{T}"/> is provided, it may override this default behavior based on custom comparison logic.
+    /// </remarks>
     public class BestSelectInteractorGroup : InteractorGroup
     {
         private IInteractor _bestInteractor = null;
@@ -37,12 +42,17 @@ namespace Oculus.Interaction
         private static readonly InteractorPredicate IsHoverAndShouldUnhoverPredicate =
             (interactor, index) => interactor.State == InteractorState.Hover && interactor.ShouldUnhover;
 
-        private static readonly InteractorPredicate IsHoverAndShoulSelectPredicate =
+        private static readonly InteractorPredicate IsHoverAndShouldSelectPredicate =
             (interactor, index) => interactor.State == InteractorState.Hover && interactor.ShouldSelect;
 
         private static readonly InteractorPredicate IsHover =
             (interactor, index) => interactor.State == InteractorState.Hover;
-
+        /// <summary>
+        /// Determines whether any interactor should transition to the Hover state.
+        /// </summary>
+        /// <value>
+        /// True if the current state is Normal and any interactor meets the criteria for hovering; otherwise, false.
+        /// </value>
         public override bool ShouldHover
         {
             get
@@ -54,7 +64,12 @@ namespace Oculus.Interaction
                 return AnyInteractor(IsNormalAndShouldHoverPredicate);
             }
         }
-
+        /// <summary>
+        /// Determines whether any interactor should cease to be in the Hover state.
+        /// </summary>
+        /// <value>
+        /// True if the current state is Hover and any interactor meets the criteria for unhovering or no interactors are in the Hover state; otherwise, false.
+        /// </value>
         public override bool ShouldUnhover
         {
             get
@@ -68,7 +83,12 @@ namespace Oculus.Interaction
                     || !AnyInteractor(IsHover);
             }
         }
-
+        /// <summary>
+        /// Determines whether any interactor should transition to the Select state.
+        /// </summary>
+        /// <value>
+        /// True if the current state is Hover and any interactor meets the criteria for selection; otherwise, false.
+        /// </value>
         public override bool ShouldSelect
         {
             get
@@ -78,10 +98,15 @@ namespace Oculus.Interaction
                     return false;
                 }
 
-                return AnyInteractor(IsHoverAndShoulSelectPredicate);
+                return AnyInteractor(IsHoverAndShouldSelectPredicate);
             }
         }
-
+        /// <summary>
+        /// Determines whether the highest-priority interactor should cease being in the Select state.
+        /// </summary>
+        /// <value>
+        /// True if the current state is Select and the highest-priority interactor meets the criteria for unselection; otherwise, false.
+        /// </value>
         public override bool ShouldUnselect
         {
             get
@@ -95,7 +120,13 @@ namespace Oculus.Interaction
                     && _bestInteractor.ShouldUnselect;
             }
         }
-
+        /// <summary>
+        /// Attempts to transition any suitable interactor into the Hover state.
+        /// </summary>
+        /// <remarks>
+        /// This method iterates through interactors, transitioning the first one that meets the hover criteria into the Hover state.
+        /// The group's state updates to Hover if at least one interactor transitions successfully.
+        /// </remarks>
         public override void Hover()
         {
             if (TryHover())
@@ -119,6 +150,13 @@ namespace Oculus.Interaction
             return anyHover;
         }
 
+        /// <summary>
+        /// Attempts to transition any interactor from the Hover state back to the Normal state.
+        /// </summary>
+        /// <remarks>
+        /// This method iterates through interactors and transitions those that meet the unhover criteria out of the Hover state.
+        /// If no interactors remain in the Hover state, the group's state is updated to <see cref="InteractorState.Normal"/>.
+        /// </remarks>
         public override void Unhover()
         {
             if (State != InteractorState.Hover)
@@ -137,9 +175,17 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Selects the highest-priority interactor that is currently in the Hover state and transitions it to the Select state.
+        /// </summary>
+        /// <remarks>
+        /// This method identifies the best candidate for selection, transitioning it to the Select state.
+        /// It disables all other interactors to ensure that only the selected one is active.
+        /// This method should only be called when <see cref="ShouldSelect"/> returns true, indicating that the conditions for selection are met.
+        /// </remarks>
         public override void Select()
         {
-            if (TryGetBestCandidateIndex(IsHoverAndShoulSelectPredicate,
+            if (TryGetBestCandidateIndex(IsHoverAndShouldSelectPredicate,
                 out int interactorIndex))
             {
                 _bestInteractor = Interactors[interactorIndex];
@@ -151,6 +197,13 @@ namespace Oculus.Interaction
             State = InteractorState.Select;
         }
 
+        /// <summary>
+        /// Reverses the selection process, transitioning the currently selected interactor back to the Hover state.
+        /// </summary>
+        /// <remarks>
+        /// This method should only be called when <see cref="ShouldUnselect"/> returns true, ensuring that the currently selected interactor meets the criteria to unselect.
+        /// If the interactor unselects successfully, the group's state is updated to Hover.
+        /// </remarks>
         public override void Unselect()
         {
             if (State != InteractorState.Select)
@@ -171,6 +224,9 @@ namespace Oculus.Interaction
             State = InteractorState.Hover;
         }
 
+        /// <summary>
+        /// Prepares interactors for state transitions based on current conditions and processes any necessary state changes.
+        /// </summary>
         public override void Preprocess()
         {
             base.Preprocess();
@@ -208,7 +264,9 @@ namespace Oculus.Interaction
                 State = InteractorState.Hover;
             }
         }
-
+        /// <summary>
+        ///  Processes state transitions and interactions for interactors based on the current group state and individual interactor conditions.
+        /// </summary>
         public override void Process()
         {
             base.Process();

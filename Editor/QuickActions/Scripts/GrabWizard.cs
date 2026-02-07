@@ -108,24 +108,6 @@ namespace Oculus.Interaction.Editor.QuickActions
                 GetComponentInChildren<Collider>() != null;
         }
 
-        private void GenerateCollider(GameObject root)
-        {
-            Collider collider;
-            if (Utils.TryEncapsulateRenderers(root,
-                out Bounds localBounds))
-            {
-                var boxCollider = AddComponent<BoxCollider>(root);
-                boxCollider.center = localBounds.center;
-                boxCollider.size = localBounds.size;
-                collider = boxCollider;
-            }
-            else
-            {
-                collider = AddComponent<SphereCollider>(root);
-            }
-            collider.isTrigger = true;
-        }
-
         protected override void Create()
         {
             GameObject obj = Templates.CreateFromTemplate(
@@ -153,7 +135,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             if (!HasCollider() && _autoGenerateCollider)
             {
-                GenerateCollider(_rigidbody.gameObject);
+                Utils.GenerateCollider(_rigidbody.gameObject);
             }
 
             InteractorUtils.AddInteractorsToRig(

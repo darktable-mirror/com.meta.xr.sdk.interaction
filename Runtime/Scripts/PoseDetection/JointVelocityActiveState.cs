@@ -164,6 +164,8 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField]
         private JointVelocityFeatureConfigList _featureConfigs;
 
+        [SerializeField]
+        private JointVelocityFeatureConfigList _featureConfigurations;
 
         [Tooltip("The velocity used for the detection " +
             "threshold, in units per second.")]
@@ -202,7 +204,11 @@ namespace Oculus.Interaction.PoseDetection
         }
 
         public IReadOnlyList<JointVelocityFeatureConfig> FeatureConfigs =>
+#if ISDK_OPENXR_HAND
+            _featureConfigurations.Values;
+#else
             _featureConfigs.Values;
+#endif
 
         public IReadOnlyDictionary<JointVelocityFeatureConfig, JointVelocityFeatureState> FeatureStates =>
             _featureStates;

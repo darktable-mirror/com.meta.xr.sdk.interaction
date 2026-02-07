@@ -22,8 +22,18 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// This interface characterizes something which contains a Unity <see cref="Canvas"/> which can be the target of Interaction
+    /// SDK "pointer interactions." Commonly, this is used to implement screen-like interactions (for menus, etc.) in otherwise
+    /// 3D experiences and applications: the Unity Canvas can be used to create a 2D interface just as it would be for traditional
+    /// screen-based experiences, and the Interaction SDK's <see cref="PointerInteractor{TInteractor, TInteractable}"/>s allow XR
+    /// users to interact with this UI in ways that are usable and familiar.
+    /// </summary>
     public interface IPointableCanvas : IPointableElement
     {
+        /// <summary>
+        /// The Unity Canvas to which users can "point" in order interact with the UI implemented within.
+        /// </summary>
         Canvas Canvas { get; }
     }
 }

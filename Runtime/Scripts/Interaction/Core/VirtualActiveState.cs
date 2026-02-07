@@ -27,6 +27,13 @@ namespace Oculus.Interaction.Locomotion
     /// </summary>
     public class VirtualActiveState : MonoBehaviour, IActiveState
     {
-        public bool Active { get; set; }
+        [SerializeField]
+        private bool _active = false;
+
+        public bool Active
+        {
+            get => _active;
+            set => _active = value;
+        }
     }
 }

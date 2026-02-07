@@ -30,12 +30,16 @@ namespace Oculus.Interaction.HandGrab.Editor
     [CanEditMultipleObjects]
     [CustomEditor(typeof(HandGrabPose))]
     public class HandGrabPoseEditor : SimplifiedEditor
+#if ISDK_OPENXR_HAND
+        , IOpenXRMigrableEditor
+#endif
     {
         private HandGrabPose _handGrabPose;
         private HandGhost _handGhost;
         private Handedness _lastHandedness;
         private Transform _relativeTo;
 
+        private bool _openXRCompatFoldout = false;
         private int _editMode = 0;
         private SerializedProperty _handPoseProperty;
         private SerializedProperty _relativeToProperty;
@@ -44,6 +48,11 @@ namespace Oculus.Interaction.HandGrab.Editor
         private const float GIZMO_SCALE = 0.005f;
         private static readonly string[] EDIT_MODES = new string[] { "Edit fingers", "Follow Surface" };
 
+#if ISDK_OPENXR_HAND
+        private bool _unrollConverter = true;
+        private static readonly string[] _ovrPropertyNames =
+            {"_handPose" };
+#endif
 
         private void Awake()
         {
@@ -54,11 +63,21 @@ namespace Oculus.Interaction.HandGrab.Editor
         {
             base.OnEnable();
 
-            GetOVRProperties(serializedObject, out _handPoseProperty);
-            _editorDrawer.Hide("_handPose");
-            _relativeToProperty = serializedObject.FindProperty("_relativeTo");
-            _ghostProviderProperty = serializedObject.FindProperty("_ghostProvider");
+            _editorDrawer.Hide("_ovrOffsetMode");
+            _editorDrawer.Hide("_handPose", "_targetHandPose");
 
+#if ISDK_OPENXR_HAND
+            GetOpenXRProperties(serializedObject, out _handPoseProperty);
+            _unrollConverter = NeedsConversion(serializedObject);
+#else
+            GetOVRProperties(serializedObject, out _handPoseProperty);
+#endif
+            _relativeToProperty = serializedObject.FindProperty("_relativeTo");
+#if ISDK_OPENXR_HAND
+            _ghostProviderProperty = serializedObject.FindProperty("_handGhostProvider");
+#else
+            _ghostProviderProperty = serializedObject.FindProperty("_ghostProvider");
+#endif
             AssignMissingGhostProvider();
         }
 
@@ -91,8 +110,42 @@ namespace Oculus.Interaction.HandGrab.Editor
                 DestroyGhost();
             }
 
-            serializedObject.ApplyModifiedProperties();
+#if ISDK_OPENXR_HAND
+            this.OpenXRConversionMenu(ref _unrollConverter,
+                (so) => Convert(so),
+                    _ovrPropertyNames);
+#else
+            GetOVROffsetMode(serializedObject, out SerializedProperty ovrOffsetMode);
+            if (ovrOffsetMode.intValue != (int)HandGrabPose.OVROffsetMode.None)
+            {
+                _openXRCompatFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(
+                    _openXRCompatFoldout, "OpenXR Compatibility");
+                if (_openXRCompatFoldout)
+                {
+                    EditorGUI.indentLevel++;
 
+                    GUI.enabled = false;
+                    Pose offset = HandGrabPose.GetOVROffset(_handGrabPose.HandPose.Handedness);
+                    EditorGUILayout.Vector3Field("Position Offset", offset.position);
+                    EditorGUILayout.Vector3Field("Rotation Offset", offset.rotation.eulerAngles);
+                    GUI.enabled = !EditorApplication.isPlaying;
+
+                    bool applyOffset = ovrOffsetMode.intValue == (int)HandGrabPose.OVROffsetMode.Apply;
+                    applyOffset = EditorGUILayout.Toggle("Apply Offset", applyOffset);
+                    ovrOffsetMode.intValue = applyOffset ?
+                        (int)HandGrabPose.OVROffsetMode.Apply : (int)HandGrabPose.OVROffsetMode.Ignore;
+
+                    GUI.enabled = true;
+                    EditorGUILayout.HelpBox("This hand pose was originally set with the OVR hand skeleton, and " +
+                        "has been converted to use OpenXR hand poses. This offset is being applied to the local position " +
+                        "of this transform for backwards compatibility of built-in assets with the OVR hand.",
+                        MessageType.Info);
+                    EditorGUI.indentLevel--;
+                }
+                EditorGUILayout.EndFoldoutHeaderGroup();
+            }
+#endif
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawGhostMenu(HandPose handPose)
@@ -307,6 +360,148 @@ namespace Oculus.Interaction.HandGrab.Editor
             handPoseProp = target.FindProperty("_targetHandPose");
         }
 
+        private void GetOVROffsetMode(SerializedObject target,
+                out SerializedProperty shouldApply)
+        {
+            shouldApply = target.FindProperty("_ovrOffsetMode");
+        }
+
+#if ISDK_OPENXR_HAND
+        public bool NeedsConversion(SerializedObject target)
+        {
+            GetOpenXRProperties(target,
+                out SerializedProperty openXRHandPoseProp);
+            GetOVRProperties(target,
+                out SerializedProperty ovrHandPoseProp);
+
+            SerializedProperty fromHandedness = ovrHandPoseProp.FindPropertyRelative("_handedness");
+            SerializedProperty fromJoints = ovrHandPoseProp.FindPropertyRelative("_jointRotations");
+            SerializedProperty toJoints = openXRHandPoseProp.FindPropertyRelative("_jointRotations");
+            Handedness handedness = (Handedness)fromHandedness.intValue;
+
+            if (toJoints.arraySize != FingersMetadata.HAND_JOINT_IDS.Length)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; i++)
+            {
+                HandJointId jointID = FingersMetadata.HAND_JOINT_IDS[i];
+                int ovrIdx = HandTranslationUtils.HAND_JOINT_IDS_OpenXRtoOVR[i];
+                if (ovrIdx < 0)
+                {
+                    continue;
+                }
+
+                Quaternion desiredRotation =
+                    GetTransformedRotation(handedness, jointID, fromJoints, ovrIdx);
+                Quaternion currentRotation = toJoints.GetArrayElementAtIndex(i).quaternionValue;
+
+                if (Quaternion.Angle(currentRotation, desiredRotation) > 0.1f)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void Convert(SerializedObject target)
+        {
+            GetOpenXRProperties(target, out SerializedProperty openXRHandPoseProp);
+            GetOVRProperties(target, out SerializedProperty ovrHandPoseProp);
+
+            if (target.targetObject is not HandGrabPose handGrabPose)
+            {
+                return;
+            }
+
+            Pose ovrRoot = handGrabPose.transform.GetPose(Space.Self);
+            HandPoseOVRToOpenXR(ovrHandPoseProp, openXRHandPoseProp, ref ovrRoot);
+
+            GetOVROffsetMode(target, out SerializedProperty ovrOffsetMode);
+            if (ovrOffsetMode.intValue == (int)HandGrabPose.OVROffsetMode.None)
+            {
+                ovrOffsetMode.intValue = (int)HandGrabPose.OVROffsetMode.Apply;
+                Matrix4x4 unmodified = handGrabPose.transform.localToWorldMatrix;
+                handGrabPose.transform.SetPose(ovrRoot, Space.Self);
+                foreach (Transform child in handGrabPose.transform)
+                {
+                    // Restore children to previous pose
+                    child?.SetPositionAndRotation(
+                        unmodified.MultiplyPoint(child.localPosition),
+                        unmodified.rotation * child.localRotation);
+                }
+            }
+        }
+
+        private static void HandPoseOVRToOpenXR(SerializedProperty from, SerializedProperty to, ref Pose root)
+        {
+            SerializedProperty fromHandedness = from.FindPropertyRelative("_handedness");
+            SerializedProperty toHandedness = to.FindPropertyRelative("_handedness");
+            toHandedness.intValue = fromHandedness.intValue;
+
+            SerializedProperty fromFingersFreedomProp = from.FindPropertyRelative("_fingersFreedom");
+            SerializedProperty toFingersFreedomProp = to.FindPropertyRelative("_fingersFreedom");
+            for (int i = 0; i < fromFingersFreedomProp.arraySize; i++)
+            {
+                toFingersFreedomProp.GetArrayElementAtIndex(i).intValue =
+                    fromFingersFreedomProp.GetArrayElementAtIndex(i).intValue;
+            }
+
+            SerializedProperty fromJoints = from.FindPropertyRelative("_jointRotations");
+            SerializedProperty toJoints = to.FindPropertyRelative("_jointRotations");
+            Handedness handedness = (Handedness)fromHandedness.intValue;
+            //prepopulate the rotations with the default skeleton values in case some are missing
+            IReadOnlyHandSkeletonJointList jointCollection = handedness == Handedness.Left ?
+                HandSkeleton.DefaultLeftSkeleton : HandSkeleton.DefaultRightSkeleton;
+
+            toJoints.arraySize = FingersMetadata.HAND_JOINT_IDS.Length;
+            //replace the OVR rotations with the OpenXR equivalent
+            for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length; i++)
+            {
+                HandJointId jointID = FingersMetadata.HAND_JOINT_IDS[i];
+                int ovrIdx = HandTranslationUtils.HAND_JOINT_IDS_OpenXRtoOVR[i];
+
+                if (ovrIdx < 0)
+                {
+                    toJoints.GetArrayElementAtIndex(i).quaternionValue = jointCollection[(int)jointID].pose.rotation;
+                    continue;
+                }
+
+                toJoints.GetArrayElementAtIndex(i).quaternionValue =
+                    GetTransformedRotation(handedness, jointID, fromJoints, ovrIdx);
+            }
+
+            Quaternion offsetRotation = root.rotation;
+            //Special case: This is a root operation, not a wrist operation,
+            //in OVR the Left needs to have its offset undone.
+            if (handedness == Handedness.Left)
+            {
+                offsetRotation *= Quaternion.Euler(0f, 180f, 0f);
+            }
+            root.rotation = offsetRotation
+                            * Quaternion.Inverse(HandTranslationUtils.ovrHands[handedness].rotation)
+                            * HandTranslationUtils.openXRHands[handedness].rotation;
+        }
+
+        private static Quaternion GetTransformedRotation(Handedness handedness, HandJointId jointID,
+            SerializedProperty jointsProp, int index)
+        {
+            Quaternion rotation;
+            if (jointID == HandJointId.HandThumb1)
+            {
+                rotation = jointsProp.GetArrayElementAtIndex(index - 1).quaternionValue
+                    * jointsProp.GetArrayElementAtIndex(index).quaternionValue;
+            }
+            else
+            {
+                rotation = jointsProp.GetArrayElementAtIndex(index).quaternionValue;
+            }
+            return HandMirroring.TransformRotation(rotation,
+                HandTranslationUtils.ovrHands[handedness],
+                HandTranslationUtils.openXRHands[handedness]);
+        }
+#endif
         #endregion
     }
 }

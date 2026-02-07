@@ -23,6 +23,14 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Defines a raycast interaction suitable to use at both short and long ranges. The possibility of interaction is triggered by the
+    /// intersection between the <see cref="RayInteractor"/>'s raycast and the interactable's <see cref="Surface"/>. Consequences of
+    /// interaction can be controlled by setting the interactable's movement provider (through the Unity Editor or via
+    /// <see cref="InjectOptionalMovementProvider(IMovementProvider)"/>), by observing the interactable's <see cref="IInteractable"/>
+    /// events (for example, using an <see cref="InteractableUnityEventWrapper"/>), or by handling the <see cref="PointerEvent"/>s emitted
+    /// during interaction (for example, by forwarding them to an <see cref="IPointableCanvas"/>).
+    /// </summary>
     public class RayInteractable : PointerInteractable<RayInteractor, RayInteractable>
     {
         /// <summary>
@@ -31,6 +39,11 @@ namespace Oculus.Interaction
         [Tooltip("The mesh used as the interactive surface for the ray.")]
         [SerializeField, Interface(typeof(ISurface))]
         private UnityEngine.Object _surface;
+
+        /// <summary>
+        /// The mesh used as the interactive surface for the ray. This value of this property is typically set in the Unity Editor,
+        /// but it can also be set programmatically using <see cref="InjectSurface(ISurface)"/>.
+        /// </summary>
         public ISurface Surface { get; private set; }
 
         /// <summary>
@@ -59,6 +72,11 @@ namespace Oculus.Interaction
         private int _tiebreakerScore = 0;
 
         #region Properties
+        /// <summary>
+        /// If a <see cref="RayInteractor"/>'s raycast strikes multiple interactables such that it is equally interactable with
+        /// any of them, the interactable with the largest TiebreakerScore wins and is targeted for interaction. If there's a tie
+        /// for largest TiebreakerScore, one of the interactables will be selected arbitrarily.
+        /// </summary>
         public int TiebreakerScore
         {
             get
@@ -132,7 +150,9 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Sets all required values for a <cref="RayInteractable" /> on a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated RayInteractable; because only <see cref="Surface"/> is
+        /// required, this simply wraps <see cref="InjectSurface(ISurface)"/>. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllRayInteractable(ISurface surface)
         {
@@ -140,7 +160,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a surface for a dynamically instantiated GameObject.
+        /// Sets an <see cref="ISurface"/> as the <see cref="Surface"/> for a dynamically instantiated RayInteractable. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSurface(ISurface surface)
         {
@@ -149,7 +170,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a select surface for a dynamically instantiated GameObject.
+        /// Sets an <see cref="ISurface"/> as the select surface for a dynamically instantiated RayInteractable. This method exists to
+        /// support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalSelectSurface(ISurface surface)
         {
@@ -158,7 +180,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a movement provider for a dynamically instantiated GameObject.
+        /// Sets an <see cref="IMovementProvider"/> for a dynamically instantiated RayInteractable. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalMovementProvider(IMovementProvider provider)
         {

@@ -329,5 +329,5 @@ namespace Oculus.Interaction
             _rigidbodiesRoot = rigidbodiesRoot;
         }
         #endregion
-        }
+    }
 }

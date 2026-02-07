@@ -28,21 +28,26 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// DistanceHandGrabInteractor lets you grab interactables at a distance with hands.
-    /// It operates with HandGrabPoses to specify the final pose of the hand and manipulate the objects
-    /// via IMovements in order to attract them, use them at a distance, etc.
-    /// The DistanceHandGrabInteractor uses a IDistantCandidateComputer to detect far-away objects.
+    /// DistanceHandGrabInteractor lets you grab interactables at a distance with hands. It operates with <see cref="HandGrabPose"/>s to
+    /// specify the final pose of the hand and manipulate the objects via <see cref="IMovement"/>s in order to attract them, use them
+    /// at a distance, etc. The DistanceHandGrabInteractor uses <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/> to
+    /// detect far-away interactables.
     /// </summary>
     public class DistanceHandGrabInteractor :
         PointerInteractor<DistanceHandGrabInteractor, DistanceHandGrabInteractable>,
         IHandGrabInteractor, IDistanceInteractor
     {
         /// <summary>
-        /// The <cref="IHand" /> to use.
+        /// The <see cref="IHand"/> to use.
         /// </summary>
         [Tooltip("The hand to use.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.Hand"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -91,6 +96,11 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         private UnityEngine.Object _velocityCalculator;
+
+        /// <summary>
+        /// Obsolete: this was used to get and set the interactor's <see cref="IThrowVelocityCalculator"/>, which is deprecated.
+        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
+        /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
@@ -106,33 +116,108 @@ namespace Oculus.Interaction.HandGrab
         private GrabTypeFlags _currentGrabType = GrabTypeFlags.None;
 
         #region IHandGrabInteractor
+        /// <summary>
+        /// The <see cref="IMovement"/> generated as a result of interacting with an interactable. This is created by the
+        /// interactable's <see cref="DistanceHandGrabInteractable.MovementProvider"/>.
+        /// </summary>
         public IMovement Movement { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the current <see cref="Movement"/> has finished.
+        /// </summary>
         public bool MovementFinished { get; set; }
 
+        /// <summary>
+        /// The <see cref="HandGrabTarget"/> used by this interactor when grabbing.
+        /// </summary>
         public HandGrabTarget HandGrabTarget { get; } = new HandGrabTarget();
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.WristPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform WristPoint => _grabOrigin;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.PinchPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform PinchPoint => _pinchPoint;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.PalmPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform PalmPoint => _gripPoint;
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.HandGrabApi"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public HandGrabAPI HandGrabApi => _handGrabApi;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.SupportedGrabTypes"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public GrabTypeFlags SupportedGrabTypes => _supportedGrabTypes;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.TargetInteractable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IHandGrabInteractable TargetInteractable => Interactable;
         #endregion
 
+        /// <summary>
+        /// Retrieves the pose (position and orientation) from which distance grabbing is calculated. This value comes from the
+        /// <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/>, but conceptually it is a point relative to the hand
+        /// around which it feels natural for the hand to grab.
+        /// </summary>
         public Pose Origin => _distantCandidateComputer.Origin;
+
+        /// <summary>
+        /// The point in space from which the interactor is considered to have "hit" its current interactable. This is conceptually
+        /// similar to <see cref="RayInteractor.CollisionInfo"/>, though the it is not the result of a simple raycast and instead
+        /// results from calculations in the <see cref="DistantCandidateComputer{TInteractor, TInteractable}"/>.
+        /// </summary>
         public Vector3 HitPoint { get; private set; }
+
+        /// <summary>
+        /// Retrieves the current interactable (null if this interactor isn't interacting with anything) as an
+        /// <see cref="IRelativeToRef"/>. This is primarily used for visualizations.
+        /// </summary>
         public IRelativeToRef DistanceInteractable => this.Interactable;
 
         #region IHandGrabState
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.IsGrabbing"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool IsGrabbing => HasSelectedInteractable
             && (Movement != null && Movement.Stopped);
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.FingersStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float FingersStrength { get; private set; }
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float WristStrength { get; private set; }
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristToGrabPoseOffset"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Pose WristToGrabPoseOffset { get; private set; }
 
         /// <summary>
-        /// Returns the fingers that are grabbing the interactable.
+        /// Implementation of <see cref="IHandGrabState.GrabbingFingers"/>; for details, please refer to the related documentation
+        /// provided for that interface.
         /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
@@ -299,6 +384,14 @@ namespace Oculus.Interaction.HandGrab
             return _handGrabShouldUnselect;
         }
 
+        /// <summary>
+        /// Overrides <see cref="Interactor{TInteractor, TInteractable}.CanSelect(TInteractable)"/>, augmenting the behavior of that
+        /// base method with an additional call to
+        /// <see cref="HandGrabInteraction.CanInteractWith(IHandGrabInteractor, IHandGrabInteractable)"/>, which confirms the
+        /// presence of hand-specific requirements for valid hand interaction.
+        /// </summary>
+        /// <param name="interactable">The interactable</param>
+        /// <returns>True if it is possible for this interactable to select <paramref name="interactable"/>, false otherwise</returns>
         public override bool CanSelect(DistanceHandGrabInteractable interactable)
         {
             if (!base.CanSelect(interactable))
@@ -384,7 +477,11 @@ namespace Oculus.Interaction.HandGrab
 
         #region Inject
         /// <summary>
-        /// Adds a <cref="DistanceHandGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// Convenience method combining <see cref="InjectHandGrabApi(HandGrabAPI)"/>,
+        /// <see cref="InjectDistantCandidateComputer(DistantCandidateComputer{DistanceHandGrabInteractor, DistanceHandGrabInteractable})"/>,
+        /// <see cref="InjectGrabOrigin(Transform)"/>, /// <see cref="InjectHand(IHand)"/>, and
+        /// <see cref="InjectSupportedGrabTypes(GrabTypeFlags)"/>. This method exists to support Interaction SDK's dependency injection
+        /// pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllDistanceHandGrabInteractor(HandGrabAPI handGrabApi,
             DistantCandidateComputer<DistanceHandGrabInteractor, DistanceHandGrabInteractable> distantCandidateComputer,
@@ -399,7 +496,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a <cref="HandGrabAPI"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="HandGrabAPI"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectHandGrabApi(HandGrabAPI handGrabApi)
         {
@@ -407,7 +505,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a <cref="DistantCandidateComputer"/> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="DistantCandidateComputer"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectDistantCandidateComputer(
             DistantCandidateComputer<DistanceHandGrabInteractor, DistanceHandGrabInteractable> distantCandidateComputer)
@@ -416,7 +515,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds an <cref="IHand"/> to a dynamically instantiated GameObject.
+        /// Adds an <see cref="IHand"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectHand(IHand hand)
         {
@@ -425,7 +525,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a list of supported grabs to a dynamically instantiated GameObject.
+        /// Adds a list of supported grabs to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSupportedGrabTypes(GrabTypeFlags supportedGrabTypes)
         {
@@ -433,7 +534,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a grab origin to a dynamically instantiated GameObject.
+        /// Adds a grab origin to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectGrabOrigin(Transform grabOrigin)
         {
@@ -441,7 +543,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a grip point to a dynamically instantiated GameObject.
+        /// Adds a grip point to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalGripPoint(Transform gripPoint)
         {
@@ -449,7 +552,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a pinch point to a dynamically instantiated GameObject.
+        /// Adds a pinch point to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalPinchPoint(Transform pinchPoint)
         {
@@ -457,7 +561,10 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a <cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
+        /// Obsolete: adds a <see cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject. This
+        /// method exists to support Interaction SDK's dependency injection pattern and is not needed for typical
+        /// Unity Editor-based usage. Velocity calculation is now a feature of <see cref="Grabbable"/> and is no
+        /// longer required by DistanceHandGrabInteractor.
         /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)

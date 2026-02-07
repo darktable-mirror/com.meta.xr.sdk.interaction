@@ -47,12 +47,46 @@ namespace Oculus.Interaction.Editor
         {
             public string title;
             public bool isFoldout;
-            public bool foldout;
             public List<string> properties = new List<string>();
+
+            private string _foldoutKey = null;
+
+            private bool _foldout = false;
+            public bool Foldout
+            {
+                get
+                {
+                    return _foldout;
+                }
+                set
+                {
+                    if (_foldout == value)
+                    {
+                        return;
+                    }
+
+                    _foldout = value;
+                    if (_foldoutKey != null)
+                    {
+                        EditorPrefs.SetBool(_foldoutKey, _foldout);
+                    }
+                }
+            }
+
 
             public bool HasSomethingToDraw()
             {
                 return properties != null && properties.Count > 0;
+            }
+
+            public Section(string title, bool isFoldout, string foldoutKey = null)
+            {
+                this.title = title;
+                this.isFoldout = isFoldout;
+
+                this._foldoutKey = isFoldout && !string.IsNullOrEmpty(foldoutKey) ?
+                    foldoutKey : null;
+                this.Foldout = _foldoutKey != null ? EditorPrefs.GetBool(_foldoutKey, false) : false;
             }
         }
 
@@ -62,6 +96,7 @@ namespace Oculus.Interaction.Editor
         }
 
         #region Sections
+
         private Section GetOrCreateSection(string sectionName)
         {
             if (_sections.TryGetValue(sectionName, out Section existingSection))
@@ -73,7 +108,7 @@ namespace Oculus.Interaction.Editor
             return section;
         }
 
-        public Section CreateSection(string sectionName, bool isFoldout)
+        public Section CreateSection(string sectionName, bool isFoldout, string foldoutKey = null)
         {
             if (_sections.TryGetValue(sectionName, out Section existingSection))
             {
@@ -81,7 +116,7 @@ namespace Oculus.Interaction.Editor
                 return null;
             }
 
-            Section section = new Section() { title = sectionName, isFoldout = isFoldout };
+            Section section = new Section(sectionName, isFoldout, foldoutKey);
             _sections.Add(sectionName, section);
             _orderedSections.Add(sectionName);
             return section;
@@ -333,8 +368,8 @@ namespace Oculus.Interaction.Editor
 
             if (section.isFoldout)
             {
-                section.foldout = EditorGUILayout.Foldout(section.foldout, section.title);
-                if (!section.foldout)
+                section.Foldout = EditorGUILayout.Foldout(section.Foldout, section.title);
+                if (!section.Foldout)
                 {
                     return;
                 }

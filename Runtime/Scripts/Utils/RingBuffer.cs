@@ -26,7 +26,12 @@ namespace Oculus.Interaction
     ///</summary>
     public class RingBuffer<T>
     {
-        private T[] _buffer;
+        public int Count => _count;
+        public int Capacity => _capacity;
+
+        private readonly T[] _buffer;
+        private readonly int _capacity;
+
         private int _head;
         private int _count;
 
@@ -35,24 +40,20 @@ namespace Oculus.Interaction
         /// </summary>
         /// <param name="capacity">The length of the buffer</param>
         /// <param name="defaultValue">The initialisation value</param>
-        public RingBuffer(int capacity, T defaultValue)
+        public RingBuffer(int capacity)
         {
             _buffer = new T[capacity];
-            _count = capacity;
-            Clear(defaultValue);
+            _capacity = capacity;
+            Clear();
         }
 
         /// <summary>
-        /// Initialises the buffer setting all values to the clear value
+        /// Initialises the buffer
         /// </summary>
-        /// <param name="clearValue">The value to set in all entries</param>
-        public void Clear(T clearValue)
+        public void Clear()
         {
-            _head = 0;
-            for (int i = 0; i < _count; i++)
-            {
-                _buffer[i] = clearValue;
-            }
+            _head = -1;
+            _count = 0;
         }
 
         /// <summary>
@@ -62,15 +63,29 @@ namespace Oculus.Interaction
         /// <param name="item">The value to set</param>
         public void Add(T item)
         {
+            _head = (_head + 1) % _capacity;
             _buffer[_head] = item;
-            _head = (_head + 1) % _count;
+            if (_count < _capacity)
+            {
+                _count++;
+            }
         }
         ///<summary>
         /// This indexer method provides read-only access to elements in the buffer.
         ///</summary>
         /// <param name="index">The index of the element to access.</param>
         /// <returns>The element at the specified index in the buffer.</returns>
-        public T this[int index] => _buffer[((index % _count) + _count) % _count];
+        public T this[int index]
+        {
+            get
+            {
+                if (_count == 0)
+                {
+                    throw new System.InvalidOperationException("The buffer is empty.");
+                }
+                return _buffer[((index % _count) + _count) % _count];
+            }
+        }
 
         ///<summary>
         /// Gets the element at a specified offset from the current head of the buffer.
@@ -78,6 +93,13 @@ namespace Oculus.Interaction
         ///</summary>
         /// <param name="offset">The offset from the head of the buffer. Defaults to 0.</param>
         /// <returns>The element at the calculated position based on the offset.</returns>
-        public T Peek(int offset = 0) => _buffer[(((_head + offset) % _count) + _count) % _count];
+        public T Peek(int offset = 0)
+        {
+            if (_count == 0)
+            {
+                throw new System.InvalidOperationException("The buffer is empty.");
+            }
+            return _buffer[(((_head + offset) % _count) + _count) % _count];
+        }
     }
 }

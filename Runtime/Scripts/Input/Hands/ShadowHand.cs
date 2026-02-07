@@ -29,22 +29,19 @@ namespace Oculus.Interaction.Input
     /// </summary>
     public class ShadowHand
     {
-        private Pose[] _localJointMap;
-        private Pose[] _worldJointMap;
+        private readonly Pose[] _localJointMap = new Pose[(int)HandJointId.HandEnd];
+        private readonly Pose[] _worldJointMap = new Pose[(int)HandJointId.HandEnd];
         private Pose _rootPose;
         private float _rootScale;
         private ulong _dirtyMap;
 
         public ShadowHand()
         {
-            _localJointMap = new Pose[(int)HandJointId.HandEnd];
-            _worldJointMap = new Pose[(int)HandJointId.HandEnd];
             for (int i = 0; i < _localJointMap.Length; i++)
             {
                 _localJointMap[i] = Pose.identity;
                 _worldJointMap[i] = Pose.identity;
             }
-
             _rootPose = Pose.identity;
             _rootScale = 1f;
             _dirtyMap = 0;
@@ -65,6 +62,12 @@ namespace Oculus.Interaction.Input
         {
             UpdateDirty(jointId);
             return _worldJointMap[(int)jointId];
+        }
+
+        public Pose[] GetWorldPoses()
+        {
+            UpdateDirty(HandJointId.HandWristRoot);
+            return _worldJointMap;
         }
 
         public Pose GetRoot() => _rootPose;
@@ -168,7 +171,6 @@ namespace Oculus.Interaction.Input
                 {
                     localJointPose = HandMirroring.Mirror(localJointPose);
                 }
-
                 shadow.SetLocalPose((HandJointId)i, localJointPose);
             }
         }

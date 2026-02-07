@@ -39,7 +39,7 @@ public class ColliderSizeConstraint : MonoBehaviour
 
         var desiredSize = size;
         desiredSize[expandingAxis] = wideSideLength;
-        var newSize = new Vector3(desiredSize.x /  worldScale.x, desiredSize.y / worldScale.y, desiredSize.z / worldScale.z);
+        var newSize = new Vector3(desiredSize.x / worldScale.x, desiredSize.y / worldScale.y, desiredSize.z / worldScale.z);
         transform.localScale = newSize;
     }
 }

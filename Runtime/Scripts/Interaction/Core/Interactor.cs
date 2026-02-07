@@ -25,13 +25,19 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Interactor provides a base template for any kind of interaction.
-    /// Interactions can be wholly defined by three things: the concrete Interactor,
-    /// the concrete Interactable, and the logic governing their coordination.
-    ///
-    /// Subclasses are responsible for implementing that coordination logic via template
-    /// methods that operate on the concrete interactor and interactable classes.
+    /// Base class for most concrete interactor types. New interactors can be created by inheriting from this class directly; however,
+    /// it is also common for new interactors to inherit from <see cref="PointerInteractor{TInteractor, TInteractable}"/>, a descendent
+    /// type which adds features for characterizing interactions as <see cref="PointerEvent"/>s.
     /// </summary>
+    /// <remarks>
+    /// Interactions can be wholly defined by three things: the concrete Interactor, the concrete Interactable, and the logic governing
+    /// their coordination. Subclasses are responsible for implementing that coordination logic via template methods that operate on
+    /// the concrete interactor and interactable classes.
+    ///
+    /// This type has a [curiously recurring](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) generic argument
+    /// <typeparamref name="TInteractor"/>, which should be the concrete interactor type which derives from this type and is uniquely
+    /// associated with <typeparamref name="TInteractable"/>.
+    /// </remarks>
     public abstract class Interactor<TInteractor, TInteractable> : MonoBehaviour, IInteractor
                                     where TInteractor : Interactor<TInteractor, TInteractable>
                                     where TInteractable : Interactable<TInteractor, TInteractable>
@@ -78,6 +84,10 @@ namespace Oculus.Interaction
         protected virtual void DoSelectUpdate() { }
         protected virtual void DoPostprocess() { }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldHover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool ShouldHover
         {
             get
@@ -91,6 +101,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldUnhover"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool ShouldUnhover
         {
             get
@@ -104,6 +118,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldSelect"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool ShouldSelect
         {
             get
@@ -122,6 +140,10 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractor.ShouldUnselect"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool ShouldUnselect
         {
             get
@@ -151,19 +173,47 @@ namespace Oculus.Interaction
         }
 
         private InteractorState _state = InteractorState.Disabled;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenStateChanged"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action<InteractorStateChangeArgs> WhenStateChanged = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenPreprocessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenPreprocessed = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenProcessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenProcessed = delegate { };
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.WhenPostprocessed"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public event Action WhenPostprocessed = delegate { };
 
         private ISelector _selector = null;
 
         /// <summary>
-        /// The maximum number of state changes that can occur per frame. For example, the interactor switching from normal to hover or vice-versa counts as one state change.
+        /// The maximum number of state changes that can occur per frame. For example, the interactor switching from normal to hover
+        /// or vice-versa counts as one state change.
         /// </summary>
         [Tooltip("The maximum number of state changes that can occur per frame. For example, the interactor switching from normal to hover or vice-versa counts as one state change.")]
         [SerializeField]
         private int _maxIterationsPerFrame = 3;
+
+        /// <summary>
+        /// This is an internal API which sets or retrieves the maximum number of times the interactor group will execute its
+        /// processing loop (assessing and enacting changes in the groups <see cref="InteractorState"/>, among other effects)
+        /// within a single frame. The implications of this are complex, and depending on or modifying this value is not
+        /// recommended.
+        /// </summary>
         public int MaxIterationsPerFrame
         {
             get
@@ -207,6 +257,10 @@ namespace Oculus.Interaction
         private bool QueuedSelect => _selectorQueue.Count > 0 && _selectorQueue.Peek();
         private bool QueuedUnselect => _selectorQueue.Count > 0 && !_selectorQueue.Peek();
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.State"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public InteractorState State
         {
             get
@@ -236,6 +290,10 @@ namespace Oculus.Interaction
         protected TInteractable _interactable;
         protected TInteractable _selectedInteractable;
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.CandidateProperties"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual object CandidateProperties
         {
             get
@@ -244,21 +302,75 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// The current interaction candidate. This is the <typeparamref name="TInteractable"/> with which this interactor can,
+        /// but may not yet have begun to, interact.
+        /// </summary>
+        /// <remarks>
+        /// The candidate is primarily used by the interactor itself (as the thing it knows it can interact with next) and by
+        /// containing interactor groups, which frequently use the availability or unavailability of a candidate in a given frame to
+        /// assess which interactors should perform the interactions of which they're capable.
+        /// </remarks>
         public TInteractable Candidate => _candidate;
+
+        /// <summary>
+        /// The <typeparamref name="TInteractable"/> with which this interactor is currently interacting. This may or may not be
+        /// the same as the <see cref="Candidate"/>
+        /// </summary>
         public TInteractable Interactable => _interactable;
+
+        /// <summary>
+        /// The <typeparamref name="TInteractable"/> which this interactor is currently selecting. This must be the same as
+        /// <see cref="Interactable"/>, and neither SelectedInteractable nor <see cref="Interactable"/> will change value until
+        /// this interactor unselects.
+        /// </summary>
         public TInteractable SelectedInteractable => _selectedInteractable;
 
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasCandidate"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool HasCandidate => _candidate != null;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasInteractable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public bool HasInteractable => _interactable != null;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.HasSelectedInteractable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public bool HasSelectedInteractable => _selectedInteractable != null;
 
         private MultiAction<TInteractable> _whenInteractableSet = new MultiAction<TInteractable>();
         private MultiAction<TInteractable> _whenInteractableUnset = new MultiAction<TInteractable>();
         private MultiAction<TInteractable> _whenInteractableSelected = new MultiAction<TInteractable>();
         private MultiAction<TInteractable> _whenInteractableUnselected = new MultiAction<TInteractable>();
+
+        /// <summary>
+        /// An event indicating that a new value is available via <see cref="Interactable"/>. In terms of <see cref="InteractorState"/>,
+        /// this occurs when the interactor begins hovering a new interactable.
+        /// </summary>
         public MAction<TInteractable> WhenInteractableSet => _whenInteractableSet;
+
+        /// <summary>
+        /// An event indicating that <see cref="Interactable"/> will now return `null`. In terms of <see cref="InteractorState"/>,
+        /// this occurs when the interactor ceases hovering an interactable.
+        /// </summary>
         public MAction<TInteractable> WhenInteractableUnset => _whenInteractableUnset;
+
+        /// <summary>
+        /// An event indicating that a new value is available via <see cref="SelectedInteractable"/>. In terms of
+        /// <see cref="InteractorState"/>, this occurs when the interactor begins selecting a new interactable.
+        /// </summary>
         public MAction<TInteractable> WhenInteractableSelected => _whenInteractableSelected;
+
+        /// <summary>
+        /// An event indicating that <see cref="SelectedInteractable"/> will now return `null`. In terms of
+        /// <see cref="InteractorState"/>, this occurs when the interactor ceases selecting an interactable.
+        /// </summary>
         public MAction<TInteractable> WhenInteractableUnselected => _whenInteractableUnselected;
 
         protected virtual void InteractableSet(TInteractable interactable)
@@ -282,6 +394,11 @@ namespace Oculus.Interaction
         }
 
         private UniqueIdentifier _identifier;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.Identifier"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public int Identifier => _identifier.ID;
 
         /// <summary>
@@ -290,6 +407,11 @@ namespace Oculus.Interaction
         [Tooltip("Can supply additional data (ex. data from an Interactable about a given Interactor, or vice-versa), or pass data along with events like PointerEvent (ex. the associated Interactor generating the event).")]
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
+
+        /// <summary>
+        /// Implementation of <see cref="IInteractorView.Data"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public object Data { get; protected set; } = null;
 
         protected bool _started;
@@ -353,10 +475,23 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Overrides the interactor's ComputeCandidate() method with a new method.
+        /// Overrides the interactor's <see cref="ComputeCandidate"/> method with a new method.
         /// <param name="computeCandidate">The method used instead of the interactable's existing ComputeCandidate() method.</param>
         /// <param name="shouldClearOverrideOnSelect">If true, clear the computeCandidate function once you select an interactable.</param>
         /// </summary>
+        /// <remarks>
+        /// <see cref="ComputeCandidate"/> is part of the core processing flow of <see cref="IInteractor"/>s and is the primary way that
+        /// individual interactors decide what they want to interact with. Computing a new candidate does not actually _do_ the
+        /// interaction because not all interaction candidates will result in interactions: an <see cref="InteractorGroup"/> might
+        /// decide that one interactor's candidate cannot be acted upon because another interactor in the group is already interacting,
+        /// for example. Managing this nuance, and the state associated with it, is why direct calls to methods like
+        /// <see cref="IInteractor.Hover"/> cannot safely be used to force an interactor into a desired state, as attempting to do so
+        /// violates the interactor's processing flow and may cause it to have invalid internal state. SetComputeCandidateOverride,
+        /// however, can serve a similar function by arbitrarily controlling candidate discovery in the interactor. In this way, while
+        /// an interactor still cannot be generally forced to interact with a specific candidate, it can be forced to _consider_
+        /// a specific candidate within its proper processing flow, which unless prevented (by an intervening
+        /// <see cref="InteractorGroup"/>, for example) can be made to result in the desired interaction.
+        /// </remarks>
         public virtual void SetComputeCandidateOverride(Func<TInteractable> computeCandidate,
             bool shouldClearOverrideOnSelect = true)
         {
@@ -365,7 +500,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Clears the function provided in SetComputeCandidateOverride(). This is called when the interactor force releases an interactable.
+        /// Clears the function provided in <see cref="SetComputeCandidateOverride"/>. This is called when the interactor
+        /// force releases an interactable.
         /// </summary>
         public virtual void ClearComputeCandidateOverride()
         {
@@ -378,6 +514,14 @@ namespace Oculus.Interaction
         /// </summary>
         /// <param name="computeShouldSelect">The method used instead of the interactor's existing ComputeShouldSelect() method.</param>
         /// <param name="clearOverrideOnSelect">If true, clear the computeShouldSelect function once you select an interactable.</param>
+        /// <remarks>
+        /// For similar reasons to those discussed in the documentation for
+        /// <see cref="SetComputeCandidateOverride(Func{TInteractable}, bool)"/>, an interactor cannot be directly forced to select
+        /// an interactable (except in special, bespoke methods such as
+        /// <see cref="HandGrab.HandGrabInteractor.ForceSelect(HandGrab.HandGrabInteractable, bool)"/>), but the logic it uses to
+        /// decide whether or not to select can be overriden so that its normal processing is guaranteed to result in selection
+        /// (again, absent intervening forces such as an <see cref="InteractorGroup"/>).
+        /// </remarks>
         public virtual void SetComputeShouldSelectOverride(Func<bool> computeShouldSelect,
             bool clearOverrideOnSelect = true)
         {
@@ -386,7 +530,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Clears the function provided in SetComputeShouldSelectOverride(). This is called when the interactor force releases an interactable.
+        /// Clears the function provided in <see cref="SetComputeShouldSelectOverride"/>. This is called when the interactor
+        /// force releases an interactable.
         /// </summary>
         public virtual void ClearComputeShouldSelectOverride()
         {
@@ -395,10 +540,11 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Overrides the interactor's ComputeShouldUnselect() method with a new method.
+        /// Overrides the interactor's <see cref="ComputeShouldUnselect"/> method with a new method.
         /// </summary>
         /// <param name="computeShouldUnselect">The method used instead of the interactor's existing ComputeShouldUnselect() method.</param>
         /// <param name="clearOverrideOnUnselect">If true, clear the computeShouldUnselect function once you unselect an interactable.</param>
+        /// <remarks>See <see cref="SetComputeShouldSelectOverride(Func{bool}, bool)"/> for relevant details</remarks>
         public virtual void SetComputeShouldUnselectOverride(Func<bool> computeShouldUnselect,
             bool clearOverrideOnUnselect = true)
         {
@@ -407,7 +553,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Clears the function provided in SetComputeShouldUnselectOverride(). This is called when the interactor unselects an interactable.
+        /// Clears the function provided in <see cref="SetComputeShouldUnselectOverride"/>. This is called when the interactor unselects
+        /// an interactable.
         /// </summary>
         public virtual void ClearComputeShouldUnselectOverride()
         {
@@ -416,7 +563,9 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Executes any logic that should run before the interactor-specific logic. Runs before Process() and Postprocess().
+        /// Implementation of <see cref="IInteractor.Preprocess"/>; executes any logic that should run before the interactor-specific
+        /// logic. Runs before <see cref="Process"/> and <see cref="Postprocess"/>. This method should never be invoked directly except
+        /// by either this interactor instance itself or the <see cref="InteractorGroup"/> to which it belongs.
         /// </summary>
         public void Preprocess()
         {
@@ -434,8 +583,10 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Runs interactor-specific logic based on the interactor's current state. Runs after Preprocess() but before Postprocess().
-        /// Can be called multiple times per interaction frame.
+        /// Implementation of <see cref="IInteractor.Process"/>; runs interactor-specific logic based on the interactor's
+        /// current state. Runs after <see cref="Preprocess"/> but before <see cref="Postprocess"/>. Can be called multiple times per
+        /// interaction frame, with the number capped by the value of <see cref="MaxIterationsPerFrame"/>. This method should never be
+        /// invoked directly except by either this interactor instance itself or the <see cref="InteractorGroup"/> to which it belongs.
         /// </summary>
         public void Process()
         {
@@ -455,7 +606,9 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        ///  Executes any logic that should run after the interactor-specific logic. Runs after both Process() and Preprocess().
+        /// Implementation of <see cref="IInteractor.Process"/>; executes any logic that should run after the interactor-specific
+        /// logic. Runs after both <see cref="Preprocess"/> and <see cref="Process"/>. This method should never be
+        /// invoked directly except by either this interactor instance itself or the <see cref="InteractorGroup"/> to which it belongs.
         /// </summary>
         public void Postprocess()
         {
@@ -470,7 +623,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Determines what the interactable candidate should be.
+        /// Implementation of <see cref="IInteractor.ProcessCandidate"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public virtual void ProcessCandidate()
         {
@@ -492,7 +646,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Causes the interactor to unselect or unhover an interactable. Called when an interactable is currently selected or hovered but a cancel <cref="IPointerEvent" /> occurs.
+        /// Causes the interactor to unselect or unhover an interactable. Called when an interactable is currently selected or
+        /// hovered but a <see cref="PointerEvent"/> of type <see cref="PointerEventType.Cancel"/> occurs.
         /// </summary>
         public void InteractableChangesUpdate()
         {
@@ -510,7 +665,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Hovers the current candidate.
+        /// Implementation of <see cref="IInteractor.Hover"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public void Hover()
         {
@@ -524,7 +680,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Unhovers the current candidate.
+        /// Implementation of <see cref="IInteractor.Unhover"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public void Unhover()
         {
@@ -538,7 +695,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Selects the target interactable and sets the interactor's state to select.
+        /// Implementation of <see cref="IInteractor.Select"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public virtual void Select()
         {
@@ -571,7 +729,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Unselects the currently selected interactable and sets the interactor's state to hover.
+        /// Implementation of <see cref="IInteractor.Unselect"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public virtual void Unselect()
         {
@@ -606,10 +765,20 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Determines if an interactor can interact with an interactable.
+        /// Determines if this interactor can interact with an interactable.
         /// </summary>
         /// <param name="interactable">The interactable to check against.</param>
         /// <returns>True if the interactor can interact with the given interactable.</returns>
+        /// <remarks>
+        /// Despite its name, this method is not a part of the interactor processing flow alongside <see cref="ShouldSelect"/> and
+        /// <see cref="Select"/>; both of those refer to things that respectively should and do happen _now_, as part of processing.
+        /// CanSelect does not specifically test whether or not an interactable can be selected _right now_; for example, a grab
+        /// interactor can only select interactables that are spatially nearby, but proximity is not taken into account at all by
+        /// CanSelect. Rather, CanSelect assesses whether an interactable can be selected more generally, such as whether there are any
+        /// special rules which should prevent the selection even if every other condition were satisfied.
+        /// <see cref="InteractableFilters"/> are the primary form such selection-blocking rules take, but descendent classes can
+        /// introduce any other type of selection blocker they wish by overriding CanSelect.
+        /// </remarks>
         public virtual bool CanSelect(TInteractable interactable)
         {
             if (InteractableFilters == null)
@@ -675,7 +844,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Enables a disabled interactor.
+        /// Implementation of <see cref="IInteractor.Enable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public void Enable()
         {
@@ -692,7 +862,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Disables an interactor.
+        /// Implementation of <see cref="IInteractor.Disable"/>; for details, please refer to the related
+        /// documentation provided for that interface.
         /// </summary>
         public void Disable()
         {
@@ -744,6 +915,10 @@ namespace Oculus.Interaction
             return active;
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IUpdateDriver.IsRootDriver"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public bool IsRootDriver { get; set; } = true;
 
         protected virtual void Update()
@@ -757,8 +932,17 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Coordinates all of the interactor's interaction logic.
+        /// Implementation of <see cref="IUpdateDriver.Drive"/>. This method should never be invoked directly by anything other
+        /// than this instance (when <see cref="IsRootDriver"/> is true) or the <see cref="IUpdateDriver"/> serving the role of root
+        /// driver.
         /// </summary>
+        /// <remarks>
+        /// This method encapsulates the entire processing flow of the interactor, invoking many of the core methods from
+        /// <see cref="IInteractor"/> (<see cref="Enable"/>, <see cref="Process"/>, etc.) in the correct order and with the
+        /// appropriate state management. Modification to or deviation from this flow very fundamentally changes how interactors work
+        /// and is likely to result in undefined behavior. Consequently, neither directly invoking nor overriding this method is
+        /// recommended.
+        /// </remarks>
         public virtual void Drive()
         {
             Preprocess();
@@ -831,7 +1015,8 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Sets an IActiveState for the interactor on a dynamically instantiated GameObject.
+        /// Adds an <see cref="IActiveState"/>s to a dynamically instantiated Interactor. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalActiveState(IActiveState activeState)
         {
@@ -840,7 +1025,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets an set of interactable filters for the interactor on a dynamically instantiated GameObject.
+        /// Adds a set of <see cref="IGameObjectFilter"/>s to a dynamically instantiated Interactor. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalInteractableFilters(List<IGameObjectFilter> interactableFilters)
         {
@@ -850,7 +1036,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a candidate tiebreaker for the interactor on a dynamically instantiated GameObject.
+        /// Adds an <see cref="ICandidateComparer"/>s to a dynamically instantiated Interactor. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalCandidateTiebreaker(IComparer<TInteractable> candidateTiebreaker)
         {
@@ -859,7 +1046,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets data for the interactor on a dynamically instantiated GameObject.
+        /// Sets <see cref="Data"/> property on a dynamically instantiated Interactor. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalData(object data)
         {

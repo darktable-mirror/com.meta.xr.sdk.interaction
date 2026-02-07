@@ -29,7 +29,11 @@ namespace Oculus.Interaction.Input
 
         public float GetJointRadius(HandJointId id)
         {
+#if ISDK_OPENXR_HAND
+            return _hand.GetData().JointRadii[(int)id];
+#else
             return _hand.GetData().Config.HandSkeleton.Joints[(int)id].radius;
+#endif
         }
 
         #region Inject

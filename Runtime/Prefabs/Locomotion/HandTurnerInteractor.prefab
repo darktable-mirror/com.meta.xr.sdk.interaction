@@ -752,7 +752,12 @@ MonoBehaviour:
   _hand: {fileID: 859996472694130198}
   _offset: {x: -0.11, y: -0.075, z: -0.02}
   _rotation: {x: 0.105225, y: -0.6678412, z: 0.013933297, w: 0.7366965}
-  _mirrorLeftRotation: 1
+  _posOffset: {x: -0.02, y: -0.075, z: 0.11}
+  _rotOffset: {x: 0.084257655, y: 0.04868803, z: -0.064553, w: 0.99315816}
+  _mirrorOffsetsForLeftHand: 1
+  _freezeRotationX: 0
+  _freezeRotationY: 0
+  _freezeRotationZ: 0
 --- !u!1 &5055033453050520182
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,6 +771,7 @@ GameObject:
   - component: {fileID: 567470891040588262}
   - component: {fileID: 3192123672666724165}
   - component: {fileID: 9185150138180294918}
+  - component: {fileID: 6071991445036744753}
   m_Layer: 0
   m_Name: TurnVisuals
   m_TagString: Untagged
@@ -809,26 +815,10 @@ MonoBehaviour:
   _turner: {fileID: 5055033453344928439}
   _broadcaster: {fileID: 1253159762709525408}
   _lookAt: {fileID: 40378652}
-  _progress: {fileID: 567470891040588262}
   _root: {fileID: 5055033453050520181}
-  _leftArrow: {fileID: 1267469393606654678}
-  _rightArrow: {fileID: 982389600}
-  _leftRail: {fileID: 1770968731}
-  _rightRail: {fileID: 838118511}
-  _leftTrail: {fileID: 299132171}
-  _rightTrail: {fileID: 1549857842}
-  _leftMaterialBlock: {fileID: 3192123672666724165}
-  _rightMaterialBlock: {fileID: 9185150138180294918}
+  _visuals: {fileID: 6071991445036744753}
+  _progress: {fileID: 567470891040588262}
   _verticalOffset: 0.03
-  _radius: 0.07
-  _margin: 5
-  _trailLength: 25
-  _maxAngle: 25
-  _railGap: 0.005
-  _squeezeLength: 7
-  _disabledColor: {r: 1, g: 1, b: 1, a: 0.2}
-  _enabledColor: {r: 1, g: 1, b: 1, a: 0.6}
-  _highligtedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &567470891040588262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -915,6 +905,39 @@ MonoBehaviour:
   _colorProperties: []
   _floatProperties: []
   _updateEveryFrame: 0
+--- !u!114 &6071991445036744753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5055033453050520182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a8bb2498cdcda04c89df15c8ee19159, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _leftArrow: {fileID: 1267469393606654678}
+  _rightArrow: {fileID: 982389600}
+  _leftRail: {fileID: 1770968731}
+  _rightRail: {fileID: 838118511}
+  _leftTrail: {fileID: 299132171}
+  _rightTrail: {fileID: 1549857842}
+  _leftMaterialBlock: {fileID: 3192123672666724165}
+  _rightMaterialBlock: {fileID: 9185150138180294918}
+  _radius: 0.07
+  _margin: 5
+  _trailLength: 25
+  _maxAngle: 25
+  _railGap: 0.005
+  _squeezeLength: 7
+  _disabledColor: {r: 1, g: 1, b: 1, a: 0.2}
+  _enabledColor: {r: 1, g: 1, b: 1, a: 0.6}
+  _highligtedColor: {r: 1, g: 1, b: 1, a: 1}
+  _highLight: 0
+  _value: 0
+  _progress: 0
+  _followArrow: 0
 --- !u!1 &5055033453344928428
 GameObject:
   m_ObjectHideFlags: 0
@@ -1092,6 +1115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _hand: {fileID: 859996472694130198}
   _selectOnRelease: 0
+  _safeReleaseThreshold: 0.5
 --- !u!114 &5782430851654726702
 MonoBehaviour:
   m_ObjectHideFlags: 0

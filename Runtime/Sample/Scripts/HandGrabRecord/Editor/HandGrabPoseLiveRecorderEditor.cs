@@ -30,7 +30,11 @@ namespace Oculus.Interaction.HandGrab.Recorder.Editor
 
         private void Awake()
         {
+#if ISDK_OPENXR_HAND
+            _ghostProviderProperty = serializedObject.FindProperty("_handGhostProvider");
+#else
             _ghostProviderProperty = serializedObject.FindProperty("_ghostProvider");
+#endif
             AssignMissingGhostProvider();
         }
 

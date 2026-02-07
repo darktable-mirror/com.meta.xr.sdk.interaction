@@ -55,7 +55,8 @@ namespace Oculus.Interaction
             set => _constraints = value;
         }
 
-        public struct TwoGrabFreeState {
+        public struct TwoGrabFreeState
+        {
             public Pose Center;
             public float Distance;
         }
@@ -172,7 +173,8 @@ namespace Oculus.Interaction
             Vector3 upDir = Mathf.Abs(Vector3.Dot(direction, Vector3.up)) < 0.999 ? Vector3.up : Vector3.right;
             Quaternion rotation = Quaternion.LookRotation(direction, upDir);
 
-            return new TwoGrabFreeState() {
+            return new TwoGrabFreeState()
+            {
                 Center = new Pose(center, rotation),
                 Distance = direction.magnitude
             };
@@ -208,7 +210,8 @@ namespace Oculus.Interaction
             Vector3 upDirection = baseTargetRotation * Vector3.up;
             Quaternion targetRotation = Quaternion.LookRotation(targetVector, upDirection).normalized;
 
-            return new TwoGrabFreeState() {
+            return new TwoGrabFreeState()
+            {
                 Center = new Pose(targetCenter, targetRotation),
                 Distance = (newB.position - newA.position).magnitude
             };

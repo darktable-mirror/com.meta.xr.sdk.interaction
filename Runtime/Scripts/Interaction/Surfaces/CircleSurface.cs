@@ -53,60 +53,42 @@ namespace Oculus.Interaction.Surfaces
 
         public bool Raycast(in Ray ray, out SurfaceHit hit, float maxDistance = 0)
         {
-            hit = new SurfaceHit();
-            Plane plane = new Plane(_planeSurface.Normal, Transform.position);
-
-            if (plane.Raycast(ray, out float hitDistance))
+            if (!_planeSurface.Raycast(ray, out hit, maxDistance))
             {
-                if (maxDistance > 0 && hitDistance > maxDistance)
-                {
-                    return false;
-                }
-
-                Vector3 hitPointWorld = ray.GetPoint(hitDistance);
-                Vector3 hitPointLocal = Transform.InverseTransformPoint(hitPointWorld);
-
-                if (Mathf.Abs(hitPointLocal.x) > _radius ||
-                    Mathf.Abs(hitPointLocal.y) > _radius)
-                {
-                    return false;
-                }
-
-                hit.Point = hitPointWorld;
-                hit.Normal = plane.normal;
-                hit.Distance = hitDistance;
-                return true;
+                return false;
             }
 
-            return false;
+            Vector3 hitPointLocal = Transform.InverseTransformPoint(hit.Point);
+            return Vector3.SqrMagnitude(hitPointLocal) <= (_radius * _radius);
         }
 
         // Closest point to circle is computed by projecting point to the plane
         // the circle is on and then clamping to the circle
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit hit, float maxDistance = 0)
         {
-            hit = new SurfaceHit();
-
-            Vector3 vectorFromPlane = point - Transform.position;
-            Vector3 planeNormal = _planeSurface.Normal;
-            Vector3 projectedPoint = Vector3.ProjectOnPlane(vectorFromPlane, planeNormal);
-
-            float distanceFromCenterSqr = projectedPoint.sqrMagnitude;
-            float worldRadius = Transform.lossyScale.x * _radius;
-            if (distanceFromCenterSqr > worldRadius * worldRadius)
+            if (!_planeSurface.ClosestSurfacePoint(point, out hit, maxDistance))
             {
-                projectedPoint = worldRadius * projectedPoint.normalized;
+                return false;
             }
-            Vector3 closestPoint = projectedPoint + Transform.position;
 
-            hit.Point = closestPoint;
-            hit.Normal = -1.0f * Transform.forward;
-            hit.Distance = Vector3.Distance(point, closestPoint);
+            Vector3 hitPointLocal = Transform.InverseTransformPoint(hit.Point);
+            Vector3 clampedLocal = Vector3.ClampMagnitude(hitPointLocal, _radius);
+            Vector3 clampedWorld = Transform.TransformPoint(clampedLocal);
+
+            hit.Point = clampedWorld;
+            hit.Distance = Vector3.Distance(point, clampedWorld);
+
             return maxDistance <= 0 || hit.Distance <= maxDistance;
         }
 
         #region Inject
+        [System.Obsolete("Use " + nameof(InjectAllCircleSurface) + " instead.")]
         public void InjectAllCircleProximityField(PlaneSurface planeSurface)
+        {
+            InjectAllCircleSurface(planeSurface);
+        }
+
+        public void InjectAllCircleSurface(PlaneSurface planeSurface)
         {
             InjectPlaneSurface(planeSurface);
         }

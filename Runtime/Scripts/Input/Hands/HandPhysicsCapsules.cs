@@ -158,7 +158,11 @@ namespace Oculus.Interaction.Input
             _capsules = new List<BoneCapsule>(capsulesCount);
             Capsules = _capsules.AsReadOnly();
 
+#if ISDK_OPENXR_HAND
+            HandJointId firstThumbJoint = HandJointId.HandThumb1;
+#else
             HandJointId firstThumbJoint = HandJointId.HandThumb0;
+#endif
 
             for (int i = (int)firstThumbJoint; i < (int)HandJointId.HandEnd; ++i)
             {

@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Samples.PalmMenu
@@ -32,13 +33,14 @@ namespace Oculus.Interaction.Samples.PalmMenu
     /// while still facing the "aim point" and located at the "anchor point." The default anchor- and
     /// aim-point values roughly center the menu just above the palms, facing away from the hands.
     /// </summary>
+    [Obsolete("Use a combination of " + nameof(DominantHandRef) + " and " + nameof(HandJoint) + " instead")]
     public class MatchNonDominantPalmWorldSpaceTransform : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHand))]
-        private Object _leftHand;
+        private UnityEngine.Object _leftHand;
 
         [SerializeField, Interface(typeof(IHand))]
-        private Object _rightHand;
+        private UnityEngine.Object _rightHand;
 
         [SerializeField]
         private Vector3 _leftAnchorPoint = new Vector3(-0.0608603321f, 0.00953984447f, 0.000258127693f);

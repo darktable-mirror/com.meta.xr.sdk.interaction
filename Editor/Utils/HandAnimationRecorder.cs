@@ -39,7 +39,11 @@ namespace Oculus.Interaction.Utils
 
         [SerializeField]
         private HandFingerJointFlags _includedJoints =
+#if ISDK_OPENXR_HAND
+            HandFingerJointFlags.All;
+#else
             HandFingerJointFlags.HandMaxSkinnable - 1;
+#endif
 
         [SerializeField]
         private bool _includeJointPosition = false;
@@ -61,6 +65,20 @@ namespace Oculus.Interaction.Utils
 
         [SerializeField]
         private HandGhostProvider _ghostProvider;
+
+        private HandGhostProvider GhostProvider
+        {
+#if ISDK_OPENXR_HAND
+            get => _handGhostProvider;
+#else
+            get => _ghostProvider;
+#endif
+        }
+
+#if ISDK_OPENXR_HAND
+        [SerializeField]
+        private HandGhostProvider _handGhostProvider;
+#endif
 
         [SerializeField]
         private AnimationClip _animationClip;
@@ -172,8 +190,15 @@ namespace Oculus.Interaction.Utils
 
             GUILayout.Space(20);
             GUILayout.Label("Prefabs provider for the hands (ghosts) to visualize the recorded animation:");
-            _forceUpdateGhost |= HandAnimationUtils.GenerateObjectField(ref _ghostProvider);
-
+#if ISDK_OPENXR_HAND
+            if (HandAnimationUtils.GenerateObjectField(ref _handGhostProvider))
+#else
+            if (HandAnimationUtils.GenerateObjectField(ref _ghostProvider))
+#endif
+            {
+                _forceUpdateGhost = true;
+                HandGhostProviderUtils.SetLastDefaultProvider(GhostProvider);
+            }
 
             GUILayout.Space(20);
             GUILayout.Label("Recorded animation:");
@@ -320,12 +345,12 @@ namespace Oculus.Interaction.Utils
 
         private void CreateGhost(Handedness handedness)
         {
-            if (_ghostProvider == null)
+            if (GhostProvider == null)
             {
                 return;
             }
 
-            HandGhost ghostPrototype = _ghostProvider.GetHand(handedness);
+            HandGhost ghostPrototype = GhostProvider.GetHand(handedness);
             _handGhost = GameObject.Instantiate(ghostPrototype);
             _handGhost.gameObject.hideFlags = HideFlags.HideAndDontSave;
             _ghostHandedness = handedness;

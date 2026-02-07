@@ -56,7 +56,8 @@ namespace Oculus.Interaction
             set => _constraints = value;
         }
 
-        public struct TwoGrabPlaneState {
+        public struct TwoGrabPlaneState
+        {
             public Pose Center;
             public float PlanarDistance;
         }
@@ -102,11 +103,11 @@ namespace Oculus.Interaction
             float scaleDelta = prevDistInWorld != 0 ? twoGrabPlaneState.PlanarDistance / prevDistInWorld : 1f;
 
             float targetScale = scaleDelta * target.localScale.x;
-            if(_constraints.MinScale.Constrain)
+            if (_constraints.MinScale.Constrain)
             {
                 targetScale = Mathf.Max(_constraints.MinScale.Value, targetScale);
             }
-            if(_constraints.MaxScale.Constrain)
+            if (_constraints.MaxScale.Constrain)
             {
                 targetScale = Mathf.Min(_constraints.MaxScale.Value, targetScale);
             }
@@ -133,7 +134,8 @@ namespace Oculus.Interaction
             Vector3 planarDelta = p1planar - p0planar;
             Quaternion poseDir = Quaternion.LookRotation(planarDelta, planeNormal);
 
-            return new TwoGrabPlaneState() {
+            return new TwoGrabPlaneState()
+            {
                 Center = new Pose(centroid, poseDir),
                 PlanarDistance = planarDelta.magnitude
             };

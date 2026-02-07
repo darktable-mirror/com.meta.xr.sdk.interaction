@@ -147,6 +147,10 @@ namespace Oculus.Interaction
 
         private void HandlePostprocessed()
         {
+            if (Progress == null)
+            {
+                return;
+            }
             var mappedPinchStrength = _remapCurve.Evaluate(Progress.Value());
             _skinnedMeshRenderer.SetBlendShapeWeight(0, mappedPinchStrength * 100f);
             _skinnedMeshRenderer.SetBlendShapeWeight(1, mappedPinchStrength * 100f);

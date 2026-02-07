@@ -31,6 +31,11 @@ namespace Oculus.Interaction.Input
         public bool IsTracked;
         public Pose Root;
         public PoseOrigin RootPoseOrigin;
+#if ISDK_OPENXR_HAND
+        public Pose[] JointPoses = new Pose[Constants.NUM_HAND_JOINTS];
+        public float[] JointRadii = new float[Constants.NUM_HAND_JOINTS];
+        [System.Obsolete("Deprecated. Use JointPoses instead.")]
+#endif
         public Quaternion[] Joints = new Quaternion[Constants.NUM_HAND_JOINTS];
         public bool IsHighConfidence;
         public bool[] IsFingerPinching = new bool[Constants.NUM_FINGERS];
@@ -59,7 +64,13 @@ namespace Oculus.Interaction.Input
         {
             Root = source.Root;
             RootPoseOrigin = source.RootPoseOrigin;
+#if ISDK_OPENXR_HAND
+            Array.Copy(source.JointPoses, JointPoses, Constants.NUM_HAND_JOINTS);
+            Array.Copy(source.JointRadii, JointRadii, source.JointRadii.Length);
+#endif
+#pragma warning disable 0618
             Array.Copy(source.Joints, Joints, Constants.NUM_HAND_JOINTS);
+#pragma warning restore 0618
             Array.Copy(source.IsFingerPinching, IsFingerPinching, IsFingerPinching.Length);
             Array.Copy(source.IsFingerHighConfidence, IsFingerHighConfidence,
                 IsFingerHighConfidence.Length);

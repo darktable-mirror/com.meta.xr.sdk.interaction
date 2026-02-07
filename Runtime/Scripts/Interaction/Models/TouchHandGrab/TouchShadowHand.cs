@@ -26,11 +26,11 @@ namespace Oculus.Interaction
 {
     public class TouchShadowHand
     {
-        private ShadowHand _shadowHand;
+        private readonly ShadowHand _shadowHand = new();
         public ShadowHand ShadowHand => _shadowHand;
-        private IHandSphereMap _handSphereMap;
-        private Handedness _handedness;
-        private List<HandSphere> _spheres;
+        private readonly IHandSphereMap _handSphereMap;
+        private readonly Handedness _handedness;
+        private readonly List<HandSphere> _spheres = new();
 
         public int TotalIterations
         {
@@ -62,8 +62,6 @@ namespace Oculus.Interaction
 
         public TouchShadowHand(IHandSphereMap map, Handedness handedness, int iterations = 10)
         {
-            _shadowHand = new ShadowHand();
-            _spheres = new List<HandSphere>();
             _handSphereMap = map;
             _handedness = handedness;
             PushoutIterations = TotalIterations = Iterations = iterations;

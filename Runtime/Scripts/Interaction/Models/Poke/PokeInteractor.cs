@@ -27,9 +27,8 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Defines a near-poke interaction that is driven by a near-distance
-    /// proximity computation and a raycast between the position
-    /// recorded across two frames against a target surface.
+    /// Defines a near-poke interaction that is driven by a near-distance proximity computation and a raycast between the position
+    /// recorded across two frames against a target surface. The interactable type for this interactor is <see cref="PokeInteractable"/>.
     /// </summary>
     public class PokeInteractor : PointerInteractor<PokeInteractor, PokeInteractable>,
         ITimeConsumer
@@ -124,13 +123,47 @@ namespace Oculus.Interaction
                  "will use tiebreaker score to decide candidate.")]
         private float _equalDistanceThreshold = 0.001f;
 
+        /// <summary>
+        /// During interaction (and potential interaction), this exposes the point on the surface of the
+        /// <see cref="Interactor{TInteractor, TInteractable}.Interactable"/>'s <see cref="PokeInteractable.SurfacePatch"/>
+        /// considered to be closest to this interactor.
+        /// </summary>
+        /// <remarks>
+        /// This point is specifically on the <see cref="PokeInteractable.SurfacePatch"/> itself (as opposed to the
+        /// <see cref="ISurfacePatch.BackingSurface"/>). This point is primarily used in visualizations, for example to display
+        /// a highlight which "follows" the tip of a poking finger across the surface of a pokable button.
+        /// </remarks>
         public Vector3 ClosestPoint { get; private set; }
 
+        /// <summary>
+        /// During interaction (and potential interaction), this exposes the point on the surface of the
+        /// <see cref="Interactor{TInteractor, TInteractable}.Interactable"/>'s <see cref="PokeInteractable.SurfacePatch"/>'s
+        /// <see cref="ISurfacePatch.BackingSurface"/> considered to be closest to this interactor.
+        /// </summary>
+        /// <remarks>
+        /// Because this point is on the <see cref="ISurfacePatch.BackingSurface"/>, it is sometimes but not always different from
+        /// <see cref="ClosestPoint"/>. The distance between these two points can be used for visualization purposes (to control the
+        /// intensity or direction of a highlight), for cancellation purposes, etc.
+        /// </remarks>
         public Vector3 TouchPoint { get; private set; }
+
+        /// <summary>
+        /// During interaction (and potential interaction), this exposes the normal of the
+        /// <see cref="Interactor{TInteractor, TInteractable}.Interactable"/>'s <see cref="PokeInteractable.SurfacePatch"/>'s
+        /// <see cref="ISurfacePatch.BackingSurface"/> at <see cref="TouchPoint"/>.
+        /// </summary>
         public Vector3 TouchNormal { get; private set; }
 
+        /// <summary>
+        /// The radius of the sphere which represents the interacting shape of this interactor. Conceptually, this can be thought of
+        /// as half the width of a fingertip, from the center of the fingernail to the edge of the finger.
+        /// </summary>
         public float Radius => _radius;
 
+        /// <summary>
+        /// The origin of the sphere which represents the interacting shape of this interactor. Conceptually, this can be thought of as
+        /// a sphere which follows the fingertip of a tracked hand, centering itself beneath the fingernail.
+        /// </summary>
         public Vector3 Origin { get; private set; }
 
         private Vector3 _previousPokeOrigin;
@@ -157,12 +190,30 @@ namespace Oculus.Interaction
         private float _lastUpdateTime;
 
         private Func<float> _timeProvider = () => Time.time;
+
+        /// <summary>
+        /// Implementation of <see cref="ITimeConsumer.SetTimeProvider(Func{float})"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
         }
 
         private bool _isPassedSurface;
+
+        /// <summary>
+        /// Checks whether the interactor has penetrated through the <see cref="PokeInteractable.SurfacePatch"/> of the current
+        /// <see cref="Interactor{TInteractor, TInteractable}.Interactable"/>. Note: while the `set` for this property is public, it
+        /// should be considered an internal API; manually overriding the value of this from outside poke interaction logic is not
+        /// supported.
+        /// </summary>
+        /// <remarks>
+        /// Because <see cref="PokeInteractable"/>s typically have no physical representation, it is common for users to unintentionally
+        /// poke through them because there is nothing to physically stop the user's hand. Handling this gracefully is a large part of
+        /// the value PokeInteractor provides, one of the most fundamental pieces of which is determining whether or not it has happened.
+        /// This property specifies that.
+        /// </remarks>
         public bool IsPassedSurface
         {
             get
@@ -180,6 +231,21 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Signals when <see cref="IsPassedSurface"/> changes.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="IsPassedSurface"/> is a nuanced value with behavior affected and controlled by many circumstances and settings
+        /// (see <see cref="PokeInteractable.RecoilAssistConfig"/> or the
+        /// [poke interaction documentation](https://developer.oculus.com/documentation/unity/unity-isdk-poke-interaction/) for details),
+        /// and its changes do not always map to readily-observable values in obvious ways. This behavior is the result of intentional
+        /// design choices, but it can disrupt what might otherwise seem like safe assumptions about the connection between two states:
+        /// for example, there are some circumstances where <see cref="IsPassedSurface"/> can become false while <see cref="Origin"/> is
+        /// still past the surface of the interactable. Thus, when implementing behavior that depends upon multiple seemingly related
+        /// happenstances (such as <see cref="IsPassedSurface"/> becoming true and <see cref="IInteractorView.State"/> becoming
+        /// <see cref="InteractorState.Select"/>), you should always check all relevant conditions even if they are always expected to
+        /// co-occur.
+        /// </remarks>
         public Action<bool> WhenPassedSurfaceChanged = delegate { };
         private SurfaceHitCache _hitCache;
 
@@ -591,6 +657,20 @@ namespace Oculus.Interaction
             return ComputeDistanceAbove(interactable, position) > distanceThreshold;
         }
 
+        /// <summary>
+        /// Returns the smallest "depth" to which the <paramref name="interactable"/> is being poked by any of the interactors
+        /// currently poking it.
+        /// </summary>
+        /// <param name="interactable">The <see cref="PokeInteractable"/> to retrieve the minimum poike depth from</param>
+        /// <returns>The minimum poke depth</returns>
+        /// <remarks>
+        /// Articulated buttons, such as the "big red button" or the keys on a physical keyboard, translate in space when they are
+        /// interacted with. <see cref="PokeInteractable"/>s which simulate this behavior also simulate this translation, causing the
+        /// conceptual surface of the button (though not necessarily the data in its <see cref="PokeInteractable.SurfacePatch"/>) to
+        /// move as well. Certain poke interaction calculations, such as whether or not a nearby interactor can hover an articulated
+        /// button which is already being pushed, can be impacted this conceptual translation, so this method is used to retrieve that
+        /// information for those calculations.
+        /// </remarks>
         public float MinPokeDepth(PokeInteractable interactable)
         {
             float minDepth = interactable.ExitHoverNormal;
@@ -786,7 +866,16 @@ namespace Oculus.Interaction
             return SurfaceUtils.ComputeDistanceAbove(interactable.SurfacePatch, point, _radius);
         }
 
-        // The distance below a surface along the closest normal. Always positive.
+        /// <summary>
+        /// Obsolete: the distance below a surface along the closest normal. Always positive. This simply wraps
+        /// <see cref="SurfaceUtils.ComputeDepth(ISurfacePatch, Vector3, float)"/>, which should simply be invoked directly in new
+        /// code.
+        /// </summary>
+        /// <param name="interactable">The <see cref="PokeInteractable"/> to compute the depth within</param>
+        /// <param name="point">The point to compute the depth of</param>
+        /// <returns>
+        /// The depth to which the <paramref name="point"/> is "within" (past the surface of) the <paramref name="interactable"/>
+        /// </returns>
         [System.Obsolete("This will be removed in a future version of Interaction SDK. Please use SurfaceUtils.ComputeDepth instead")]
         public float ComputeDepth(PokeInteractable interactable, Vector3 point)
         {
@@ -1072,7 +1161,9 @@ namespace Oculus.Interaction
         #region Inject
 
         /// <summary>
-        /// Sets all required values for a poke interactor on a dynamically instantiated GameObject.
+        /// Injects all required dependencies for a dynamically instantiated PokeInteractor; effectively wraps
+        /// <see cref="InjectPointTransform(Transform)"/> and <see cref="InjectRadius(float)"/>. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllPokeInteractor(Transform pointTransform, float radius = 0.005f)
         {
@@ -1081,7 +1172,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a point transform for a dynamically instantiated GameObject.
+        /// Sets a point transform for a dynamically instantiated PokeInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectPointTransform(Transform pointTransform)
         {
@@ -1089,7 +1181,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a radius for a dynamically instantiated GameObject.
+        /// Sets a radius for a dynamically instantiated PokeInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectRadius(float radius)
         {
@@ -1097,7 +1190,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets a touch release threshold for a dynamically instantiated GameObject.
+        /// Sets a touch release threshold for a dynamically instantiated PokeInteractor. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalTouchReleaseThreshold(float touchReleaseThreshold)
         {
@@ -1105,7 +1199,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Sets an equal distance threshold for a dynamically instantiated GameObject.
+        /// Sets an equal distance threshold for a dynamically instantiated PokeInteractor. This method exists to support Interaction
+        /// SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalEqualDistanceThreshold(float equalDistanceThreshold)
         {
@@ -1113,7 +1208,8 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Obsolete, replaced by SetTimeProvider().
+        /// Obsolete, replaced by SetTimeProvider(). Sets a time provider for a dynamically instantiated PokeInteractor. This method
+        /// exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)

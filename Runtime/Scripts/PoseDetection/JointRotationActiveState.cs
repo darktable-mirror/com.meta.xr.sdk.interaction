@@ -136,6 +136,8 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField]
         private JointRotationFeatureConfigList _featureConfigs;
 
+        [SerializeField]
+        private JointRotationFeatureConfigList _featureConfigurations;
 
         [Tooltip("The angular velocity used for the detection " +
             "threshold, in degrees per second.")]
@@ -174,7 +176,11 @@ namespace Oculus.Interaction.PoseDetection
         }
 
         public IReadOnlyList<JointRotationFeatureConfig> FeatureConfigs =>
+#if ISDK_OPENXR_HAND
+            _featureConfigurations.Values;
+#else
             _featureConfigs.Values;
+#endif
 
         public IReadOnlyDictionary<JointRotationFeatureConfig, JointRotationFeatureState> FeatureStates =>
              _featureStates;

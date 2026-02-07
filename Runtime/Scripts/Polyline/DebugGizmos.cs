@@ -205,14 +205,14 @@ namespace Oculus.Interaction
                 return;
             }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (_root == this)
             {
                 EditorApplication.playModeStateChanged -= PlayModeStateChanged;
                 Camera.onPreCull -= HandlePreCullRender;
                 _root = null;
             }
-    #endif
+#endif
         }
 
         protected void ClearSegments()
@@ -260,7 +260,8 @@ namespace Oculus.Interaction
         }
 
         private static bool _renderSinglePass = true;
-        public static bool RenderSinglePass {
+        public static bool RenderSinglePass
+        {
             get
             {
                 return _renderSinglePass;
@@ -335,7 +336,7 @@ namespace Oculus.Interaction
             for (int i = 0; i < divisions; i++)
             {
                 Vector3 xz0 = xzPoints[i];
-                Vector3 xz1 = xzPoints[i+1];
+                Vector3 xz1 = xzPoints[i + 1];
                 DrawLine(xz0 + halfH, xz1 + halfH, t);
                 DrawLine(xz0 - halfH, xz1 - halfH, t);
             }
@@ -359,11 +360,11 @@ namespace Oculus.Interaction
         {
             Color _saveColor = Color;
             Color = Color.red;
-            DrawLine(position, position + rotation*Vector3.right * size);
+            DrawLine(position, position + rotation * Vector3.right * size);
             Color = Color.green;
-            DrawLine(position, position + rotation*Vector3.up * size);
+            DrawLine(position, position + rotation * Vector3.up * size);
             Color = Color.blue;
-            DrawLine(position, position + rotation*Vector3.forward * size);
+            DrawLine(position, position + rotation * Vector3.forward * size);
             Color = _saveColor;
         }
 

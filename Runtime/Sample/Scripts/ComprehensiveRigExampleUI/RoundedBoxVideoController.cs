@@ -99,7 +99,7 @@ public class RoundedBoxVideoController : MonoBehaviour
     private void Start()
     {
         animations = new List<BoxAnimation>();
-        var viewRect = (RectTransform) transform;
+        var viewRect = (RectTransform)transform;
         var size = viewRect.rect.size;
         var sections = size.x / ((float)boxes.Count);
 
@@ -166,7 +166,7 @@ public class RoundedBoxVideoController : MonoBehaviour
         }
         else
         {
-            if(Mathf.Abs(animationDuration - animationTime) < 0.1f)
+            if (Mathf.Abs(animationDuration - animationTime) < 0.1f)
             {
                 animationTime = 0.0f;
             }

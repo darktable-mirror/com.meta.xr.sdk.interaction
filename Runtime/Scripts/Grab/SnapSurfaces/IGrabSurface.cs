@@ -39,7 +39,7 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
         /// <param name="scoringModifier">Weight used to decide which target pose to select</param>
         /// <param name="relativeTo">Reference transform to measure the poses against</param>
         /// <returns>The score indicating how good the found pose was, -1 for invalid result.</returns>
-        [Obsolete("Use "+ nameof(CalculateBestPoseAtSurface) + " with offset instead")]
+        [Obsolete("Use " + nameof(CalculateBestPoseAtSurface) + " with offset instead")]
         GrabPoseScore CalculateBestPoseAtSurface(in Pose targetPose, out Pose bestPose,
             in PoseMeasureParameters scoringModifier, Transform relativeTo);
 

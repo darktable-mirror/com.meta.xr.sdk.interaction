@@ -618,7 +618,7 @@ MonoBehaviour:
   _rotation: {x: 0, y: 0, z: 0, w: 1}
   _posOffset: {x: 0, y: 0, z: 0}
   _rotOffset: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  _mirrorOffsetsForLeftHand: 0
+  _mirrorOffsetsForLeftHand: 1
 --- !u!1 &8924745499081199448
 GameObject:
   m_ObjectHideFlags: 0

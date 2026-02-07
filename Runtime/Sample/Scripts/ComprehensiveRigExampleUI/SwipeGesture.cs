@@ -68,7 +68,8 @@ public class SwipeGesture : UIBehaviour, IBeginDragHandler, IEndDragHandler
         var minRequiredTravelDistance = size * gestureMinDistanceNormalized;
         var isProperSwipeDistance = movementOverAxis > minRequiredTravelDistance;
 
-        if(isDragOnAxis && isProperSwipeDistance && isValidGestureDuration) {
+        if (isDragOnAxis && isProperSwipeDistance && isValidGestureDuration)
+        {
             var direction = (int)Mathf.Sign(positionDelta[(int)swipeAxis]);
             direction *= invertScroll ? -1 : 1;
             swipeExecuted.Invoke(direction);

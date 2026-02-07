@@ -34,6 +34,8 @@ namespace Oculus.Interaction
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        #region OVR Fields
+
         [SerializeField]
         [InspectorName("Offset")]
         private Vector3 _offset;
@@ -42,6 +44,19 @@ namespace Oculus.Interaction
         [InspectorName("Rotation")]
         private Quaternion _rotation = Quaternion.identity;
 
+        #endregion OVR Fields
+
+        #region OpenXR Fields
+
+        [SerializeField]
+        [InspectorName("Offset")]
+        private Vector3 _posOffset;
+
+        [SerializeField]
+        [InspectorName("Rotation")]
+        private Quaternion _rotOffset = Quaternion.identity;
+
+        #endregion OpenXR Fields
 
         [SerializeField]
         [FormerlySerializedAs("_mirrorLeftRotation")]
@@ -54,16 +69,50 @@ namespace Oculus.Interaction
             set => _mirrorOffsetsForLeftHand = value;
         }
 
+        [Header("Freeze rotations")]
+        [SerializeField]
+        private bool _freezeRotationX = false;
+        public bool FreezeRotationX
+        {
+            get => _freezeRotationX;
+            set => _freezeRotationX = value;
+        }
+        [SerializeField]
+        private bool _freezeRotationY = false;
+        public bool FreezeRotationY
+        {
+            get => _freezeRotationY;
+            set => _freezeRotationY = value;
+        }
+
+        [SerializeField]
+        private bool _freezeRotationZ = false;
+        public bool FreezeRotationZ
+        {
+            get => _freezeRotationZ;
+            set => _freezeRotationZ = value;
+        }
+
         public Vector3 Offset
         {
+#if ISDK_OPENXR_HAND
+            get => _posOffset;
+            set => _posOffset = value;
+#else
             get => _offset;
             set => _offset = value;
+#endif
         }
 
         public Quaternion Rotation
         {
+#if ISDK_OPENXR_HAND
+            get => _rotOffset;
+            set => _rotOffset = value;
+#else
             get => _rotation;
             set => _rotation = value;
+#endif
         }
 
         public bool MirrorLeftRotation
@@ -110,6 +159,7 @@ namespace Oculus.Interaction
             {
                 GetOffset(ref _cachedPose);
                 _cachedPose.Postmultiply(rootPose);
+                _cachedPose.rotation = FreezeRotation(_cachedPose.rotation);
                 transform.SetPose(_cachedPose);
             }
         }
@@ -147,6 +197,36 @@ namespace Oculus.Interaction
             pose.rotation = this.transform.rotation;
         }
 
+
+        private Quaternion FreezeRotation(Quaternion rotation)
+        {
+            if (_freezeRotationX
+                || _freezeRotationY
+                || _freezeRotationZ)
+            {
+                Vector3 eulerAngles = rotation.eulerAngles;
+                Quaternion pitch = Quaternion.Euler(new Vector3(eulerAngles.x, 0.0f, 0.0f));
+                Quaternion yaw = Quaternion.Euler(new Vector3(0.0f, eulerAngles.y, 0.0f));
+                Quaternion roll = Quaternion.Euler(new Vector3(0.0f, 0.0f, eulerAngles.z));
+                Quaternion finalSourceRotation = Quaternion.identity;
+
+                if (!_freezeRotationY)
+                {
+                    finalSourceRotation *= yaw;
+                }
+                if (!_freezeRotationX)
+                {
+                    finalSourceRotation *= pitch;
+                }
+                if (!_freezeRotationZ)
+                {
+                    finalSourceRotation *= roll;
+                }
+                rotation = finalSourceRotation;
+            }
+
+            return rotation;
+        }
         #region Inject
         public void InjectAllHandRootOffset(IHand hand)
         {

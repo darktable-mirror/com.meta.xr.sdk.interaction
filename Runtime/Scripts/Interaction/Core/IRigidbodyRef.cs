@@ -22,8 +22,19 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// This interface characterizes a type for which the most relevant Unity Rigidbody can be on an arbitrary GameObject, not
+    /// necessarily on the same GameObject as the current instance. For example, a <see cref="HandGrab.HandGrabInteractor"/> component
+    /// may be placed on a separate GameObject from the Rigidbody it uses for its internal logic. This interface provides a unified
+    /// way of accessing the relevant Rigidbody.
+    /// </summary>
     public interface IRigidbodyRef
     {
+        /// <summary>
+        /// The Unity Rigidbody most relevant to the current instance. The role this Rigidbody plays varies according to the
+        /// implementing type; for example, an <see cref="HandGrab.HandGrabInteractor"/> may use a Rigidbody for collision
+        /// detection when grabbing.
+        /// </summary>
         Rigidbody Rigidbody { get; }
     }
 }

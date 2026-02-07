@@ -85,6 +85,36 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             return true;
         }
+
+        internal static Collider GenerateCollider(GameObject target)
+        {
+            Collider collider;
+            if (Utils.TryEncapsulateRenderers(target,
+                out Bounds localBounds))
+            {
+                var boxCollider = target.AddComponent<BoxCollider>();
+                boxCollider.center = localBounds.center;
+                boxCollider.size = localBounds.size;
+                collider = boxCollider;
+            }
+            else if (target.TryGetComponent(out RectTransform rectTransform))
+            {
+                var boxCollider = target.AddComponent<BoxCollider>();
+                boxCollider.center = rectTransform.rect.center;
+                boxCollider.size = new Vector3(
+                    rectTransform.rect.size.x,
+                    rectTransform.rect.size.y,
+                    0f
+                );
+                collider = boxCollider;
+            }
+            else
+            {
+                collider = target.AddComponent<SphereCollider>();
+            }
+            collider.isTrigger = true;
+            return collider;
+        }
     }
 
     internal static class MenuOrder

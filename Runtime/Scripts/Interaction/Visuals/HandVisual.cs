@@ -49,12 +49,21 @@ namespace Oculus.Interaction
         /// <summary>
         /// Determines the appearance of the hand.
         /// </summary>
+#if ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
         [SerializeField]
         private SkinnedMeshRenderer _skinnedMeshRenderer;
 
+#if ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
         [SerializeField, Optional]
         private Transform _root = null;
 
+#if ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
         [SerializeField, Optional]
         private MaterialPropertyBlockEditor _handMaterialPropertyBlockEditor;
 
@@ -62,6 +71,27 @@ namespace Oculus.Interaction
         [SerializeField]
         private List<Transform> _jointTransforms = new List<Transform>();
 
+#if !ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
+        [SerializeField]
+        private SkinnedMeshRenderer _openXRSkinnedMeshRenderer;
+
+#if !ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
+        [SerializeField, Optional]
+        private Transform _openXRRoot = null;
+
+#if !ISDK_OPENXR_HAND
+        [HideInInspector]
+#endif
+        [SerializeField, Optional]
+        private MaterialPropertyBlockEditor _openXRHandMaterialPropertyBlockEditor;
+
+        [HideInInspector]
+        [SerializeField]
+        private List<Transform> _openXRJointTransforms = new List<Transform>();
 
         public event Action WhenHandVisualUpdated = delegate { };
 
@@ -71,25 +101,44 @@ namespace Oculus.Interaction
 
         public IList<Transform> Joints
         {
+#if ISDK_OPENXR_HAND
+            get => _openXRJointTransforms;
+#else
             get => _jointTransforms;
+#endif
         }
 
         public Transform Root
         {
+#if ISDK_OPENXR_HAND
+            get => _openXRRoot;
+            private set => _openXRRoot = value;
+#else
             get => _root;
             private set => _root = value;
+#endif
         }
 
         private SkinnedMeshRenderer SkinnedMeshRenderer
         {
+#if ISDK_OPENXR_HAND
+            get => _openXRSkinnedMeshRenderer;
+            set => _openXRSkinnedMeshRenderer = value;
+#else
             get => _skinnedMeshRenderer;
             set => _skinnedMeshRenderer = value;
+#endif
         }
 
         private MaterialPropertyBlockEditor HandMaterialPropertyBlockEditor
         {
+#if ISDK_OPENXR_HAND
+            get => _openXRHandMaterialPropertyBlockEditor;
+            set => _openXRHandMaterialPropertyBlockEditor = value;
+#else
             get => _handMaterialPropertyBlockEditor;
             set => _handMaterialPropertyBlockEditor = value;
+#endif
         }
 
         private bool _forceOffVisibility;
@@ -118,6 +167,26 @@ namespace Oculus.Interaction
             {
                 Root = Joints[0].parent;
             }
+#if ISDK_OPENXR_HAND
+            if (_root != null)
+            {
+                _root.gameObject.SetActive(false);
+            }
+            if (_openXRRoot != null)
+            {
+                _openXRRoot.gameObject.SetActive(true);
+            }
+
+#else
+            if (_root != null)
+            {
+                _root.gameObject.SetActive(true);
+            }
+            if (_openXRRoot != null)
+            {
+                _openXRRoot.gameObject.SetActive(false);
+            }
+#endif
         }
 
         protected virtual void Start()

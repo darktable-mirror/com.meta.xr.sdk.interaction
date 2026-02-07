@@ -28,19 +28,24 @@ using UnityEngine;
 namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
-    /// Enables hand grab for objects within arm's reach that have a <cref="GrabInteractable" />.
-    /// When grabbing an object, the hands visually snap to any <cref="HandPose" /> you've provided.
+    /// Enables hand grab for objects within arm's reach that have a <see cref="GrabInteractable"/>.
+    /// When grabbing an object, the hands visually snap to any <see cref="HandPose"/> you've provided.
     /// To enable grab for controllers, use <see cref="GrabInteractor"/>.
     /// </summary>
     public class HandGrabInteractor : PointerInteractor<HandGrabInteractor, HandGrabInteractable>,
         IHandGrabInteractor, IRigidbodyRef
     {
         /// <summary>
-        /// The <cref="IHand"> that should be able to grab.
+        /// The <see cref="IHand"> that should be able to grab.
         /// </summary>
         [Tooltip("The IHand that should be able to grab.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.Hand"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -72,6 +77,13 @@ namespace Oculus.Interaction.HandGrab
         [Tooltip("When enabled, nearby interactables can become candidates even if the" +
             "finger strength is 0")]
         private bool _hoverOnZeroStrength = false;
+
+        /// <summary>
+        /// When enabled, nearby <see cref="HandGrabInteractable"/>s can become candidates even if the finger
+        /// strength  is 0. "Strength" in this context is a measure of of how similar/different the finger's state is to what the
+        /// system considers "grabbing"; for a more detailed overview, see the documentation for
+        /// <see cref="IHand.GetFingerPinchStrength(HandFinger)"/>.
+        /// </summary>
         public bool HoverOnZeroStrength
         {
             get
@@ -130,6 +142,11 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         private UnityEngine.Object _velocityCalculator;
+
+        /// <summary>
+        /// Obsolete: this was used to get and set the interactor's <see cref="IThrowVelocityCalculator"/>, which is deprecated.
+        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
+        /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
@@ -141,29 +158,88 @@ namespace Oculus.Interaction.HandGrab
         private GrabTypeFlags _currentGrabType = GrabTypeFlags.None;
 
         #region IHandGrabInteractor
+        /// <summary>
+        /// The <see cref="IMovement"/> generated as a result of interacting with an interactable. This is created by the
+        /// interactable's <see cref="DistanceHandGrabInteractable.MovementProvider"/>.
+        /// </summary>
         public IMovement Movement { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the current <see cref="Movement"/> has finished.
+        /// </summary>
         public bool MovementFinished { get; set; }
 
+        /// <summary>
+        /// The <see cref="HandGrab.HandGrabTarget"/> used by this interactor when grabbing.
+        /// </summary>
         public HandGrabTarget HandGrabTarget { get; } = new HandGrabTarget();
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.WristPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform WristPoint => _grabOrigin;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.PinchPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform PinchPoint => _pinchPoint;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.PalmPoint"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Transform PalmPoint => _gripPoint;
 
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.HandGrabApi"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public HandGrabAPI HandGrabApi => _handGrabApi;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.SupportedGrabTypes"/>; for details, please refer to the related
+        /// documentation provided for that interface.
+        /// </summary>
         public GrabTypeFlags SupportedGrabTypes => _supportedGrabTypes;
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabInteractor.TargetInteractable"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public IHandGrabInteractable TargetInteractable => Interactable;
         #endregion
 
         #region IHandGrabState
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.IsGrabbing"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public virtual bool IsGrabbing => HasSelectedInteractable
             && (Movement != null && Movement.Stopped);
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.FingersStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float FingersStrength { get; private set; }
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristStrength"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public float WristStrength { get; private set; }
+
+        /// <summary>
+        /// Implementation of <see cref="IHandGrabState.WristToGrabPoseOffset"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Pose WristToGrabPoseOffset { get; private set; }
 
         /// <summary>
-        /// Returns the fingers that are grabbing the interactable.
+        /// Implementation of <see cref="IHandGrabState.GrabbingFingers"/>; for details, please refer to the related documentation
+        /// provided for that interface.
         /// </summary>
         public HandFingerFlags GrabbingFingers()
         {
@@ -172,6 +248,10 @@ namespace Oculus.Interaction.HandGrab
         #endregion
 
         #region IRigidbodyRef
+        /// <summary>
+        /// Implementation of <see cref="IRigidbodyRef.Rigidbody"/>; for details, please refer to the related documentation
+        /// provided for that interface.
+        /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
         #endregion
 
@@ -378,6 +458,14 @@ namespace Oculus.Interaction.HandGrab
                 || (_selectedInteractableOverride != null && _selectedInteractableOverride != SelectedInteractable);
         }
 
+        /// <summary>
+        /// Overrides <see cref="Interactor{TInteractor, TInteractable}.CanSelect(TInteractable)"/>, augmenting the behavior of that
+        /// base method with an additional call to
+        /// <see cref="HandGrabInteraction.CanInteractWith(IHandGrabInteractor, IHandGrabInteractable)"/>, which confirms the
+        /// presence of hand-specific requirements for valid hand interaction.
+        /// </summary>
+        /// <param name="interactable">The interactable</param>
+        /// <returns>True if it is possible for this interactable to select <paramref name="interactable"/>, false otherwise</returns>
         public override bool CanSelect(HandGrabInteractable interactable)
         {
             if (!base.CanSelect(interactable))
@@ -471,7 +559,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Forces the interactor to select the passed interactable, which will be grabbed in the next interaction iteration.
+        /// Forces the interactor to select the passed <see cref="HandGrabInteractable"/>, which will be grabbed in the next
+        /// interaction iteration.
         /// </summary>
         /// <param name="interactable">The interactable to grab.</param>
         /// <param name="allowManualRelease">If false, the interactable can only be released by calling ForceRelease.</param>
@@ -486,7 +575,7 @@ namespace Oculus.Interaction.HandGrab
             }
         }
         /// <summary>
-        /// Forces the interactor to deselect the currently grabbed interactable (if any).
+        /// Forces the interactor to deselect the currently grabbed <see cref="HandGrabInteractable"/> (if any).
         /// </summary>
         public void ForceRelease()
         {
@@ -504,6 +593,13 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
+        /// <summary>
+        /// Overrides the interactor's ComputeCandidate() method with a new method. This method itself is an override
+        /// <see cref="Interactor{TInteractor, TInteractable}.SetComputeCandidateOverride(Func{TInteractable}, bool)"/>, encapsulating the
+        /// base behavior.
+        /// <param name="computeCandidate">The method used instead of the interactable's existing ComputeCandidate() method.</param>
+        /// <param name="shouldClearOverrideOnSelect">If true, clear the computeCandidate function once you select an interactable.</param>
+        /// </summary>
         public override void SetComputeCandidateOverride(Func<HandGrabInteractable> computeCandidate, bool shouldClearOverrideOnSelect = true)
         {
             base.SetComputeCandidateOverride(() =>
@@ -514,6 +610,10 @@ namespace Oculus.Interaction.HandGrab
             shouldClearOverrideOnSelect);
         }
 
+        /// <summary>
+        /// Overrides <see cref="Interactor{TInteractor, TInteractable}.Unselect"/>, augmenting the base behavior to ensure correct handling
+        /// of overrides set with <see cref="Interactor{TInteractor, TInteractable}.SetComputeShouldUnselectOverride(Func{bool}, bool)"/>.
+        /// </summary>
         public override void Unselect()
         {
             if (State == InteractorState.Select
@@ -579,9 +679,12 @@ namespace Oculus.Interaction.HandGrab
         }
 
         #region Inject
-
         /// <summary>
-        /// Adds everything contained in <cref="HandGrabInteractor"/> to a dynamically instantiated GameObject.
+        /// Convenience method combining <see cref="InjectHandGrabApi(HandGrabAPI)"/>,
+        /// <see cref="InjectDistantCandidateComputer(DistantCandidateComputer{DistanceHandGrabInteractor, DistanceHandGrabInteractable})"/>,
+        /// <see cref="InjectGrabOrigin(Transform)"/>, /// <see cref="InjectHand(IHand)"/>, and
+        /// <see cref="InjectSupportedGrabTypes(GrabTypeFlags)"/>. This method exists to support Interaction SDK's dependency injection
+        /// pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectAllHandGrabInteractor(HandGrabAPI handGrabApi,
             Transform grabOrigin,
@@ -595,7 +698,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a <cref="HandGrabAPI" /> to a dynamically instantiated GameObject.
+        /// Adds a <see cref="HandGrabAPI"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectHandGrabApi(HandGrabAPI handGrabAPI)
         {
@@ -603,7 +707,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a <cref="IHand" /> to a dynamically instantiated GameObject.
+        /// Adds an <see cref="IHand"/> to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectHand(IHand hand)
         {
@@ -612,7 +717,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a Rigidbody to a dynamically instantiated GameObject.
+        /// Adds a Unity Rigidbody to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectRigidbody(Rigidbody rigidbody)
         {
@@ -620,7 +726,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a list of <cref="GrabTypeFlags" /> to a dynamically instantiated GameObject.
+        /// Adds a list of supported grabs to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectSupportedGrabTypes(GrabTypeFlags supportedGrabTypes)
         {
@@ -628,7 +735,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a grab origin to a dynamically instantiated GameObject.
+        /// Adds a grab origin to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectGrabOrigin(Transform grabOrigin)
         {
@@ -636,7 +744,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a grip point to a dynamically instantiated GameObject.
+        /// Adds a grip point to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalGripPoint(Transform gripPoint)
         {
@@ -644,7 +753,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a grip collider to a dynamically instantiated GameObject.
+        /// Adds a grip collider to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalGripCollider(Collider gripCollider)
         {
@@ -652,7 +762,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a pinch point to a dynamically instantiated GameObject.
+        /// Adds a pinch point to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalPinchPoint(Transform pinchPoint)
         {
@@ -660,7 +771,8 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a pinch collider to a dynamically instantiated GameObject.
+        /// Adds a pinch collider to a dynamically instantiated GameObject. This method exists to support
+        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectOptionalPinchCollider(Collider pinchCollider)
         {
@@ -668,7 +780,10 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Adds a velocity calculator to a dynamically instantiated GameObject.
+        /// Obsolete: adds a <see cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject. This
+        /// method exists to support Interaction SDK's dependency injection pattern and is not needed for typical
+        /// Unity Editor-based usage. Velocity calculation is now a feature of <see cref="Grabbable"/> and is no
+        /// longer required by HandGrabInteractor.
         /// </summary>
         [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)

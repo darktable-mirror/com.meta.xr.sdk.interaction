@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Throw
@@ -28,87 +29,102 @@ namespace Oculus.Interaction.Throw
     /// </summary>
     public class RANSACVelocity
     {
-        private int _samplesCount = 8;
-        private int _minHighConfidenceSamples = 2;
+        private bool _highConfidenceStreak = false;
+        private float _lastProcessedTime = 0;
 
-        private int _consecutiveValidFrames = 1;
-        private float _previousProcessTime = 0;
+        private float _maxSyntheticSpeed = 5.0f;
+        /// <summary>
+        /// Maximum speed (in m/s) allowed for synthetic poses
+        /// </summary>
+        public float MaxSyntheticSpeed
+        {
+            get => _maxSyntheticSpeed;
+            set => _maxSyntheticSpeed = Mathf.Max(_minSyntheticSpeed, value);
+        }
+
+        private const float _minSyntheticSpeed = 0.0001f;
 
         private RandomSampleConsensus<Vector3> _ransac;
         private RingBuffer<TimedPose> _poses;
 
-        public RANSACVelocity(int samplesCount = 8, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
+        [Obsolete("The minHighConfidenceSamples parameter will be ignored. Use the constructor without it")]
+        public RANSACVelocity(int samplesCount = 10, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
+            : this(samplesCount, samplesDeadZone)
         {
-            _samplesCount = samplesCount;
-            _minHighConfidenceSamples = minHighConfidenceSamples;
-            _poses = new RingBuffer<TimedPose>(_samplesCount + samplesDeadZone, default(TimedPose));
-            _ransac = new RandomSampleConsensus<Vector3>(_samplesCount, samplesDeadZone);
         }
 
-        public void Initialize(Pose pose, float time)
+        public RANSACVelocity(int samplesCount = 10, int samplesDeadZone = 2)
         {
-            TimedPose timedPose = new TimedPose(time, pose);
-            _poses.Clear(timedPose);
-            _previousProcessTime = time;
-            _consecutiveValidFrames = 1;
+            _poses = new RingBuffer<TimedPose>(samplesCount);
+            _ransac = new RandomSampleConsensus<Vector3>(samplesCount, samplesDeadZone);
         }
 
-        public void Process(Pose pose, float time, bool isHighConfidence = true)
+        public void Initialize()
         {
-            if (_poses.Peek().time == time)
+            _poses.Clear();
+            _highConfidenceStreak = false;
+        }
+
+        public void Process(Pose pose, float time,
+            bool isHighConfidence = true)
+        {
+            if (_poses.Count > 0 && _poses.Peek().time == time)
             {
                 return;
             }
 
             if (!isHighConfidence)
             {
-                _consecutiveValidFrames = 0;
+                _highConfidenceStreak = false;
             }
             else
             {
-                if (_consecutiveValidFrames == 0
-                    && time != _previousProcessTime)
+                //first high-confidence frame
+                if (!_highConfidenceStreak &&
+                    _poses.Count > 0)
                 {
-                    TimedPose repeatedPose = RepeatLast(_previousProcessTime);
+                    TimedPose repeatedPose = _poses.Peek();
+                    //remove the dirty data from the buffer
+                    _poses.Clear();
+                    //add a first synthetic pose as if it where from the previous frame
+                    //cap the speed so it is within the allowed limit
+                    float distance = Vector3.Distance(pose.position, repeatedPose.pose.position);
+                    float deltaTime = time - _lastProcessedTime;
+                    if (Mathf.Approximately(deltaTime, 0f)
+                        || distance / deltaTime > _maxSyntheticSpeed)
+                    {
+                        repeatedPose.time = time - (distance / _maxSyntheticSpeed);
+                    }
+                    else
+                    {
+                        repeatedPose.time = _lastProcessedTime;
+                    }
                     _poses.Add(repeatedPose);
                 }
-                _consecutiveValidFrames++;
+
+                _highConfidenceStreak = true;
 
                 TimedPose timedPose = new TimedPose(time, pose);
                 _poses.Add(timedPose);
             }
 
-            _previousProcessTime = time;
+            _lastProcessedTime = time;
         }
 
         public void GetVelocities(out Vector3 velocity, out Vector3 torque)
         {
-            if (_consecutiveValidFrames >= _minHighConfidenceSamples)
+            if (_poses.Count >= 2)
             {
-                velocity = _ransac.FindOptimalModel(CalculateVelocityFromSamples, ScoreDistance);
-                torque = _ransac.FindOptimalModel(CalculateTorqueFromSamples, ScoreAngularDistance);
+                velocity = _ransac.FindOptimalModel(
+                    CalculateVelocityFromSamples, ScoreDistance, _poses.Count);
+                torque = _ransac.FindOptimalModel(
+                    CalculateTorqueFromSamples, ScoreAngularDistance, _poses.Count);
             }
             else
             {
-                GetLastPoseVelocity(out velocity, out torque);
+                velocity = Vector3.zero;
+                torque = Vector3.zero;
             }
-        }
-
-        private TimedPose RepeatLast(float time)
-        {
-            TimedPose lastPose = _poses.Peek();
-            lastPose.time = time;
-            return lastPose;
-        }
-
-        private void GetLastPoseVelocity(out Vector3 velocity, out Vector3 torque)
-        {
-            TimedPose younger = _poses.Peek(0);
-            TimedPose older = _poses.Peek(-1);
-
-            float timeShift = younger.time - older.time;
-            velocity = PositionOffset(younger.pose, older.pose) / timeShift;
-            torque = GetTorque(older, younger);
         }
 
         private Vector3 CalculateVelocityFromSamples(int idx1, int idx2)
@@ -134,9 +150,9 @@ namespace Oculus.Interaction.Throw
         private float ScoreDistance(Vector3 distance, Vector3[,] distances)
         {
             float score = 0f;
-            for (int i = 0; i < _samplesCount; ++i)
+            for (int i = 0; i < _poses.Count; ++i)
             {
-                for (int j = i + 1; j < _samplesCount; ++j)
+                for (int j = i + 1; j < _poses.Count; ++j)
                 {
                     score += (distance - distances[i, j]).sqrMagnitude;
                 }
@@ -165,9 +181,9 @@ namespace Oculus.Interaction.Throw
 
             Quaternion target = Quaternion.Euler(angularDistance);
 
-            for (int i = 0; i < _samplesCount; ++i)
+            for (int i = 0; i < _poses.Count; ++i)
             {
-                for (int j = i + 1; j < _samplesCount; ++j)
+                for (int j = i + 1; j < _poses.Count; ++j)
                 {
                     Quaternion sample = Quaternion.Euler(angularDistances[i, j]);
                     score += Mathf.Abs(Quaternion.Dot(target, sample));
@@ -179,10 +195,21 @@ namespace Oculus.Interaction.Throw
         protected static Vector3 GetTorque(TimedPose older, TimedPose younger)
         {
             float timeShift = younger.time - older.time;
-            Quaternion deltaRotation = older.pose.rotation * Quaternion.Inverse(younger.pose.rotation);
+            Quaternion olderRot = older.pose.rotation;
+            Quaternion youngerRot = younger.pose.rotation;
+
+            //Quaternions have two ways of expressing the same rotation.
+            //This code ensures that the result is the same rotation but expressed in the desired sign.
+            if (Quaternion.Dot(olderRot, youngerRot) < 0)
+            {
+                youngerRot.x = -youngerRot.x;
+                youngerRot.y = -youngerRot.y;
+                youngerRot.z = -youngerRot.z;
+                youngerRot.w = -youngerRot.w;
+            }
+            Quaternion deltaRotation = youngerRot * Quaternion.Inverse(olderRot);
             deltaRotation.ToAngleAxis(out float angularSpeed, out Vector3 torqueAxis);
             angularSpeed = (angularSpeed * Mathf.Deg2Rad) / timeShift;
-
             return torqueAxis * angularSpeed;
         }
 

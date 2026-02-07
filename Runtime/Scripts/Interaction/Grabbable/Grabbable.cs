@@ -27,8 +27,12 @@ using UnityEngine.Pool;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Moves the object it's attached to when an Interactor selects that object.
+    /// The <see cref="Grabbable"/> class enables interaction with and manipulation of the object it's attached to when an <see cref="Interactor{TInteractor,TInteractable}"/> selects that object.
+    /// This class implements the <see cref="IGrabbable"/> and <see cref="ITimeConsumer"/> interfaces and inherits from <see cref="PointableElement"/> to handle pointer events effectively.
     /// </summary>
+    /// <remarks>
+    /// Utilize this class to make any GameObject interactive and responsive to grab-based user interactions. It supports both single-hand and dual-hand interactions, allowing for complex object manipulation.
+    /// </remarks>
     public class Grabbable : PointableElement, IGrabbable, ITimeConsumer
     {
         /// <summary>
@@ -77,6 +81,9 @@ namespace Oculus.Interaction
         [Tooltip("Applies throwing velocities to the rigidbody when fully released.")]
         private bool _throwWhenUnselected = true;
 
+        /// <summary>
+        /// Gets or sets the maximum number of grab points. This property is crucial for defining how many points can be used to interact with the object.
+        /// </summary>
         public int MaxGrabPoints
         {
             get
@@ -89,10 +96,22 @@ namespace Oculus.Interaction
             }
         }
 
+        /// <summary>
+        /// Provides access to the transform that should be manipulated. This can be the transform of the GameObject this component is attached to or a different specified transform.
+        /// </summary>
         public Transform Transform => _targetTransform;
+
+        /// <summary>
+        /// Lists the current grab points as poses. These are used to calculate transformations based on user interactions.
+        /// </summary>
         public List<Pose> GrabPoints => _selectingPoints;
 
         private Func<float> _timeProvider = () => Time.time;
+
+        /// <summary>
+        /// Sets a custom time provider function that returns the current time in seconds. This is essential for synchronizing time-dependent behaviors within the <see cref="Grabbable"/> object.
+        /// </summary>
+        /// <param name="timeProvider">A function delegate that returns the current time in seconds.</param>
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
@@ -310,34 +329,57 @@ namespace Oculus.Interaction
         }
 
         #region Inject
-
+        /// <summary>
+        /// Injects an optional one-hand transformer component to be used when the object is grabbed with one hand.
+        /// </summary>
+        /// <param name="transformer">The transformer component that defines how the object behaves when grabbed with one hand.</param>
         public void InjectOptionalOneGrabTransformer(ITransformer transformer)
         {
             _oneGrabTransformer = transformer as UnityEngine.Object;
             OneGrabTransformer = transformer;
         }
 
+        /// <summary>
+        /// Injects an optional two-hand transformer component to be used when the object is grabbed with two hands.
+        /// </summary>
+        /// <param name="transformer">The transformer component that defines how the object behaves when grabbed with two hands.</param>
         public void InjectOptionalTwoGrabTransformer(ITransformer transformer)
         {
             _twoGrabTransformer = transformer as UnityEngine.Object;
             TwoGrabTransformer = transformer;
         }
 
+        /// <summary>
+        /// Sets an optional target transform to which all transformations will be applied, instead of the object this component is attached to.
+        /// </summary>
+        /// <param name="targetTransform">The transform component that should receive all transformations.</param>
         public void InjectOptionalTargetTransform(Transform targetTransform)
         {
             _targetTransform = targetTransform;
         }
 
+        /// <summary>
+        /// Injects an optional Rigidbody component to be controlled by this <see cref="Grabbable"/> object.
+        /// </summary>
+        /// <param name="rigidbody">The Rigidbody component to be manipulated during grab interactions.</param>
         public void InjectOptionalRigidbody(Rigidbody rigidbody)
         {
             _rigidbody = rigidbody;
         }
 
+        /// /// <summary>
+        /// Configures whether the object should simulate throwing physics when unselected based on user interactions.
+        /// </summary>
+        /// <param name="throwWhenUnselected">A boolean value indicating whether to apply throwing dynamics when the object is released.</param>
         public void InjectOptionalThrowWhenUnselected(bool throwWehenUnselected)
         {
             _throwWhenUnselected = throwWehenUnselected;
         }
 
+        /// <summary>
+        /// Determines whether the Rigidbody should be locked to kinematic mode while the object is selected.
+        /// </summary>
+        /// <param name="kinematicWhileSelected">A boolean value indicating whether to lock the Rigidbody to kinematic mode during selection.</param>
         public void InjectOptionalKinematicWhileSelected(bool kinematicWhileSelected)
         {
             _kinematicWhileSelected = kinematicWhileSelected;
@@ -346,13 +388,15 @@ namespace Oculus.Interaction
         #endregion
 
         /// <summary>
-        /// Tracks the movement of a rigidbody while it is selected by an IPointable
+        /// Tracks the movement of a rigidbody while it is selected by an <see cref="IPointable"/>
         /// and applies a throw velocity when it becomes fully unselected.
         /// </summary>
         private class ThrowWhenUnselected : ITimeConsumer, IDisposable
         {
             private Rigidbody _rigidbody;
             private IPointable _pointable;
+
+            private HashSet<int> _selectors;
 
             private Func<float> _timeProvider = () => Time.time;
             public void SetTimeProvider(Func<float> timeProvider)
@@ -361,17 +405,21 @@ namespace Oculus.Interaction
             }
 
             private static IObjectPool<RANSACVelocity> _ransacVelocityPool = new ObjectPool<RANSACVelocity>(
-                createFunc: () => new RANSACVelocity(8, 2, 2),
+                createFunc: () => new RANSACVelocity(10, 2),
+                collectionCheck: false,
+                defaultCapacity: 2);
+
+            private static IObjectPool<HashSet<int>> _selectorsPool = new ObjectPool<HashSet<int>>(
+                createFunc: () => new HashSet<int>(),
+                actionOnRelease: (s) => s.Clear(),
                 collectionCheck: false,
                 defaultCapacity: 2);
 
             private RANSACVelocity _ransacVelocity = null;
 
-            private Pose _lastPose = Pose.identity;
-            private float _lastTime = 0f;
+            private Pose _prevPose = Pose.identity;
+            private float _prevTime = 0f;
             private bool _isHighConfidence = true;
-
-            private int _selectorsCount = 0;
 
             /// <summary>
             /// Creates a new instance that listens to the provided IPointable events.
@@ -395,26 +443,33 @@ namespace Oculus.Interaction
                 _pointable.WhenPointerEventRaised -= HandlePointerEventRaised;
             }
 
-            private void AddSelection()
+            private void AddSelection(int selectorId)
             {
-                if (_selectorsCount++ == 0)
+                if (_selectors == null)
                 {
                     Initialize();
                 }
+
+                _selectors.Add(selectorId);
             }
 
-            private void RemoveSelection(bool canThrow)
+            private void RemoveSelection(int selectorId, bool canThrow)
             {
-                if (--_selectorsCount == 0)
+                _selectors.Remove(selectorId);
+                if (_selectors.Count == 0)
                 {
                     if (canThrow)
                     {
-                        Process(true);
+                        //During Unselection, a Move call is executed storing the
+                        //previous frame data, then the Target is moved to the final pose
+                        //and the Unselect is invoked. At this point the Target position can
+                        //be expected (in the general cases) to be certain, so we can process
+                        //the data as if it happened this frame.
+                        Process(false);
                         LoadThrowVelocities();
                     }
                     Teardown();
                 }
-                _selectorsCount = Mathf.Max(0, _selectorsCount);
             }
 
             private void HandlePointerEventRaised(PointerEvent evt)
@@ -422,36 +477,42 @@ namespace Oculus.Interaction
                 switch (evt.Type)
                 {
                     case PointerEventType.Select:
-                        AddSelection();
+                        AddSelection(evt.Identifier);
                         break;
                     case PointerEventType.Move:
-                        if (_selectorsCount > 0)
+                        if (_selectors != null &&
+                            _selectors.Contains(evt.Identifier))
                         {
-                            Process(false);
+                            //Move is invoked before the actual Transformer is applied to the target.
+                            //Additionally several Move events can be fired per frame when grabbing
+                            //with multiple points.
+                            //So the pose of the target is still one frame behind, and we should store it
+                            //as the previous frame data, not this one.
+                            Process(true);
                             MarkFrameConfidence(evt.Identifier);
                         }
                         break;
                     case PointerEventType.Cancel:
-                        RemoveSelection(false);
+                        RemoveSelection(evt.Identifier, false);
                         break;
                     case PointerEventType.Unselect:
                         MarkFrameConfidence(evt.Identifier);
-                        RemoveSelection(true);
+                        RemoveSelection(evt.Identifier, true);
                         break;
                 }
             }
 
             private void Initialize()
             {
-                Pose rootPose = _rigidbody.transform.GetPose();
-                float time = _timeProvider.Invoke();
-
+                _selectors = _selectorsPool.Get();
                 _ransacVelocity = _ransacVelocityPool.Get();
-                _ransacVelocity.Initialize(rootPose, time);
+                _ransacVelocity.Initialize();
             }
 
             private void Teardown()
             {
+                _selectorsPool.Release(_selectors);
+                _selectors = null;
                 _ransacVelocityPool.Release(_ransacVelocity);
                 _ransacVelocity = null;
             }
@@ -463,7 +524,8 @@ namespace Oculus.Interaction
                     return;
                 }
 
-                if (HandTrackingConfidenceProvider.TryGetTrackingConfidence(emitterKey, out bool isHighConfidence))
+                if (HandTrackingConfidenceProvider.TryGetTrackingConfidence(emitterKey,
+                    out bool isHighConfidence))
                 {
                     if (!isHighConfidence)
                     {
@@ -472,22 +534,21 @@ namespace Oculus.Interaction
                 }
             }
 
-            private void Process(bool forceSubmit)
+            private void Process(bool saveAsPreviousFrame)
             {
                 float time = _timeProvider.Invoke();
                 Pose pose = _rigidbody.transform.GetPose();
 
-                if (time > _lastTime || forceSubmit)
+                if (time > _prevTime || !saveAsPreviousFrame)
                 {
-                    _isHighConfidence &= pose.position != _lastPose.position;
-                    _ransacVelocity.Process(pose,
-                        forceSubmit ? time : _lastTime,
-                        _isHighConfidence);
+                    float frameTime = saveAsPreviousFrame ? _prevTime : time;
+                    _isHighConfidence &= pose.position != _prevPose.position;
+                    _ransacVelocity.Process(pose, frameTime, _isHighConfidence);
                     _isHighConfidence = true;
                 }
 
-                _lastTime = time;
-                _lastPose = pose;
+                _prevTime = time;
+                _prevPose = pose;
             }
 
             private void LoadThrowVelocities()
@@ -496,7 +557,6 @@ namespace Oculus.Interaction
                 _rigidbody.velocity = velocity;
                 _rigidbody.angularVelocity = torque;
             }
-
         }
     }
 }
