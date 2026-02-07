@@ -1,7 +1,7 @@
 {
   "name": "com.meta.xr.sdk.interaction",
   "displayName": "Meta XR Interaction SDK",
-  "version": "62.0.0",
+  "version": "63.0.0",
   "description": "Provides the core implementations of all the provided interaction models along with necessary shaders, materials, and prefabs.",
   "samples": [],
   "unity": "2021.3",
@@ -17,10 +17,10 @@
   "keywords": [
     "Oculus",
     "Quest",
-    "Meta",
     "SDK",
-    "Interaction",
-    "XR"
+    "XR",
+    "Meta",
+    "Interaction"
   ],
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6",
