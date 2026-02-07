@@ -18,48 +18,34 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction.Input;
 using UnityEditor;
 using UnityEngine;
+using static Oculus.Interaction.Input.HandMirroring;
 
 namespace Oculus.Interaction.Editor
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(HandWristOffset))]
-    public class HandWristOffsetEditor : UnityEditor.Editor
+    [CustomEditor(typeof(HandRootOffset))]
+    public class HandRootOffsetEditor : SimplifiedEditor
     {
-        private HandWristOffset _wristOffset;
-
-        private SerializedProperty _offsetPositionProperty;
-        private SerializedProperty _rotationProperty;
-
+        private HandRootOffset _rootOffset;
         private Pose _cachedPose;
+
 
         private void Awake()
         {
-            _wristOffset = target as HandWristOffset;
-
-            _offsetPositionProperty = serializedObject.FindProperty("_offset");
-            _rotationProperty = serializedObject.FindProperty("_rotation");
+            _rootOffset = target as HandRootOffset;
         }
 
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
-
-            _offsetPositionProperty.vector3Value = EditorGUILayout.Vector3Field("Offset", _offsetPositionProperty.vector3Value);
-            Vector3 euler = EditorGUILayout.Vector3Field("Rotation", _rotationProperty.quaternionValue.eulerAngles);
-            _rotationProperty.quaternionValue = Quaternion.Euler(euler);
-
-            serializedObject.ApplyModifiedProperties();
-        }
 
         private void OnSceneGUI()
         {
-            _cachedPose.position = _wristOffset.Offset;
-            _cachedPose.rotation = _wristOffset.Rotation;
+            _cachedPose.position = _rootOffset.Offset;
+            _cachedPose.rotation = _rootOffset.Rotation;
 
-            Pose wristPose = _wristOffset.transform.GetPose();
-            _cachedPose.Postmultiply(wristPose);
+            Pose rootPose = _rootOffset.transform.GetPose();
+            _cachedPose.Postmultiply(rootPose);
             DrawAxis(_cachedPose);
         }
 

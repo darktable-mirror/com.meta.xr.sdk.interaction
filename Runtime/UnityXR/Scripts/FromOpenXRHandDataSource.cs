@@ -113,6 +113,10 @@ namespace Oculus.Interaction.Input.UnityXR
             }
         }
 
+        protected abstract OpenXRHandDataAsset OpenXRData { get; }
+        private readonly static float DefaultSkeletonIndexMagnitude = HandSkeleton.DefaultLeftSkeleton[(int)HandJointId.HandIndex2].pose.position
+            .magnitude;
+
         private const float PressThreshold = 0.8f;
         static readonly Vector3 TrackedRemoteAimOffset = new(0.0f, 0.0f, -0.055f);
 
@@ -125,8 +129,6 @@ namespace Oculus.Interaction.Input.UnityXR
         // Meta Hand Aim Mocking
         private HandJointCache _jointCache;
         private FingerPinchGrabAPI _fingerGrabAPI;
-
-        protected abstract OpenXRHandDataAsset OpenXRData { get; }
 
         protected virtual void Awake()
         {
@@ -145,6 +147,10 @@ namespace Oculus.Interaction.Input.UnityXR
             var openXRData = OpenXRData;
             _dataAsset.CopyFrom(openXRData);
 
+            UpdateHandScale(
+                OpenXRData.JointPoses[7].position, // IndexProximal
+                OpenXRData.JointPoses[8].position); // IndexIntermediate
+
             // if XR_FB_hand_tracking_aim is unavailable
             if (_dataAsset.IsDataValidAndConnected && openXRData.AimFlags == OpenXRHandDataAsset.AimFlagsFB.None)
             {
@@ -152,9 +158,22 @@ namespace Oculus.Interaction.Input.UnityXR
             }
         }
 
+        private void UpdateHandScale(Vector3 indexProximal, Vector3 indexIntermediate)
+        {
+            // calculate scale comparing Index Proximal -> Intermediate distance
+            var indexDistance = Vector3.Distance(
+                indexProximal,
+                indexIntermediate);
+            _dataAsset.HandScale = indexDistance / DefaultSkeletonIndexMagnitude;
+        }
 
         private void PopulateMockHandTrackingAim(Pose xrPalmPose)
         {
+            _dataAsset.PointerPose =
+            xrPalmPose.GetTransformedBy(new Pose(TrackedRemoteAimOffset, Quaternion.identity));
+            _dataAsset.PointerPoseOrigin = PoseOrigin.SyntheticPose;
+            _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
+
             // Update Joint Cache
             _jointCache ??= new HandJointCache(_dataAsset.Config.HandSkeleton);
             _jointCache.Update(_dataAsset, CurrentDataVersion);
@@ -166,12 +185,6 @@ namespace Oculus.Interaction.Input.UnityXR
             PopulateMockHandTrackingAimFinger(HandFinger.Middle);
             PopulateMockHandTrackingAimFinger(HandFinger.Ring);
             PopulateMockHandTrackingAimFinger(HandFinger.Pinky);
-
-
-            _dataAsset.PointerPose =
-                xrPalmPose.GetTransformedBy(new Pose(TrackedRemoteAimOffset, Quaternion.identity));
-            _dataAsset.PointerPoseOrigin = PoseOrigin.SyntheticPose;
-            _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
         }
 
         private void PopulateMockHandTrackingAimFinger(HandFinger finger)

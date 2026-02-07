@@ -18,11 +18,10 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using System;
-
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Oculus.Interaction.Editor
@@ -54,8 +53,13 @@ namespace Oculus.Interaction.Editor
         private List<AssetInfo> _assetInfos;
         private Vector2 _scrollPos;
 
+        private Action<AssetListWindow, int, AssetInfo> _contentDrawer;
         private Action<AssetListWindow> _headerDrawer;
         private Action<AssetListWindow> _footerDrawer;
+
+        public event Action<AssetListWindow> WhenEnabled = delegate { };
+        public event Action<AssetListWindow> WhenDisabled = delegate { };
+        public event Action<AssetListWindow> WhenDestroyed = delegate { };
 
         public IReadOnlyList<AssetInfo> AssetInfos => _assetInfos;
 
@@ -64,14 +68,15 @@ namespace Oculus.Interaction.Editor
             IEnumerable<string> assetPaths,
             bool modal = false,
             Action<AssetListWindow> headerDrawer = null,
-            Action<AssetListWindow> footerDrawer = null)
+            Action<AssetListWindow> footerDrawer = null,
+            Action<AssetListWindow, int, AssetInfo> contentDrawer = null)
         {
             List<AssetInfo> assetInfos = new List<AssetInfo>();
             foreach (var path in assetPaths)
             {
                 assetInfos.Add(new AssetInfo(path));
             }
-            return Show(title, assetInfos, modal, headerDrawer, footerDrawer);
+            return Show(title, assetInfos, modal, headerDrawer, footerDrawer, contentDrawer);
         }
 
         public static AssetListWindow Show(
@@ -79,13 +84,15 @@ namespace Oculus.Interaction.Editor
             IEnumerable<AssetInfo> assetInfos,
             bool modal = false,
             Action<AssetListWindow> headerDrawer = null,
-            Action<AssetListWindow> footerDrawer = null)
+            Action<AssetListWindow> footerDrawer = null,
+            Action<AssetListWindow, int, AssetInfo> contentDrawer = null)
         {
             AssetListWindow window = GetWindow<AssetListWindow>(true);
-            window._assetInfos = new List<AssetInfo>(assetInfos);
             window.SetTitle(title);
+            window.SetAssets(assetInfos);
             window.SetHeader(headerDrawer);
             window.SetFooter(footerDrawer);
+            window.SetContentDrawer(contentDrawer);
 
             if (modal)
             {
@@ -113,6 +120,11 @@ namespace Oculus.Interaction.Editor
             titleContent = new GUIContent(title);
         }
 
+        public void SetAssets(IEnumerable<AssetInfo> assetInfos)
+        {
+            _assetInfos = new List<AssetInfo>(assetInfos);
+        }
+
         public void SetHeader(Action<AssetListWindow> headerDrawer)
         {
             _headerDrawer = headerDrawer;
@@ -123,10 +135,18 @@ namespace Oculus.Interaction.Editor
             _footerDrawer = footerDrawer;
         }
 
+        public void SetContentDrawer(Action<AssetListWindow, int, AssetInfo> contentDrawer)
+        {
+            _contentDrawer = contentDrawer;
+        }
+
         private void OnGUI()
         {
             DrawHeader();
-            DrawContent();
+            if (_assetInfos != null && _assetInfos.Count > 0)
+            {
+                DrawContent();
+            }
             DrawFooter();
         }
 
@@ -158,32 +178,61 @@ namespace Oculus.Interaction.Editor
         {
             EditorGUILayout.BeginVertical();
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
-            foreach (var assetInfo in _assetInfos)
+            for (int i = 0; i < _assetInfos.Count; i++)
             {
-                var rect = EditorGUILayout.BeginHorizontal();
-                if (GUI.Button(rect, "", GUIStyle.none))
+                AssetInfo assetInfo = _assetInfos[i];
+                if (_contentDrawer != null)
                 {
-                    assetInfo.ClickAction.Invoke();
+                    _contentDrawer.Invoke(this, i, assetInfo);
                 }
-                GUIStyle style = new GUIStyle(GUI.skin.label);
-                style.richText = true;
-                EditorGUILayout.LabelField(assetInfo.DisplayName, style);
-                EditorGUILayout.EndHorizontal();
+                else
+                {
+                    DrawAssetInfo(assetInfo);
+                }
+
             }
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
 
+        private static void DrawAssetInfo(AssetInfo assetInfo)
+        {
+            var rect = EditorGUILayout.BeginHorizontal();
+            if (GUI.Button(rect, "", GUIStyle.none))
+            {
+                assetInfo.ClickAction.Invoke();
+            }
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.richText = true;
+            EditorGUILayout.LabelField(assetInfo.DisplayName, style);
+            EditorGUILayout.EndHorizontal();
+        }
+
         private static void PingObject(string assetPath)
         {
             Object obj = AssetDatabase.LoadAssetAtPath(
-                assetPath, typeof(Object));
+                 assetPath, typeof(Object));
 
             if (obj != null)
             {
                 EditorGUIUtility.PingObject(obj);
             }
+        }
+
+        private void OnEnable()
+        {
+            WhenEnabled.Invoke(this);
+        }
+
+        private void OnDisable()
+        {
+            WhenDisabled.Invoke(this);
+        }
+
+        private void OnDestroy()
+        {
+            WhenDestroyed.Invoke(this);
         }
     }
 }

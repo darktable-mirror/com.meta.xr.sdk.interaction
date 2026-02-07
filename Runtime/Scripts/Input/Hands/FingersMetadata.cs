@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Oculus.Interaction.Input
 {
     public enum JointFreedom
@@ -49,9 +51,14 @@ namespace Oculus.Interaction.Input
             };
         }
 
+        /// <summary>
+        /// The index within HAND_JOINT_IDS for the given joint
+        /// </summary>
+        /// <param name="id">The HandJoint to check the id for</param>
+        /// <returns>An index in HAND_JOINT_IDS or -1 if invalud</returns>
         public static int HandJointIdToIndex(HandJointId id)
         {
-            return (int)id - (int)HandJointId.HandThumb0;
+            return JOINT_TO_INDEX[(int)id];
         }
 
         /// <summary>
@@ -79,118 +86,111 @@ namespace Oculus.Interaction.Input
         };
 
         /// <summary>
-        /// This array is used to convert from Finger id to the list indices
+        /// This collection contains the joints of each finger minus the tip in ascending order
+        /// </summary>
+        public static readonly HandJointId[][] FINGER_TO_JOINTS = InitializeFingerToJoint();
+
+        /// <summary>
+        /// This collection is used to convert from Finger id to the list indices
         /// of its joint in the HAND_JOINT_IDS list.
         /// </summary>
-        public static readonly int[][] FINGER_TO_JOINT_INDEX = new int[][]
-        {
-            new[] {0,1,2,3},
-            new[] {4,5,6},
-            new[] {7,8,9},
-            new[] {10,11,12},
-            new[] {13,14,15,16}
-        };
-
-        public static readonly HandJointId[][] FINGER_TO_JOINTS = new[]
-        {
-            new HandJointId[]
-            {
-                HandJointId.HandThumb0,
-                HandJointId.HandThumb1,
-                HandJointId.HandThumb2,
-                HandJointId.HandThumb3
-            },
-            new HandJointId[]
-            {
-                HandJointId.HandIndex1,
-                HandJointId.HandIndex2,
-                HandJointId.HandIndex3
-            },
-            new HandJointId[]
-            {
-                HandJointId.HandMiddle1,
-                HandJointId.HandMiddle2,
-                HandJointId.HandMiddle3
-            },
-            new HandJointId[]
-            {
-                HandJointId.HandRing1,
-                HandJointId.HandRing2,
-                HandJointId.HandRing3
-            },
-            new HandJointId[]
-            {
-                HandJointId.HandPinky0,
-                HandJointId.HandPinky1,
-                HandJointId.HandPinky2,
-                HandJointId.HandPinky3
-            }
-        };
+        public static readonly int[][] FINGER_TO_JOINT_INDEX = InitializeFingerToJointIndex();
 
         /// <summary>
         /// Array order following HAND_JOINT_IDS that indicates if the i joint
         /// can spread (rotate around Y). Should be true for the root of the fingers
         /// but Pink and Thumb are special cases
         /// </summary>
-        public static readonly bool[] HAND_JOINT_CAN_SPREAD = new bool[]
-        {
-            true, //HandJointId.HandThumb0
-            true, //HandJointId.HandThumb1
-            false,//HandJointId.HandThumb2
-            false,//HandJointId.HandThumb3
-            true, //HandJointId.HandIndex1
-            false,//HandJointId.HandIndex2
-            false,//HandJointId.HandIndex3
-            true, //HandJointId.HandMiddle1
-            false,//HandJointId.HandMiddle2
-            false,//HandJointId.HandMiddle3
-            true, //HandJointId.HandRing1
-            false,//HandJointId.HandRing2
-            false,//HandJointId.HandRing3
-            true, //HandJointId.HandPinky0
-            true, //HandJointId.HandPinky1
-            false,//HandJointId.HandPinky2
-            false //HandJointId.HandPinky3
-        };
+        public static readonly bool[] HAND_JOINT_CAN_SPREAD = InitializeCanSpread();
+
+        /// <summary>
+        /// Map any HandJointId to joint index of each finger, where the joint index
+        /// starts at 0 (toward wrist) and increments for each joint toward the fingertip.
+        /// </summary>
+        public static readonly int[] JOINT_TO_FINGER_INDEX = InitializeJointToFingerIndex();
 
         /// <summary>
         /// Map HandJointId to HandFinger
         /// </summary>
-        public static readonly HandFinger[] JOINT_TO_FINGER = new HandFinger[]
-        {
-            HandFinger.Invalid,
-            HandFinger.Invalid,
-            HandFinger.Thumb,
-            HandFinger.Thumb,
-            HandFinger.Thumb,
-            HandFinger.Thumb,
-            HandFinger.Index,
-            HandFinger.Index,
-            HandFinger.Index,
-            HandFinger.Middle,
-            HandFinger.Middle,
-            HandFinger.Middle,
-            HandFinger.Ring,
-            HandFinger.Ring,
-            HandFinger.Ring,
-            HandFinger.Pinky,
-            HandFinger.Pinky,
-            HandFinger.Pinky,
-            HandFinger.Pinky,
-            HandFinger.Thumb,
-            HandFinger.Index,
-            HandFinger.Middle,
-            HandFinger.Ring,
-            HandFinger.Pinky
-        };
+        [Obsolete("Use " + nameof(HandJointUtils.JointToFingerList) + " instead")]
+        public static readonly HandFinger[] JOINT_TO_FINGER = null;
 
-        /// <summary>
-        /// Map HandJointId to joint index of each finger, where the joint index
-        /// starts at 0 (toward wrist) and increments for each joint toward the fingertip.
-        /// </summary>
-        public static readonly int[] JOINT_TO_FINGER_INDEX = new int[]
+        private static int[] JOINT_TO_INDEX = InitializeHandJointIdToIndex();
+
+        #region Initializers
+        private static int[] InitializeHandJointIdToIndex()
         {
-            -1, -1, 0, 1, 2, 3, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 4, 3, 3, 3, 4
-        };
+            int[] indexes = new int[(int)HandJointId.HandEnd];
+
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandEnd; jointId++)
+            {
+                indexes[(int)jointId] = Array.FindIndex(HAND_JOINT_IDS, (HandJointId joint) => joint == jointId);
+            }
+            return indexes;
+        }
+
+        private static HandJointId[][] InitializeFingerToJoint()
+        {
+            HandJointId[][] joints = new HandJointId[HandJointUtils.FingerToJointList.Count][];
+            for (int i = 0; i < HandJointUtils.FingerToJointList.Count; i++)
+            {
+                //-1 to the Length to skip the Finger tip
+                int fingerLength = HandJointUtils.FingerToJointList[i].Length - 1;
+                joints[i] = new HandJointId[fingerLength];
+                Array.Copy(HandJointUtils.FingerToJointList[i], joints[i], fingerLength);
+            }
+            return joints;
+        }
+
+        private static int[][] InitializeFingerToJointIndex()
+        {
+            HandJointId[][] fingerToJoints = InitializeFingerToJoint();
+            int[] jointToIndex = InitializeHandJointIdToIndex();
+            int[][] indexes = new int[fingerToJoints.Length][];
+            for (int i = 0; i < fingerToJoints.Length; i++)
+            {
+                int[] fingerJoints = new int[fingerToJoints[i].Length];
+                for (int j = 0; j < fingerToJoints[i].Length; j++)
+                {
+                    fingerJoints[j] = jointToIndex[(int)fingerToJoints[i][j]];
+                }
+                indexes[i] = fingerJoints;
+            }
+            return indexes;
+        }
+
+        private static int[] InitializeJointToFingerIndex()
+        {
+            int[] fingerIndexes = new int[(int)HandJointId.HandEnd];
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandEnd; jointId++)
+            {
+                //Count the amount of joints in the hierarchy until it exits the finger
+                int fingerIndex = -1;
+                for (HandJointId i = jointId;
+                    HandJointUtils.JointToFingerList[(int)i] != HandFinger.Invalid;
+                    i = HandJointUtils.JointParentList[(int)i])
+                {
+                    fingerIndex++;
+                }
+                fingerIndexes[(int)jointId] = fingerIndex;
+            }
+            return fingerIndexes;
+        }
+
+        private static bool[] InitializeCanSpread()
+        {
+            int[] jointToFingerIndex = InitializeJointToFingerIndex();
+            bool[] canSpread = new bool[HAND_JOINT_IDS.Length];
+            for (int i = 0; i < HAND_JOINT_IDS.Length; i++)
+            {
+                HandJointId jointId = HAND_JOINT_IDS[i];
+                int fingerIndex = jointToFingerIndex[(int)jointId];
+                canSpread[i] = fingerIndex == 0 //most fingers start in the proximal
+                    || jointId == HandJointId.HandThumb1 //thumb starts in the metacarpal
+                    || jointId == HandJointId.HandPinky1; //pinky starts in the metacarpal
+            }
+            return canSpread;
+        }
+        #endregion
     }
 }

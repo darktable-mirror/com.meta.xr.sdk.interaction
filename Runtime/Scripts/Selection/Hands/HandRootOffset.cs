@@ -19,70 +19,60 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// Specifies a position and rotation offset from the wrist of the given hand
+    /// Specifies a position and rotation offset from the root of the given hand
     /// </summary>
-    public class HandWristOffset : MonoBehaviour
+    public class HandRootOffset : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
         [SerializeField]
-        [HideInInspector]
+        [InspectorName("Offset")]
         private Vector3 _offset;
 
         [SerializeField]
-        [HideInInspector]
+        [InspectorName("Rotation")]
         private Quaternion _rotation = Quaternion.identity;
 
-        [SerializeField]
-        [Tooltip("Mirrors the rotation offset when the attached Hand is has Left Handedness")]
-        private bool _mirrorLeftRotation = true;
 
-        private Pose _cachedPose = Pose.identity;
+        [SerializeField]
+        [FormerlySerializedAs("_mirrorLeftRotation")]
+        [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
+            "This allows for offset values to be set in Right hand coordinates for both Left and Right hands.")]
+        private bool _mirrorOffsetsForLeftHand = true;
+        public bool MirrorOffsetsForLeftHand
+        {
+            get => _mirrorOffsetsForLeftHand;
+            set => _mirrorOffsetsForLeftHand = value;
+        }
 
         public Vector3 Offset
         {
-            get
-            {
-                return _offset;
-            }
-            set
-            {
-                _offset = value;
-            }
+            get => _offset;
+            set => _offset = value;
         }
 
         public Quaternion Rotation
         {
-            get
-            {
-                return _rotation;
-            }
-            set
-            {
-                _rotation = value;
-            }
+            get => _rotation;
+            set => _rotation = value;
         }
 
         public bool MirrorLeftRotation
         {
-            get
-            {
-                return _mirrorLeftRotation;
-            }
-            set
-            {
-                _mirrorLeftRotation = value;
-            }
+            get => _mirrorOffsetsForLeftHand;
+            set => _mirrorOffsetsForLeftHand = value;
         }
 
-        private static readonly Quaternion LEFT_MIRROR_ROTATION = Quaternion.Euler(180f, 0f, 0f);
+        private Pose _cachedPose = Pose.identity;
 
         protected bool _started = false;
 
@@ -136,15 +126,18 @@ namespace Oculus.Interaction
 
         public void GetOffset(ref Pose pose, Handedness handedness, float scale)
         {
-            if (_mirrorLeftRotation && handedness == Handedness.Left)
+            if (_mirrorOffsetsForLeftHand && handedness == Handedness.Left)
             {
-                pose.position = -_offset * scale;
-                pose.rotation = _rotation * LEFT_MIRROR_ROTATION;
+                pose.position = HandMirroring.Mirror(Offset) * scale;
+                pose.rotation = HandMirroring.Mirror(Rotation);
+#if !ISDK_OPENXR_HAND
+                pose.rotation = pose.rotation * Constants.LeftRootRotation;
+#endif
             }
             else
             {
-                pose.position = _offset * scale;
-                pose.rotation = _rotation;
+                pose.position = Offset * scale;
+                pose.rotation = Rotation;
             }
         }
 
@@ -155,20 +148,30 @@ namespace Oculus.Interaction
         }
 
         #region Inject
+        public void InjectAllHandRootOffset(IHand hand)
+        {
+            InjectHand(hand);
+        }
+
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;
             Hand = hand;
         }
+
+        [Obsolete("Use the " + nameof(Offset) + " setter instead")]
         public void InjectOffset(Vector3 offset)
         {
-            _offset = offset;
-        }
-        public void InjectRotation(Quaternion rotation)
-        {
-            _rotation = rotation;
+            Offset = offset;
         }
 
+        [Obsolete("Use the " + nameof(Rotation) + " setter instead")]
+        public void InjectRotation(Quaternion rotation)
+        {
+            Rotation = rotation;
+        }
+
+        [Obsolete("Use " + nameof(InjectAllHandRootOffset) + " instead")]
         public void InjectAllHandWristOffset(IHand hand,
             Vector3 offset, Quaternion rotation)
         {
@@ -176,6 +179,7 @@ namespace Oculus.Interaction
             InjectOffset(offset);
             InjectRotation(rotation);
         }
+
         #endregion
     }
 }

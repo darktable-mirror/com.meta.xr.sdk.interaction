@@ -297,8 +297,17 @@ namespace Oculus.Interaction.Input
             if (_capsulesGenerated)
             {
                 UpdateRigidbodies();
+                UpdateColliders();
             }
 
+        }
+
+        private void UpdateColliders()
+        {
+            foreach (var capsule in _capsules)
+            {
+                capsule.CapsuleCollider.radius = _jointsRadiusFeature.GetJointRadius(capsule.StartJoint);
+            }
         }
 
         private void UpdateRigidbodies()

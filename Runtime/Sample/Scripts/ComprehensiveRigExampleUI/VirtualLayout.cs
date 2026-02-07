@@ -77,7 +77,7 @@ public class VirtualLayout : UIBehaviour
     {
         child.localPosition = Vector3.zero;
         child.anchoredPosition = Vector2.zero;
-        child.localScale = Vector2.one;
+        child.localScale = Vector3.one;
         child.localRotation = Quaternion.identity;
         child.anchorMin = Vector2.zero;
         child.anchorMax = Vector2.zero;

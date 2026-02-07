@@ -21,6 +21,7 @@
 using Oculus.Interaction.GrabAPI;
 using Oculus.Interaction.Input;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -36,7 +37,45 @@ namespace Oculus.Interaction
         [SerializeField, Optional]
         private Collider _collider = null;
 
+        [SerializeField]
+        [InspectorName("Offset")]
+        private Vector3 _localPositionOffset;
+
+        [SerializeField]
+        [InspectorName("Rotation")]
+        private Quaternion _rotationOffset = Quaternion.identity;
+
+
+        [SerializeField]
+        [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
+            "This allows for offset values to be set in Right hand coordinates for both Left and Right hands.")]
+        private bool _mirrorOffsetsForLeftHand = true;
+
+        #region Properties
+
+        public bool MirrorOffsetsForLeftHand
+        {
+            get => _mirrorOffsetsForLeftHand;
+            set => _mirrorOffsetsForLeftHand = value;
+        }
+
+        public Vector3 LocalPositionOffset
+        {
+            get => _localPositionOffset;
+            set => _localPositionOffset = value;
+        }
+
+        public Quaternion RotationOffset
+        {
+            get => _rotationOffset;
+            set => _rotationOffset = value;
+        }
+
+        #endregion
+
         protected bool _started = false;
+
+        private Pose _cachedPose = Pose.identity;
 
         protected virtual void Awake()
         {
@@ -75,10 +114,28 @@ namespace Oculus.Interaction
                 center = _collider.ClosestPoint(center);
             }
 
-            transform.position = center;
-            if (Hand.GetRootPose(out Pose pose))
+            Hand.GetRootPose(out Pose rootPose);
+
+            Pose pinchPose = new Pose(center, rootPose.rotation);
+            GetOffset(ref _cachedPose, Hand.Handedness, Hand.Scale);
+            _cachedPose.Postmultiply(pinchPose);
+            transform.SetPose(_cachedPose);
+        }
+
+        private void GetOffset(ref Pose pose, Handedness handedness, float scale)
+        {
+            if (_mirrorOffsetsForLeftHand && handedness == Handedness.Left)
             {
-                transform.rotation = pose.rotation;
+                pose.position = HandMirroring.Mirror(LocalPositionOffset * scale);
+                pose.rotation = HandMirroring.Mirror(RotationOffset);
+#if !ISDK_OPENXR_HAND
+                pose.rotation = pose.rotation * Constants.LeftRootRotation;
+#endif
+            }
+            else
+            {
+                pose.position = LocalPositionOffset * scale;
+                pose.rotation = RotationOffset;
             }
         }
 

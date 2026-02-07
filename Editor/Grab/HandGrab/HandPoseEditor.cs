@@ -26,6 +26,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.HandGrab.Editor
 {
+    [CanEditMultipleObjects]
     [CustomPropertyDrawer(typeof(HandPose))]
     public class HandPoseEditor : PropertyDrawer
     {
@@ -75,10 +76,16 @@ namespace Oculus.Interaction.HandGrab.Editor
                 for (int i = 0; i < Constants.NUM_FINGERS; i++)
                 {
                     SerializedProperty finger = fingersFreedom.GetArrayElementAtIndex(i);
+                    EditorGUI.showMixedValue = finger.hasMultipleDifferentValues;
+                    EditorGUI.BeginChangeCheck();
                     HandFinger fingerID = (HandFinger)i;
                     JointFreedom current = (JointFreedom)finger.intValue;
                     JointFreedom selected = (JointFreedom)EditorGUI.EnumPopup(position, $"{fingerID}", current);
-                    finger.intValue = (int)selected;
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        finger.intValue = (int)selected;
+                    }
+                    EditorGUI.showMixedValue = false;
                     position.y += EditorConstants.ROW_HEIGHT;
                 }
                 EditorGUI.indentLevel--;
@@ -96,11 +103,17 @@ namespace Oculus.Interaction.HandGrab.Editor
                 EditorGUI.indentLevel++;
                 for (int i = 0; i < FingersMetadata.HAND_JOINT_IDS.Length && i < jointRotations.arraySize; i++)
                 {
-                    SerializedProperty finger = jointRotations.GetArrayElementAtIndex(i);
+                    SerializedProperty joint = jointRotations.GetArrayElementAtIndex(i);
+                    EditorGUI.showMixedValue = joint.hasMultipleDifferentValues;
+                    EditorGUI.BeginChangeCheck();
                     HandJointId jointID = FingersMetadata.HAND_JOINT_IDS[i];
-                    Vector3 current = finger.quaternionValue.eulerAngles;
+                    Vector3 current = joint.quaternionValue.eulerAngles;
                     Vector3 rotation = EditorGUI.Vector3Field(position, $"{jointID}", current);
-                    finger.quaternionValue = Quaternion.Euler(rotation);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        joint.quaternionValue = Quaternion.Euler(rotation);
+                    }
+                    EditorGUI.showMixedValue = false;
                     position.y += EditorConstants.ROW_HEIGHT;
                 }
                 EditorGUI.indentLevel--;
@@ -112,11 +125,17 @@ namespace Oculus.Interaction.HandGrab.Editor
         private void DrawFlagProperty<TEnum>(SerializedProperty parentProperty, Rect position, string title, string fieldName, bool isFlags) where TEnum : Enum
         {
             SerializedProperty fieldProperty = parentProperty.FindPropertyRelative(fieldName);
+            EditorGUI.showMixedValue = fieldProperty.hasMultipleDifferentValues;
             TEnum value = (TEnum)Enum.ToObject(typeof(TEnum), fieldProperty.intValue);
+            EditorGUI.BeginChangeCheck();
             Enum selectedValue = isFlags ?
-                EditorGUI.EnumFlagsField(position, title, value)
-                : EditorGUI.EnumPopup(position, title, value);
-            fieldProperty.intValue = (int)Enum.ToObject(typeof(TEnum), selectedValue);
+            EditorGUI.EnumFlagsField(position, title, value)
+            : EditorGUI.EnumPopup(position, title, value);
+            if (EditorGUI.EndChangeCheck())
+            {
+                fieldProperty.intValue = (int)Enum.ToObject(typeof(TEnum), selectedValue);
+            }
+            EditorGUI.showMixedValue = false;
         }
     }
 }

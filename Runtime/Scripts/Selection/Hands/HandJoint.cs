@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -33,50 +34,47 @@ namespace Oculus.Interaction
         private HandJointId _handJointId;
 
         [SerializeField]
+        [InspectorName("Offset")]
         private Vector3 _localPositionOffset;
 
         [SerializeField]
+        [InspectorName("Rotation")]
         private Quaternion _rotationOffset = Quaternion.identity;
+
+
+        [SerializeField]
+        [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
+            "This allows for offset values to be set in Right hand coordinates for both Left and Right hands.")]
+        private bool _mirrorOffsetsForLeftHand = true;
+        public bool MirrorOffsetsForLeftHand
+        {
+            get => _mirrorOffsetsForLeftHand;
+            set => _mirrorOffsetsForLeftHand = value;
+        }
 
         #region Properties
 
         public HandJointId HandJointId
         {
-            get
-            {
-                return _handJointId;
-            }
-            set
-            {
-                _handJointId = value;
-            }
+            get => _handJointId;
+            set => _handJointId = value;
         }
 
         public Vector3 LocalPositionOffset
         {
-            get
-            {
-                return _localPositionOffset;
-            }
-            set
-            {
-                _localPositionOffset = value;
-            }
+            get => _localPositionOffset;
+            set => _localPositionOffset = value;
         }
 
         public Quaternion RotationOffset
         {
-            get
-            {
-                return _rotationOffset;
-            }
-            set
-            {
-                _rotationOffset = value;
-            }
+            get => _rotationOffset;
+            set => _rotationOffset = value;
         }
 
         #endregion
+
+        private Pose _cachedPose = Pose.identity;
 
         protected bool _started = false;
 
@@ -110,13 +108,30 @@ namespace Oculus.Interaction
 
         private void HandleHandUpdated()
         {
-            if (!Hand.GetJointPose(_handJointId, out Pose pose)) return;
+            if (Hand.GetJointPose(HandJointId, out Pose pose))
+            {
+                GetOffset(ref _cachedPose, Hand.Handedness, Hand.Scale);
+                //Note that RotationOffset should be on the right of pose.rotation in order to be applied locally.
+                //having it pre-multiplying can yield unwanted results.
+                _cachedPose.position = pose.position + RotationOffset * pose.rotation * _cachedPose.position;
+                _cachedPose.rotation = pose.rotation;
 
-            Vector3 positionOffsetWithHandedness =
-                (Hand.Handedness == Handedness.Left ? -1f : 1f) * _localPositionOffset;
-            pose.position += _rotationOffset * pose.rotation *
-                              positionOffsetWithHandedness * Hand.Scale;
-            transform.SetPose(pose);
+                transform.SetPose(_cachedPose);
+            }
+        }
+
+        private void GetOffset(ref Pose pose, Handedness handedness, float scale)
+        {
+            if (_mirrorOffsetsForLeftHand && handedness == Handedness.Left)
+            {
+                pose.position = HandMirroring.Mirror(LocalPositionOffset * scale);
+                pose.rotation = HandMirroring.Mirror(RotationOffset);
+            }
+            else
+            {
+                pose.position = LocalPositionOffset * scale;
+                pose.rotation = RotationOffset;
+            }
         }
 
         #region Inject

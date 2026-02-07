@@ -30,6 +30,7 @@ namespace Oculus.Interaction
         private UnityEngine.Object _hand;
         private IHand Hand { get; set; }
 
+
         private IFingerAPI _grabAPI = new FingerPalmGrabAPI();
 
         private int _lastDataVersion = -1;

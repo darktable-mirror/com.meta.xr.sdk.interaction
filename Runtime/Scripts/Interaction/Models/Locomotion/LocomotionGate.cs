@@ -225,7 +225,7 @@ namespace Oculus.Interaction.Locomotion
 
         private void HandleHandupdated()
         {
-            if (!Hand.GetRootPose(out Pose handPose))
+            if (!Hand.GetJointPose(HandJointId.HandWristRoot, out Pose wristPose))
             {
                 Disable();
                 return;
@@ -233,11 +233,11 @@ namespace Oculus.Interaction.Locomotion
 
             bool isRightHand = Hand.Handedness == Handedness.Right;
             Vector3 trackingUp = Vector3.up;
-            Vector3 shoulderToHand = (handPose.position - _shoulder.position).normalized;
+            Vector3 shoulderToHand = (wristPose.position - _shoulder.position).normalized;
             Vector3 trackingRight = Vector3.Cross(trackingUp, shoulderToHand).normalized;
             trackingRight = isRightHand ? trackingRight : -trackingRight;
-            Vector3 wristDir = isRightHand ? -handPose.forward : handPose.forward;
-            Vector3 fingersDir = isRightHand ? -handPose.right : handPose.right;
+            Vector3 wristDir = wristPose.rotation * (isRightHand ? Constants.RightThumbSide : Constants.LeftThumbSide);
+            Vector3 fingersDir = wristPose.rotation * (isRightHand ? Constants.RightDistal : Constants.LeftDistal);
             bool fingersAway = (Vector3.Dot(fingersDir, Vector3.ProjectOnPlane(shoulderToHand, trackingUp).normalized) * 0.5 + 0.5f) > _enterPoseThreshold;
 
             wristDir = Vector3.ProjectOnPlane(wristDir, shoulderToHand).normalized;

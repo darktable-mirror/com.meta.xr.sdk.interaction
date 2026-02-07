@@ -47,26 +47,26 @@ namespace Oculus.Interaction.Input.UnityXR
         private static readonly Pose XRLeftHandLegacyBindPoseThumb0 = new()
         {
 
-            rotation = new Quaternion(0.375387f, 0.424584f, -0.007779f, 0.823864f),
+            rotation = new Quaternion(0.375387f, 0.424584f, -0.007779f, 0.823864f).normalized,
             position = new Vector3(0.020069f, 0.011554f, -0.010497f),
         };
 
         private static readonly Pose  XRRightHandLegacyBindPoseThumb0 = new()
         {
 
-            rotation = new Quaternion(0.375387f, 0.424584f, -0.007779f, 0.823864f),
+            rotation = new Quaternion(0.375387f, 0.424584f, -0.007779f, 0.823864f).normalized,
             position = new Vector3(-0.020069f, -0.011554f, 0.010497f),
         };
 
         private static readonly Pose  XRLeftHandLegacyBindPoseThumb1 = new()
         {
-            rotation = new Quaternion(0.260230f, 0.024331f, 0.125678f, 0.957023f),
+            rotation = new Quaternion(0.260230f, 0.024331f, 0.125678f, 0.957023f).normalized,
             position = new Vector3(0.024853f, 0f, -0f),
         };
 
         private static readonly Pose  XRRightHandLegacyBindPoseThumb1 = new()
         {
-            rotation = new Quaternion(0.260230f, 0.024331f, 0.125678f, 0.957023f),
+            rotation = new Quaternion(0.260230f, 0.024331f, 0.125678f, 0.957023f).normalized,
             position = new Vector3(-0.024853f, 0f, 0f),
         };
 

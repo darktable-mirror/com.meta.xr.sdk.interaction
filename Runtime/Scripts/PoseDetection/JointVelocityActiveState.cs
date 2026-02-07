@@ -120,11 +120,29 @@ namespace Oculus.Interaction.PoseDetection
             [SerializeField]
             private HeadAxis _headAxis = HeadAxis.HeadForward;
 
-            public RelativeTo RelativeTo => _relativeTo;
-            public WorldAxis WorldAxis => _worldAxis;
-            public HandAxis HandAxis => _handAxis;
-            public HeadAxis HeadAxis => _headAxis;
+            public RelativeTo RelativeTo
+            {
+                get => _relativeTo;
+                set => _relativeTo = value;
+            }
 
+            public WorldAxis WorldAxis
+            {
+                get => _worldAxis;
+                set => _worldAxis = value;
+            }
+
+            public HandAxis HandAxis
+            {
+                get => _handAxis;
+                set => _handAxis = value;
+            }
+
+            public HeadAxis HeadAxis
+            {
+                get => _headAxis;
+                set => _headAxis = value;
+            }
         }
 
         [Tooltip("Provided joints will be sourced from this IHand.")]
@@ -145,6 +163,7 @@ namespace Oculus.Interaction.PoseDetection
 
         [SerializeField]
         private JointVelocityFeatureConfigList _featureConfigs;
+
 
         [Tooltip("The velocity used for the detection " +
             "threshold, in units per second.")]
@@ -252,12 +271,12 @@ namespace Oculus.Interaction.PoseDetection
 
             foreach (var config in FeatureConfigs)
             {
-                if (Hand.GetRootPose(out Pose rootPose) &&
-                    Hand.GetJointPose(config.Feature, out Pose curPose) &&
+                if (Hand.GetJointPose(HandJointId.HandWristRoot, out Pose wristPose) &&
+                    Hand.GetJointPose(config.Feature, out _) &&
                     JointDeltaProvider.GetPositionDelta(
                         config.Feature, out Vector3 worldDeltaDirection))
                 {
-                    Vector3 worldTargetDirection = GetWorldTargetVector(rootPose, config);
+                    Vector3 worldTargetDirection = GetWorldTargetVector(wristPose, config);
                     float velocityAlongTargetAxis =
                         Vector3.Dot(worldDeltaDirection, worldTargetDirection);
 
@@ -323,13 +342,13 @@ namespace Oculus.Interaction.PoseDetection
             _lastUpdateTime = _timeProvider();
         }
 
-        private Vector3 GetWorldTargetVector(Pose rootPose, JointVelocityFeatureConfig config)
+        private Vector3 GetWorldTargetVector(Pose wristPose, JointVelocityFeatureConfig config)
         {
             switch (config.RelativeTo)
             {
                 default:
                 case RelativeTo.Hand:
-                    return GetHandAxisVector(config.HandAxis, rootPose);
+                    return GetHandAxisVector(config.HandAxis, wristPose);
                 case RelativeTo.World:
                     return GetWorldAxisVector(config.WorldAxis);
                 case RelativeTo.Head:
@@ -357,40 +376,31 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
-        private Vector3 GetHandAxisVector(HandAxis axis, Pose rootPose)
+        private Vector3 GetHandAxisVector(HandAxis axis, Pose wristPose)
         {
-            Vector3 result;
             switch (axis)
             {
                 case HandAxis.PalmForward:
-                    result = Hand.Handedness == Handedness.Left ?
-                        rootPose.up : -1.0f * rootPose.up;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftPalmar : Constants.RightPalmar);
                 case HandAxis.PalmBackward:
-                    result = Hand.Handedness == Handedness.Left ?
-                        -1.0f * rootPose.up : rootPose.up;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftDorsal : Constants.RightDorsal);
                 case HandAxis.WristUp:
-                    result = Hand.Handedness == Handedness.Left ?
-                        rootPose.forward : -1.0f * rootPose.forward;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftThumbSide : Constants.RightThumbSide);
                 case HandAxis.WristDown:
-                    result = Hand.Handedness == Handedness.Left ?
-                        -1.0f * rootPose.forward : rootPose.forward;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftPinkySide : Constants.RightPinkySide);
                 case HandAxis.WristForward:
-                    result = Hand.Handedness == Handedness.Left ?
-                        rootPose.right : -1.0f * rootPose.right;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftDistal : Constants.RightDistal);
                 case HandAxis.WristBackward:
-                    result = Hand.Handedness == Handedness.Left ?
-                        -1.0f * rootPose.right : rootPose.right;
-                    break;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftProximal : Constants.RightProximal);
                 default:
-                    result = Vector3.zero;
-                    break;
+                    return Vector3.zero;
             }
-            return result;
         }
 
         private Vector3 GetHeadAxisVector(HeadAxis axis)

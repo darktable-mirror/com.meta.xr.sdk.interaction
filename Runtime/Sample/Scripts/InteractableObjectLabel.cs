@@ -265,6 +265,12 @@ public class InteractableObjectLabel : MonoBehaviour
 
     void UpdateLabelTransform()
     {
+        _startScale = new Vector3()
+        {
+            x = canvasTransform.sizeDelta.x * canvasTransform.localScale.x,
+            y = canvasTransform.sizeDelta.y * canvasTransform.localScale.y,
+            z = 1.0f
+        };
         var labelPosition = FindHighestLabelPosition();
         currentLabelPosition = Vector3.Lerp(currentLabelPosition, labelPosition, positionAnimationSpeed);
 

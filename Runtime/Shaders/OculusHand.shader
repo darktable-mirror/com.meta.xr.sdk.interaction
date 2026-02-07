@@ -137,7 +137,7 @@ Shader "Interaction/OculusHand"
             }
 
             Cull Front
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha OneMinusSrcAlpha, OneMinusDstAlpha One
             Stencil
             {
                 Ref 1
@@ -162,7 +162,7 @@ Shader "Interaction/OculusHand"
             }
 
             Cull Front
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha OneMinusSrcAlpha, OneMinusDstAlpha One
             Stencil
             {
                 Ref 1
@@ -185,7 +185,7 @@ Shader "Interaction/OculusHand"
                 "RenderType" = "Transparent" "Queue" = "Transparent" "IgnoreProjector" = "True"
             }
 
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha OneMinusSrcAlpha, OneMinusDstAlpha One
             ZWrite Off
             ZTest LEqual
             Stencil 
@@ -211,7 +211,7 @@ Shader "Interaction/OculusHand"
                 "LightMode" = "UniversalForward" "RenderType" = "Transparent" "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderPipeline" = "UniversalPipeline"
             }
 
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha OneMinusSrcAlpha, OneMinusDstAlpha One
             ZWrite Off
             ZTest LEqual
             Stencil

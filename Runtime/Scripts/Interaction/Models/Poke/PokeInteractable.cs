@@ -45,7 +45,7 @@ namespace Oculus.Interaction
         [FormerlySerializedAs("_maxDistance")]
         [Tooltip("The distance required for a poke interactor to enter hovering, " +
                  "measured along the normal to the surface (in meters)")]
-        private float _enterHoverNormal = 0.03f;
+        private float _enterHoverNormal = 0.15f;
 
         /// <summary>
         /// The distance from the surface perpendicular to the normal that hover begins.
@@ -61,7 +61,7 @@ namespace Oculus.Interaction
         [SerializeField]
         [Tooltip("The distance required for a poke interactor to exit hovering, " +
                  "measured along the normal to the surface (in meters)")]
-        private float _exitHoverNormal = 0.05f;
+        private float _exitHoverNormal = 0.2f;
 
         /// <summary>
         /// The distance from the surface perpendicular to the normal that hover ends.

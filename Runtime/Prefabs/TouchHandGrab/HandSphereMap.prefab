@@ -919,6 +919,33 @@ MonoBehaviour:
   _updateAfter: {fileID: 0}
   _handedness: 1
   _hidePrefabOnStart: 1
+  _jointTransformsOpenXR:
+  - {fileID: 58075687560883367}
+  - {fileID: 58075688092509095}
+  - {fileID: 58075687456612949}
+  - {fileID: 58075686965066626}
+  - {fileID: 58075686888966180}
+  - {fileID: 58075687388402396}
+  - {fileID: 0}
+  - {fileID: 58075686936812128}
+  - {fileID: 58075688771434266}
+  - {fileID: 58075688554036465}
+  - {fileID: 58075687344526028}
+  - {fileID: 0}
+  - {fileID: 58075687541854788}
+  - {fileID: 58075688041203403}
+  - {fileID: 58075688530903510}
+  - {fileID: 58075687095505763}
+  - {fileID: 0}
+  - {fileID: 58075687974744612}
+  - {fileID: 58075688522788471}
+  - {fileID: 58075688309756690}
+  - {fileID: 58075687844040447}
+  - {fileID: 58075687268128824}
+  - {fileID: 58075687870614854}
+  - {fileID: 58075687632159838}
+  - {fileID: 58075688273963944}
+  - {fileID: 58075687638438533}
   _jointTransforms:
   - {fileID: 58075688092509095}
   - {fileID: 58075687994163290}

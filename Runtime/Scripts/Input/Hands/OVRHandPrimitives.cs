@@ -47,6 +47,8 @@ namespace Oculus.Interaction.Input
         public static readonly Vector3 LeftThumbSide = Vector3.back;
         public static readonly Vector3 LeftPalmar = Vector3.up;
         public static readonly Vector3 LeftDorsal = Vector3.down;
+
+        public static readonly Quaternion LeftRootRotation = Quaternion.Euler(180f, 0f, 0f);
     }
 
     public enum Handedness

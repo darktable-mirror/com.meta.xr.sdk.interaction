@@ -21,6 +21,7 @@
 using Oculus.Interaction.Input;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -42,54 +43,51 @@ namespace Oculus.Interaction
         }
 
         [SerializeField]
+        [InspectorName("Weighted Joints")]
         private List<WeightedJoint> _weightedJoints;
 
         [SerializeField]
+        [InspectorName("Offset")]
         private Vector3 _localPositionOffset;
 
         [SerializeField]
+        [InspectorName("Rotation")]
         private Quaternion _rotationOffset = Quaternion.identity;
+
+
+        [SerializeField]
+        [Tooltip("When the attached hand's handedness is set to Left, this property will mirror the offsets. " +
+            "This allows for offset values to be set in Right hand coordinates for both Left and Right hands.")]
+        private bool _mirrorOffsetsForLeftHand = true;
+        public bool MirrorOffsetsForLeftHand
+        {
+            get => _mirrorOffsetsForLeftHand;
+            set => _mirrorOffsetsForLeftHand = value;
+        }
 
         #region Properties
 
         public List<WeightedJoint> WeightedJoints
         {
-            get
-            {
-                return _weightedJoints;
-            }
-            set
-            {
-                _weightedJoints = value;
-            }
+            get => _weightedJoints;
+            set => _weightedJoints = value;
         }
 
         public Vector3 LocalPositionOffset
         {
-            get
-            {
-                return _localPositionOffset;
-            }
-            set
-            {
-                _localPositionOffset = value;
-            }
+            get => _localPositionOffset;
+            set => _localPositionOffset = value;
         }
 
         public Quaternion RotationOffset
         {
-            get
-            {
-                return _rotationOffset;
-            }
-            set
-            {
-                _rotationOffset = value;
-            }
+            get => _rotationOffset;
+            set => _rotationOffset = value;
         }
 
         #endregion
 
+        private Pose _cachedPose = Pose.identity;
         protected bool _started = false;
 
         protected virtual void Awake()
@@ -124,7 +122,7 @@ namespace Oculus.Interaction
         {
             Pose pose = Pose.identity;
             float accumulatedWeight = 0f;
-            foreach (WeightedJoint weightedJoint in _weightedJoints)
+            foreach (WeightedJoint weightedJoint in WeightedJoints)
             {
                 if (!Hand.GetJointPose(weightedJoint.handJointId, out Pose jointPose))
                 {
@@ -136,11 +134,28 @@ namespace Oculus.Interaction
                 pose.Lerp(jointPose, t);
             }
 
-            Vector3 positionOffsetWithHandedness =
-                (Hand.Handedness == Handedness.Left ? -1f : 1f) * _localPositionOffset;
+            Vector3 positionOffsetWithHandedness = Hand.Handedness == Handedness.Left && MirrorOffsetsForLeftHand ?
+                HandMirroring.Mirror(_localPositionOffset) : _localPositionOffset;
+            //Note that RotationOffset should be on the right of pose.rotation in order to be applied locally.
+            //having it pre-multiplying can yield unwanted results.
             pose.position += _rotationOffset * pose.rotation *
                               positionOffsetWithHandedness * Hand.Scale;
+
             transform.SetPose(pose);
+        }
+
+        private void GetOffset(ref Pose pose, Handedness handedness, float scale)
+        {
+            if (_mirrorOffsetsForLeftHand && handedness == Handedness.Left)
+            {
+                pose.position = HandMirroring.Mirror(LocalPositionOffset * scale);
+                pose.rotation = HandMirroring.Mirror(RotationOffset);
+            }
+            else
+            {
+                pose.position = LocalPositionOffset * scale;
+                pose.rotation = RotationOffset;
+            }
         }
 
         #region Inject

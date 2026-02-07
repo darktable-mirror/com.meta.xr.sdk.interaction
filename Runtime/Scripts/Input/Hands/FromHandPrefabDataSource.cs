@@ -38,6 +38,7 @@ namespace Oculus.Interaction.Input
         [HideInInspector]
         [SerializeField]
         private List<Transform> _jointTransforms = new List<Transform>();
+
         public List<Transform> JointTransforms => _jointTransforms;
 
         [SerializeField, Interface(typeof(IHandSkeletonProvider))]
@@ -91,7 +92,8 @@ namespace Oculus.Interaction.Input
 
             for (var i = 0; i < Constants.NUM_HAND_JOINTS; ++i)
             {
-                Transform joint = _jointTransforms[i];
+                Transform joint = JointTransforms[i];
+
                 if (joint == null)
                 {
                     _handDataAsset.Joints[i] = Quaternion.identity;
@@ -105,7 +107,7 @@ namespace Oculus.Interaction.Input
 
         public Transform GetTransformFor(HandJointId jointId)
         {
-            return _jointTransforms[(int)jointId];
+            return JointTransforms[(int)jointId];
         }
     }
 }

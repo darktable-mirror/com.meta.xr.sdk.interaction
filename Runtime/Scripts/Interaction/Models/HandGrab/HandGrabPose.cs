@@ -56,13 +56,18 @@ namespace Oculus.Interaction.HandGrab
 
         [SerializeField, Optional]
         [HideInInspector]
+        [InspectorName("Hand Pose")]
         private HandPose _handPose = new HandPose();
+
 
         [SerializeField]
         [HideInInspector]
         private HandGhostProvider _ghostProvider;
 
-        public HandPose HandPose => _usesHandPose ? _handPose : null;
+        public HandPose HandPose
+        {
+            get => _usesHandPose ? _handPose : null;
+        }
 
         /// <summary>
         /// Scale of the HandGrabPoint relative to its reference transform.

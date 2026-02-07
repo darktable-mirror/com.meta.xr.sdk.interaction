@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AnimatorOverrideLayerWeigth : MonoBehaviour
@@ -30,10 +30,36 @@ public class AnimatorOverrideLayerWeigth : MonoBehaviour
     public float transitionDuration;
     public AnimationCurve transitionCurve;
 
+    private bool _layerIsActive = false;
+
+    private bool _started;
+
+    protected virtual void Start()
+    {
+        this.BeginStart(ref _started);
+        this.AssertField(animator, nameof(animator));
+        this.AssertField(transitionCurve, nameof(transitionCurve));
+        this.EndStart(ref _started);
+    }
+
+    protected virtual void OnEnable()
+    {
+        if (_started)
+        {
+            if (_layerIsActive)
+            {
+                //After disabling the component. The state of the layers of the Animator is reset
+                //ensure we restore it accordingly.
+                int layerIndex = animator.GetLayerIndex(overrideLayer);
+                animator.SetLayerWeight(layerIndex, 1.0f);
+            }
+        }
+    }
+
     public void SetOverrideLayerActive(bool active)
     {
-        var layerIndex = animator.GetLayerIndex(overrideLayer);
-
+        _layerIsActive = active;
+        int layerIndex = animator.GetLayerIndex(overrideLayer);
         if (transitionDuration > 0.0)
         {
             StopAllCoroutines();
@@ -45,7 +71,7 @@ public class AnimatorOverrideLayerWeigth : MonoBehaviour
         }
     }
 
-    IEnumerator LayerTransition(int layerIndex, float targetWeight)
+    private IEnumerator LayerTransition(int layerIndex, float targetWeight)
     {
         float startTime = Time.time;
         float startWeight = animator.GetLayerWeight(layerIndex);

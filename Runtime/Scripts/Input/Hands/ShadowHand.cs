@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Oculus.Interaction.Input
@@ -150,7 +151,11 @@ namespace Oculus.Interaction.Input
         public static void FromHandFingers(this ShadowHand shadow, IHand hand, bool flipHandedness = false)
         {
             hand.GetJointPosesLocal(out ReadOnlyHandJointPoses localJointPoses);
+            shadow.FromJoints(localJointPoses, flipHandedness);
+        }
 
+        public static void FromJoints(this ShadowHand shadow, IReadOnlyList<Pose> localJointPoses, bool flipHandedness)
+        {
             if (localJointPoses.Count != (int)HandJointId.HandEnd)
             {
                 return;

@@ -618,7 +618,7 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(HandWristOffset), false, isFallback = true), CanEditMultipleObjects]
+    [CustomEditor(typeof(HandRootOffset), false, isFallback = true), CanEditMultipleObjects]
     public class HandWristOffsetEditorFallback : SimplifiedEditor { }
 }
 

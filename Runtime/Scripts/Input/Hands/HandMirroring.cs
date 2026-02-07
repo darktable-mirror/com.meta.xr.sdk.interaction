@@ -143,6 +143,22 @@ namespace Oculus.Interaction.Input
         }
 
         /// <summary>
+        /// Transforms a pose from one HandSpace to another.
+        /// </summary>
+        /// <param name="pose">The pose to transform</param>
+        /// <param name="fromHand">The original HandSpace of the pose</param>
+        /// <param name="toHand">The target HandSpace of the pose</param>
+        /// <returns>The transformed pose</returns>
+        public static Pose TransformPose(in Pose pose,
+            in HandSpace fromHand, in HandSpace toHand)
+        {
+            Pose transformedPose = new Pose(
+                TransformPosition(pose.position, fromHand, toHand),
+                TransformRotation(pose.rotation, fromHand, toHand));
+            return transformedPose;
+        }
+
+        /// <summary>
         /// Transforms a position from one HandSpace to another.
         /// </summary>
         /// <param name="position">The position to transform</param>

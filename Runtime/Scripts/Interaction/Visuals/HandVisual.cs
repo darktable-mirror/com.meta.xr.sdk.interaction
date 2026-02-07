@@ -43,6 +43,9 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _updateRootScale = true;
 
+        [SerializeField]
+        private bool _updateVisibility = true;
+
         /// <summary>
         /// Determines the appearance of the hand.
         /// </summary>
@@ -148,6 +151,11 @@ namespace Oculus.Interaction
 
         private void UpdateVisibility()
         {
+            if (!_updateVisibility)
+            {
+                return;
+            }
+
             if (!Hand.IsTrackedDataValid)
             {
                 if (IsVisible || ForceOffVisibility)

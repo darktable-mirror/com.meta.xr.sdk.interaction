@@ -104,9 +104,23 @@ namespace Oculus.Interaction.PoseDetection
             [SerializeField]
             private HandAxis _handAxis = HandAxis.RadialDeviation;
 
-            public RelativeTo RelativeTo => _relativeTo;
-            public WorldAxis WorldAxis => _worldAxis;
-            public HandAxis HandAxis => _handAxis;
+            public RelativeTo RelativeTo
+            {
+                get => _relativeTo;
+                set => _relativeTo = value;
+            }
+
+            public WorldAxis WorldAxis
+            {
+                get => _worldAxis;
+                set => _worldAxis = value;
+            }
+
+            public HandAxis HandAxis
+            {
+                get => _handAxis;
+                set => _handAxis = value;
+            }
         }
 
         [Tooltip("Provided joints will be sourced from this IHand.")]
@@ -121,6 +135,7 @@ namespace Oculus.Interaction.PoseDetection
 
         [SerializeField]
         private JointRotationFeatureConfigList _featureConfigs;
+
 
         [Tooltip("The angular velocity used for the detection " +
             "threshold, in degrees per second.")]
@@ -220,35 +235,19 @@ namespace Oculus.Interaction.PoseDetection
 
             foreach (var config in FeatureConfigs)
             {
-                if (Hand.GetRootPose(out Pose rootPose) &&
-                    Hand.GetJointPose(config.Feature, out Pose curPose) &&
+                if (Hand.GetJointPose(HandJointId.HandWristRoot, out Pose wristPose) &&
+                    Hand.GetJointPose(config.Feature, out _) &&
                     JointDeltaProvider.GetRotationDelta(
                         config.Feature, out Quaternion worldDeltaRotation))
                 {
-                    Vector3 rotDeltaEuler = worldDeltaRotation.eulerAngles;
-
-                    for (int i = 0; i < 3; ++i)
-                    {
-                        while (rotDeltaEuler[i] > 180)
-                        {
-                            rotDeltaEuler[i] -= 360;
-                        }
-                        while (rotDeltaEuler[i] < -180)
-                        {
-                            rotDeltaEuler[i] += 360;
-                        }
-                    }
-
-                    Vector3 worldTargetRotation =
-                        GetWorldTargetRotation(rootPose, config);
-                    float rotationOnTargetAxis =
-                        Vector3.Dot(rotDeltaEuler, worldTargetRotation);
+                    Vector3 worldTargetAxis = GetWorldTargetAxis(wristPose, config);
+                    worldDeltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+                    float axisDifference = Mathf.Abs(Vector3.Dot(axis, worldTargetAxis));
+                    float rotationOnTargetAxis = angle * axisDifference;
 
                     _featureStates[config] = new JointRotationFeatureState(
-                                             worldTargetRotation,
-                                             threshold > 0 ?
-                                             Mathf.Clamp01(rotationOnTargetAxis / threshold) :
-                                             1);
+                                             worldTargetAxis, threshold <= 0 ? 1f :
+                                                Mathf.Clamp01(rotationOnTargetAxis / threshold));
 
                     bool rotationExceedsThreshold = rotationOnTargetAxis > threshold;
                     result &= rotationExceedsThreshold;
@@ -306,13 +305,13 @@ namespace Oculus.Interaction.PoseDetection
             _lastUpdateTime = _timeProvider();
         }
 
-        private Vector3 GetWorldTargetRotation(Pose rootPose, JointRotationFeatureConfig config)
+        private Vector3 GetWorldTargetAxis(Pose wristPose, JointRotationFeatureConfig config)
         {
             switch (config.RelativeTo)
             {
                 default:
                 case RelativeTo.Hand:
-                    return GetHandAxisVector(config.HandAxis, rootPose);
+                    return GetHandAxisVector(config.HandAxis, wristPose);
                 case RelativeTo.World:
                     return GetWorldAxisVector(config.WorldAxis);
             }
@@ -338,22 +337,28 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
-        private Vector3 GetHandAxisVector(HandAxis axis, Pose rootPose)
+        private Vector3 GetHandAxisVector(HandAxis axis, Pose wristPose)
         {
             switch (axis)
             {
                 case HandAxis.Pronation:
-                    return rootPose.rotation * Vector3.left;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftProximal : Constants.RightProximal);
                 case HandAxis.Supination:
-                    return rootPose.rotation * Vector3.right;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftDistal : Constants.RightDistal);
                 case HandAxis.RadialDeviation:
-                    return rootPose.rotation * Vector3.down;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftPalmar : Constants.RightPalmar);
                 case HandAxis.UlnarDeviation:
-                    return rootPose.rotation * Vector3.up;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                         Constants.LeftDorsal : Constants.RightDorsal);
                 case HandAxis.Extension:
-                    return rootPose.rotation * Vector3.back;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftThumbSide : Constants.RightThumbSide);
                 case HandAxis.Flexion:
-                    return rootPose.rotation * Vector3.forward;
+                    return wristPose.rotation * (Hand.Handedness == Handedness.Left ?
+                        Constants.LeftPinkySide : Constants.RightPinkySide);
                 default:
                     return Vector3.zero;
             }

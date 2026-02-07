@@ -27,8 +27,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.HandGrab.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(HandGrabPose))]
-    public class HandGrabPoseEditor : UnityEditor.Editor
+    public class HandGrabPoseEditor : SimplifiedEditor
     {
         private HandGrabPose _handGrabPose;
         private HandGhost _handGhost;
@@ -43,22 +44,28 @@ namespace Oculus.Interaction.HandGrab.Editor
         private const float GIZMO_SCALE = 0.005f;
         private static readonly string[] EDIT_MODES = new string[] { "Edit fingers", "Follow Surface" };
 
+
         private void Awake()
         {
             _handGrabPose = target as HandGrabPose;
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            _handPoseProperty = serializedObject.FindProperty("_handPose");
+            base.OnEnable();
+
+            GetOVRProperties(serializedObject, out _handPoseProperty);
+            _editorDrawer.Hide("_handPose");
             _relativeToProperty = serializedObject.FindProperty("_relativeTo");
             _ghostProviderProperty = serializedObject.FindProperty("_ghostProvider");
 
             AssignMissingGhostProvider();
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
+
             DestroyGhost();
         }
 
@@ -85,6 +92,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             }
 
             serializedObject.ApplyModifiedProperties();
+
         }
 
         private void DrawGhostMenu(HandPose handPose)
@@ -134,7 +142,7 @@ namespace Oculus.Interaction.HandGrab.Editor
         }
 
 
-        #region ghost
+        #region Ghost
 
         private void AssignMissingGhostProvider()
         {
@@ -224,7 +232,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             {
                 bool changed = false;
                 HandJointId joint = FingersMetadata.HAND_JOINT_IDS[i];
-                HandFinger finger = FingersMetadata.JOINT_TO_FINGER[(int)joint];
+                HandFinger finger = HandJointUtils.JointToFingerList[(int)joint];
 
                 if (_handGrabPose.HandPose.FingersFreedom[(int)finger] == JointFreedom.Free)
                 {
@@ -285,5 +293,20 @@ namespace Oculus.Interaction.HandGrab.Editor
         }
         #endregion
 
+        #region Translation
+
+        private static void GetOVRProperties(SerializedObject target,
+           out SerializedProperty handPoseProp)
+        {
+            handPoseProp = target.FindProperty("_handPose");
+        }
+
+        private static void GetOpenXRProperties(SerializedObject target,
+           out SerializedProperty handPoseProp)
+        {
+            handPoseProp = target.FindProperty("_targetHandPose");
+        }
+
+        #endregion
     }
 }

@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8091738752604836971}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: BasicPokeInfoFrames
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26,6 +26,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.771896, z: 0.4066}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 621532604372232466}
   - {fileID: 621532603500660051}
@@ -71,6 +72,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1354736171447201227, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 1920279308707977431, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -105,6 +111,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: UnityCanvasInfoFrame
+      objectReference: {fileID: 0}
+    - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -166,10 +177,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4637090283671048175, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_text
-      value: Unity Canvas & Scrolling
+      value: Unity UI Canvas Scrolling
+      objectReference: {fileID: 0}
+    - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 284
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -179,17 +205,17 @@ PrefabInstance:
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.1537
+      value: -0.188
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.2499
+      value: -0.2394
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0155
+      value: -0.02600003
       objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031748, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -211,6 +237,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.0765
       objectReference: {fileID: 0}
+    - target: {fileID: 5036699396446031749, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031751, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: _width
@@ -220,6 +251,11 @@ PrefabInstance:
         type: 3}
       propertyPath: _height
       value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 5243603381296277201, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8560839017174208340, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -271,6 +307,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1354736171447201227, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 1920279308707977431, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -305,6 +346,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TouchpadInfoFrame
+      objectReference: {fileID: 0}
+    - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -366,10 +412,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4637090283671048175, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_text
-      value: Pressy Touchpad
+      value: Touchpad
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -379,17 +435,17 @@ PrefabInstance:
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.1537
+      value: -0.188
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.2499
+      value: -0.26340002
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0155
+      value: -0.02600003
       objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031748, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -411,6 +467,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.0765
       objectReference: {fileID: 0}
+    - target: {fileID: 5036699396446031749, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031751, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: _width
@@ -420,6 +481,11 @@ PrefabInstance:
         type: 3}
       propertyPath: _height
       value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 5243603381296277201, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8560839017174208340, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -471,6 +537,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1354736171447201227, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 1920279308707977431, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -505,6 +576,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: BigRedButtonInfoFrame
+      objectReference: {fileID: 0}
+    - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -566,10 +642,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4637090283671048175, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_text
-      value: Pressy Touchpad
+      value: Large Button
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -579,17 +665,17 @@ PrefabInstance:
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.1537
+      value: -0.188
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.2499
+      value: -0.26340002
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0155
+      value: -0.02600003
       objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031748, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -611,6 +697,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.0765
       objectReference: {fileID: 0}
+    - target: {fileID: 5036699396446031749, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031751, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: _width
@@ -620,6 +711,11 @@ PrefabInstance:
         type: 3}
       propertyPath: _height
       value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 5243603381296277201, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8560839017174208340, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -671,6 +767,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1354736171447201227, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 1920279308707977431, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -705,6 +806,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: HoverButtonInfoFrame
+      objectReference: {fileID: 0}
+    - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2044460589861100289, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -766,10 +872,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3235666578127616469, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4637090283671048175, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_text
-      value: Hover Above vs Touch
+      value: Hover And Touch Variants
+      objectReference: {fileID: 0}
+    - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -779,17 +900,17 @@ PrefabInstance:
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.1537
+      value: -0.188
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.3292
+      value: -0.3136
       objectReference: {fileID: 0}
     - target: {fileID: 4940169939016864637, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.015500009
+      value: -0.026
       objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031748, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
@@ -811,6 +932,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.0765
       objectReference: {fileID: 0}
+    - target: {fileID: 5036699396446031749, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5036699396446031751, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}
       propertyPath: _width
@@ -820,6 +946,11 @@ PrefabInstance:
         type: 3}
       propertyPath: _height
       value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 5243603381296277201, guid: a8764922f3a9e1740b79346543e14f83,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8560839017174208340, guid: a8764922f3a9e1740b79346543e14f83,
         type: 3}

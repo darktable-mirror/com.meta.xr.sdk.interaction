@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
@@ -38,6 +39,12 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField]
         private HandJointId _jointIdA;
 
+        public HandJointId JointIdA
+        {
+            get => _jointIdA;
+            set => _jointIdA = value;
+        }
+
         [Tooltip("The IHand that JointIdB will be sourced from.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _handB;
@@ -46,6 +53,13 @@ namespace Oculus.Interaction.PoseDetection
         [Tooltip("The joint of HandB to use for distance check.")]
         [SerializeField]
         private HandJointId _jointIdB;
+
+
+        public HandJointId JointIdB
+        {
+            get => _jointIdB;
+            set => _jointIdB = value;
+        }
 
         [Tooltip("The ActiveState will become Active when joints are " +
             "within this distance from each other.")]
@@ -122,8 +136,8 @@ namespace Oculus.Interaction.PoseDetection
 
         private bool JointDistanceWithinThreshold()
         {
-            if (HandA.GetJointPose(_jointIdA, out Pose poseA) &&
-                HandB.GetJointPose(_jointIdB, out Pose poseB))
+            if (HandA.GetJointPose(JointIdA, out Pose poseA) &&
+                HandB.GetJointPose(JointIdB, out Pose poseB))
             {
                 float threshold = _internalState ?
                                   _distance + _thresholdWidth * 0.5f :
@@ -147,12 +161,10 @@ namespace Oculus.Interaction.PoseDetection
 #endif
 
         #region Inject
-        public void InjectAllJointDistanceActiveState(IHand handA, HandJointId jointIdA, IHand handB, HandJointId jointIdB)
+        public void InjectAllJointDistanceActiveState(IHand handA, IHand handB)
         {
             InjectHandA(handA);
-            InjectJointIdA(jointIdA);
             InjectHandB(handB);
-            InjectJointIdB(jointIdB);
         }
 
         public void InjectHandA(IHand handA)
@@ -161,9 +173,10 @@ namespace Oculus.Interaction.PoseDetection
             HandA = handA;
         }
 
+        [Obsolete("Use the " + nameof(JointIdA) + " setter instead")]
         public void InjectJointIdA(HandJointId jointIdA)
         {
-            _jointIdA = jointIdA;
+            JointIdA = jointIdA;
         }
 
         public void InjectHandB(IHand handB)
@@ -172,9 +185,10 @@ namespace Oculus.Interaction.PoseDetection
             HandB = handB;
         }
 
+        [Obsolete("Use the " + nameof(JointIdB) + " setter instead")]
         public void InjectJointIdB(HandJointId jointIdB)
         {
-            _jointIdB = jointIdB;
+            JointIdB = jointIdB;
         }
 
         public void InjectOptionalDistance(float val)

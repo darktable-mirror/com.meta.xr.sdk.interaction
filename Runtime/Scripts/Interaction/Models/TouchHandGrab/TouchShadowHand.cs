@@ -204,10 +204,8 @@ namespace Oculus.Interaction
 
                         break;
                     }
-
                 }
             }
-
             return hit;
         }
 
@@ -421,7 +419,7 @@ namespace Oculus.Interaction
                     HandSphere sphereData = _spheres[_sphereHit[i]];
                     HandJointId joint = sphereData.Joint;
 
-                    int fingerIndex = (int)FingersMetadata.JOINT_TO_FINGER[(int)joint];
+                    int fingerIndex = (int)HandJointUtils.JointToFingerList[(int)joint];
                     if (fingerIndex >= 0)
                     {
                         result.grabbingFingers[fingerIndex] = true;

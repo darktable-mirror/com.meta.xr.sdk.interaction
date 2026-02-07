@@ -133,8 +133,6 @@ namespace Oculus.Interaction.Input.UnityXR
         private InputActionMap MetaAimHandBindings =>
             (_handedness == Handedness.Left) ? _metaAimHandBindingsLeft : _metaAimHandBindingsRight;
 
-        private readonly OpenXRHandDataAsset _dataAsset = new();
-
         private HandDataSourceConfig _config;
         private InputAction _metaAimFlags;
         private InputAction _pinchStrengthIndex;
@@ -144,8 +142,8 @@ namespace Oculus.Interaction.Input.UnityXR
         private InputAction _devicePosition;
         private InputAction _deviceRotation;
 
+        private readonly OpenXRHandDataAsset _dataAsset = new();
         protected override OpenXRHandDataAsset OpenXRData => _dataAsset;
-
 
         protected override void Awake()
         {
@@ -267,11 +265,13 @@ namespace Oculus.Interaction.Input.UnityXR
             // XR_EXT_hand_tracking
             _dataAsset.Root = hand.rootPose;
             _dataAsset.RootPoseOrigin = PoseOrigin.RawTrackedPose;
+
             for (var i = XRHandJointID.BeginMarker.ToIndex();
                  i < XRHandJointID.EndMarker.ToIndex();
                  i++)
             {
-                var trackingData = hand.GetJoint(XRHandJointIDUtility.FromIndex(i));
+                var jointID = XRHandJointIDUtility.FromIndex(i);
+                var trackingData = hand.GetJoint(jointID);
                 _dataAsset.JointStates[i] = (OpenXRHandDataAsset.JointTrackingState)trackingData.trackingState;
                 if (trackingData.TryGetPose(out var pose))
                 {
