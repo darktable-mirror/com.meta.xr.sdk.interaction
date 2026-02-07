@@ -15,8 +15,12 @@ Shader "Interaction/DotGridUnlit"
     Properties {
         _Color("Color", Color) = (0, 0, 0, 1)
 
-        // rows, columns, radius
+        // rows, columns, radius, displacement
         _Dimensions("Dimensions", Vector) = (1, 1, .1, 0)
+
+        [Toggle] _CLIP ("Use clip", Integer) = 1
+        _OffsetFactor("Offset Factor", float) = 0
+        _OffsetUnits("Offset Units", float) = 0
     }
 
     SubShader
@@ -28,10 +32,12 @@ Shader "Interaction/DotGridUnlit"
 
         Pass
         {
+            Offset[_OffsetFactor],[_OffsetUnits]
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_instancing
+            #pragma shader_feature _CLIP_ON
 
             #include "UnityCG.cginc"
 
@@ -46,8 +52,13 @@ Shader "Interaction/DotGridUnlit"
             {
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 float4 vertex : SV_POSITION;
-                float2 uv : TEXCOORD0;
+                float4 uv : TEXCOORD0;
+                fixed4 color: COLOR;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
+
+            uniform float _OffsetFactor;
+            uniform float _OffsetUnits;
 
             UNITY_INSTANCING_BUFFER_START(Props)
                 UNITY_DEFINE_INSTANCED_PROP(fixed4, _Color)
@@ -59,10 +70,15 @@ Shader "Interaction/DotGridUnlit"
                 v2f o;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
+                float4 dimensions = UNITY_ACCESS_INSTANCED_PROP(Props, _Dimensions);
+                fixed4 color = UNITY_ACCESS_INSTANCED_PROP(Props, _Color);
 
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-
+                o.uv.xy = v.uv;
+                o.uv.zw = float2(1/dimensions.x, 1/dimensions.y);
+                o.color = color;
                 return o;
             }
 
@@ -70,16 +86,19 @@ Shader "Interaction/DotGridUnlit"
             {
                 UNITY_SETUP_INSTANCE_ID(i);
 
-                float4 color = UNITY_ACCESS_INSTANCED_PROP(Props, _Color);
                 float4 dimensions = UNITY_ACCESS_INSTANCED_PROP(Props, _Dimensions);
-
-                float2 diameter = float2(1.0f/dimensions.x, 1.0f/dimensions.y);
-                float2 uvOffset = i.uv + diameter / 2.0f;
+                float2 diameter = i.uv.zw;
+                float2 uvOffset = i.uv + diameter * 0.5;
                 float2 index = floor(uvOffset / diameter);
                 float2 xy = index * diameter;
-                float dist = distance(i.uv, xy);
+                float dist = distance(i.uv + dimensions.ww, xy);
 
-                clip(dimensions.z - dist);
+                fixed4 color = i.color;
+                #if _CLIP_ON
+                    clip(dimensions.z - dist);
+                #else
+                    color.a *= saturate((dimensions.z - dist) * 100);
+                #endif
 
                 return color;
             }

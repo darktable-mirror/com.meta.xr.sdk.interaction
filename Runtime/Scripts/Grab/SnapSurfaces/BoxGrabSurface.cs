@@ -71,6 +71,9 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
 
         private Pose RelativePose => PoseUtils.DeltaScaled(_relativeTo, this.transform);
 
+        private GrabPoseHelper.PoseCalculator _minTranslationCached;
+        private GrabPoseHelper.PoseCalculator _minRotationCached;
+
         /// <summary>
         /// The origin pose of the surface. This is the point from which
         /// the base of the box must start.
@@ -195,9 +198,19 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
         public GrabPoseScore CalculateBestPoseAtSurface(in Pose targetPose, in Pose offset, out Pose bestPose,
             in PoseMeasureParameters scoringModifier, Transform relativeTo)
         {
+            if (_minTranslationCached == null)
+            {
+                _minTranslationCached = MinimalTranslationPoseAtSurface;
+            }
+            if (_minRotationCached == null)
+            {
+                _minRotationCached = MinimalRotationPoseAtSurface;
+            }
+
             return GrabPoseHelper.CalculateBestPoseAtSurface(targetPose, offset, out bestPose,
                 scoringModifier, relativeTo,
-                MinimalTranslationPoseAtSurface, MinimalRotationPoseAtSurface);
+                _minTranslationCached,
+                _minRotationCached);
         }
 
         private void CalculateCorners(out Vector3 bottomLeft, out Vector3 bottomRight, out Vector3 topLeft, out Vector3 topRight,

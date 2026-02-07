@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Input;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -36,12 +37,14 @@ namespace Oculus.Interaction.PoseDetection
         /// The hand to read for state data.
         /// </summary>
         [SerializeField, Interface(typeof(IHand))]
+        [Optional(OptionalAttribute.Flag.Obsolete)]
         private UnityEngine.Object _hand;
 
         /// <summary>
         /// The <see cref="IHand"/> to be observed. While this hand adopts a pose which meets the requirements of any of the
         /// specified <see cref="Shapes"/>, <see cref="Active"/> will be true.
         /// </summary>
+        [Obsolete]
         public IHand Hand { get; private set; }
 
         /// <summary>
@@ -49,7 +52,6 @@ namespace Oculus.Interaction.PoseDetection
         /// </summary>
         [SerializeField, Interface(typeof(IFingerFeatureStateProvider))]
         private UnityEngine.Object _fingerFeatureStateProvider;
-
         protected IFingerFeatureStateProvider FingerFeatureStateProvider;
 
         /// <summary>
@@ -68,6 +70,7 @@ namespace Oculus.Interaction.PoseDetection
         /// The <see cref="Handedness"/> of the ShapeRecognizerActiveState. This is a convenience method which wraps
         /// a call to the <see cref="Hand.Handedness"/> property of the <see cref="Hand"/>
         /// </summary>
+        [Obsolete]
         public Handedness Handedness => Hand.Handedness;
 
         struct FingerFeatureStateUsage
@@ -83,13 +86,17 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
+#pragma warning disable CS0612 // Type or member is obsolete
             Hand = _hand as IHand;
-            FingerFeatureStateProvider = _fingerFeatureStateProvider as IFingerFeatureStateProvider;
+#pragma warning restore CS0612 // Type or member is obsolete
+            if (FingerFeatureStateProvider == null)
+            {
+                FingerFeatureStateProvider = _fingerFeatureStateProvider as IFingerFeatureStateProvider;
+            }
         }
 
         protected virtual void Start()
         {
-            this.AssertField(Hand, nameof(Hand));
             this.AssertField(FingerFeatureStateProvider, nameof(FingerFeatureStateProvider));
             this.AssertCollectionField(_shapes, nameof(_shapes));
 
@@ -176,6 +183,7 @@ namespace Oculus.Interaction.PoseDetection
         /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
         /// usage.
         /// </summary>
+        [Obsolete("Use InjectAllShapeRecognizerActiveState(IFingerFeatureStateProvider, ShapeRecognizer[]) instead")]
         public void InjectAllShapeRecognizerActiveState(IHand hand,
             IFingerFeatureStateProvider fingerFeatureStateProvider,
             ShapeRecognizer[] shapes)
@@ -185,11 +193,28 @@ namespace Oculus.Interaction.PoseDetection
             InjectShapes(shapes);
         }
 
+
+        /// <summary>
+        /// Sets all required dependencies for a dynamically instantiated ShapeRecognizerActiveState. This is a convenience
+        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
+        /// <see cref="InjectFingerFeatureStateProvider(IFingerFeatureStateProvider)"/>, and <see cref="InjectShapes(ShapeRecognizer[])"/>.
+        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
+        /// usage.
+        /// </summary>
+        public void InjectAllShapeRecognizerActiveState(
+            IFingerFeatureStateProvider fingerFeatureStateProvider,
+            ShapeRecognizer[] shapes)
+        {
+            InjectFingerFeatureStateProvider(fingerFeatureStateProvider);
+            InjectShapes(shapes);
+        }
+
         /// <summary>
         /// Sets an <see cref="IHand"/> as the <see cref="Hand"/> for a dynamically instantiated ShapeRecognizerActiveState. This
         /// method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
         /// usage.
         /// </summary>
+        [Obsolete]
         public void InjectHand(IHand hand)
         {
             _hand = hand as UnityEngine.Object;

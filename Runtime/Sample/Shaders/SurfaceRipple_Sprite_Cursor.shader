@@ -26,7 +26,7 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
         _SpriteSize ("Sprite Sheet Tile Count (e.g., 10 for a 10x10 sheet)", Float ) = 10
         _BeforeTouch ("Sprite Sheet Before Touching", 2D) = "white" {}
         _AfterTouch ("Sprite Sheet After Touching", 2D) = "white" {}
-        
+
         [HideInInspector]_MainTex ("Main Texture", 2D) = "white" {}
     }
 
@@ -45,6 +45,8 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
 
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
+            ZTest LEqual
+            Offset -1,-1
             Cull Off
 
             HLSLPROGRAM
@@ -53,7 +55,7 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
             #pragma multi_compile_instancing
 
             #include "UnityCG.cginc"
-            #include "Cursor.cginc" 
+            #include "Cursor.cginc"
 
             UNITY_DECLARE_TEX2D(_AfterTouch);
             UNITY_DECLARE_TEX2D_NOSAMPLER(_BeforeTouch);
@@ -87,7 +89,7 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
 
                 output.spriteUV = (input.uv + float2(x_unit, y_unit)) * invSpriteSize.xx;
                 output.rippleProgress = _RippleProgress;
-                
+
                 return output;
             }
 
@@ -96,14 +98,14 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
                 float4 spriteColor = (input.rippleProgress < 0) ?
                     UNITY_SAMPLE_TEX2D(_AfterTouch, input.spriteUV) :
                     UNITY_SAMPLE_TEX2D_SAMPLER(_BeforeTouch, _AfterTouch, input.spriteUV);
-                
+
                 half3 emissive = (spriteColor.rgb * _TintColor.rgb * 1.5);
                 return half4(emissive, spriteColor.a * _Opacity);
             }
             ENDHLSL
         }
     }
-    
+
     // SubShader for Built-in Render Pipeline
     SubShader
     {
@@ -119,6 +121,8 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
 
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
+            ZTest LEqual
+            Offset -1,-1
             Cull Off
 
             CGPROGRAM
@@ -153,9 +157,9 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.uv0 = v.texcoord0;
                 o.pos = UnityObjectToClipPos(v.vertex);
-                
+
                 float _SpriteSize_var = UNITY_ACCESS_INSTANCED_PROP(Props, _SpriteSize);
-                
+
                 float progressAbs = abs(_RippleProgress);
                 float progressFactor = _RippleProgress > 0 ? (1.0 - progressAbs) : progressAbs;
                 float p = CalculateUVwithProgress((_SpriteSize_var * _SpriteSize_var - 1.0) * progressFactor, _SpriteSize_var);
@@ -172,7 +176,7 @@ Shader "Interaction/SurfaceRipple_Sprite_Cursor"
             {
                 float _Opacity_var = UNITY_ACCESS_INSTANCED_PROP( Props, _Opacity );
                 float4 _TintColor_var = UNITY_ACCESS_INSTANCED_PROP( Props, _TintColor );
-                
+
                 float4 spriteColor = (i.rippleProgress < 0) ?
                     UNITY_SAMPLE_TEX2D(_AfterTouch, i.spriteUV) :
                     UNITY_SAMPLE_TEX2D_SAMPLER(_BeforeTouch, _AfterTouch, i.spriteUV);

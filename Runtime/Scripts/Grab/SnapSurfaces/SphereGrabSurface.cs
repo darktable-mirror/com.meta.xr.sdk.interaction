@@ -60,6 +60,9 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
 
         private Pose RelativePose => PoseUtils.DeltaScaled(_relativeTo, this.transform);
 
+        private GrabPoseHelper.PoseCalculator _minTranslationCached;
+        private GrabPoseHelper.PoseCalculator _minRotationCached;
+
         /// <summary>
         /// The reference pose of the surface. It defines the radius of the sphere
         /// as the point from the relative transform to the reference pose to ensure
@@ -162,10 +165,19 @@ namespace Oculus.Interaction.Grab.GrabSurfaces
         public GrabPoseScore CalculateBestPoseAtSurface(in Pose targetPose, in Pose offset, out Pose bestPose,
             in PoseMeasureParameters scoringModifier, Transform relativeTo)
         {
+            if (_minTranslationCached == null)
+            {
+                _minTranslationCached = MinimalTranslationPoseAtSurface;
+            }
+            if (_minRotationCached == null)
+            {
+                _minRotationCached = MinimalRotationPoseAtSurface;
+            }
+
             return GrabPoseHelper.CalculateBestPoseAtSurface(targetPose, offset, out bestPose,
                 scoringModifier, relativeTo,
-                MinimalTranslationPoseAtSurface,
-                MinimalRotationPoseAtSurface);
+                _minTranslationCached,
+                _minRotationCached);
         }
 
         public IGrabSurface CreateMirroredSurface(GameObject gameObject)

@@ -168,8 +168,11 @@ namespace Oculus.Interaction.Locomotion
                 || locomotionEvent.Translation == LocomotionEvent.TranslationType.Absolute
                 || locomotionEvent.Translation == LocomotionEvent.TranslationType.AbsoluteEyeLevel)
             {
-                float movementStrength = _movementStrength.Evaluate(pose.position.magnitude);
-                SetFOV(movementStrength);
+                if (pose.position.sqrMagnitude > 0f)
+                {
+                    float movementStrength = _movementStrength.keys[_movementStrength.length - 1].value;
+                    SetFOV(movementStrength);
+                }
             }
         }
 

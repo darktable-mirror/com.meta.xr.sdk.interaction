@@ -515,29 +515,7 @@ namespace Oculus.Interaction.Locomotion
         /// </summary>
         public void Jump()
         {
-            bool coyoteMoment = _coyoteTime > 0f && _timeProvider() - _leftGroundTime <= _coyoteTime;
-            if (!IsGrounded && !coyoteMoment)
-            {
-                return;
-            }
-
-            if (_isCrouching)
-            {
-                Crouch(false);
-                return;
-            }
-
-            TryExitHotspot(true);
-
-            if (coyoteMoment && _velocity.y < 0f)
-            {
-                _velocity.y = 0f;
-            }
-
-            _velocity += Vector3.up * _jumpForce;
-            _leftGroundTime = 0;
-            _endedFrameGrounded = false;
-            _jumpThisFrame = true;
+            Jump(Vector3.up * _jumpForce);
         }
 
         /// <summary>
@@ -611,7 +589,6 @@ namespace Oculus.Interaction.Locomotion
             _characterController.TryGround();
         }
 
-
         /// <summary>
         /// Instantly moves the Player to the character position
         /// </summary>
@@ -624,8 +601,7 @@ namespace Oculus.Interaction.Locomotion
             _playerOrigin.position = characterFeet + playerHeadOffset;
             _accumulatedDeltaFrame = Pose.identity;
 
-            _characterController.SetPosition(characterPose.position);
-            _characterController.SetRotation(characterPose.rotation);
+            _characterController.SetPose(characterPose);
         }
 
         #region Locomotion Events Handling
@@ -654,9 +630,10 @@ namespace Oculus.Interaction.Locomotion
             {
                 //empty event? check if there is an action payload
                 if (LocomotionActionsBroadcaster.TryGetLocomotionActions(locomotionEvent,
-                        out LocomotionActionsBroadcaster.LocomotionAction action, _context))
+                        out LocomotionActionsBroadcaster.LocomotionAction action, _context)
+                    && TryPerformLocomotionActions(action, locomotionEvent.Pose))
                 {
-                    TryPerformLocomotionActions(action);
+                    _whenLocomotionEventHandled.Invoke(locomotionEvent, locomotionEvent.Pose);
                 }
             }
             else //other events are stored to be excuted at the end of the frame
@@ -725,7 +702,7 @@ namespace Oculus.Interaction.Locomotion
             AccumulateDelta(ref delta, startPose, endPose);
             _whenLocomotionEventHandled.Invoke(locomotionEvent, delta);
         }
-        private bool TryPerformLocomotionActions(LocomotionActionsBroadcaster.LocomotionAction action)
+        private bool TryPerformLocomotionActions(LocomotionActionsBroadcaster.LocomotionAction action, in Pose pose)
         {
             switch (action)
             {
@@ -735,7 +712,10 @@ namespace Oculus.Interaction.Locomotion
                 case LocomotionActionsBroadcaster.LocomotionAction.Run: Run(true); return true;
                 case LocomotionActionsBroadcaster.LocomotionAction.Walk: Run(false); return true;
                 case LocomotionActionsBroadcaster.LocomotionAction.ToggleRun: ToggleRun(); return true;
-                case LocomotionActionsBroadcaster.LocomotionAction.Jump: Jump(); return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.Jump:
+                    Jump(pose.position.sqrMagnitude > 0f ? pose.position : Vector3.up * _jumpForce);
+                    return true;
+                case LocomotionActionsBroadcaster.LocomotionAction.InvalidTarget: return true;
                 default: return false;
             }
         }
@@ -746,6 +726,33 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #endregion Locomotion Events Handling
+
+        private void Jump(Vector3 force)
+        {
+            bool coyoteMoment = _coyoteTime > 0f && _timeProvider() - _leftGroundTime <= _coyoteTime;
+            if (!IsGrounded && !coyoteMoment)
+            {
+                return;
+            }
+
+            if (_isCrouching)
+            {
+                Crouch(false);
+                return;
+            }
+
+            TryExitHotspot(true);
+
+            if (coyoteMoment && _velocity.y < 0f)
+            {
+                _velocity.y = 0f;
+            }
+
+            _velocity += force;
+            _leftGroundTime = 0;
+            _endedFrameGrounded = false;
+            _jumpThisFrame = true;
+        }
 
         private void AddVelocity(Vector3 velocity)
         {
@@ -761,6 +768,7 @@ namespace Oculus.Interaction.Locomotion
             Vector3 pos = _characterController.Pose.position + offset;
             _characterController.SetPosition(pos);
             _characterController.TryGround(_characterController.MaxStep);
+            _velocity = Vector3.zero;
         }
 
         private void MoveAbsoluteHead(Vector3 target)
@@ -771,15 +779,16 @@ namespace Oculus.Interaction.Locomotion
             _characterController.SetPosition(pos);
             _isHeadInHotspot = true;
             _headHotspotCenter = GetCharacterHead();
+            _velocity = Vector3.zero;
         }
 
         private void MoveRelative(Vector3 offset)
         {
-            if (_characterController.IsGrounded)
+            if (_characterController.IsGrounded || IgnoringVelocity)
             {
                 TryExitHotspot(true);
                 _velocity = Vector3.zero;
-                _characterController.Move(offset);
+                MoveAndSlideDownStep(offset);
             }
         }
 
@@ -830,9 +839,8 @@ namespace Oculus.Interaction.Locomotion
             Vector3 head = GetPlayerHead();
             Vector3 delta = Vector3.ProjectOnPlane(head - _characterController.Pose.position, Vector3.up);
             Vector3 forward = Vector3.ProjectOnPlane(_playerEyes.forward, Vector3.up);
-
-            _characterController.Move(delta);
             _characterController.SetRotation(Quaternion.LookRotation(forward, Vector3.up));
+            MoveAndSlideDownStep(delta);
         }
 
         private void CatchUpPlayerToCharacter(Pose delta, float feetHeight)
@@ -848,9 +856,37 @@ namespace Oculus.Interaction.Locomotion
                 + (_isCrouching ? _crouchHeightOffset : 0f)
                 + _heightOffset;
             _playerOrigin.position = finalPosition;
+            _characterController.SetPose(characterPose);
+        }
 
-            _characterController.SetPosition(characterPose.position);
-            _characterController.SetRotation(characterPose.rotation);
+        private void MoveAndSlideDownStep(Vector3 delta)
+        {
+            bool wasGrounded = _characterController.IsGrounded;
+            float radius = _characterController.Radius;
+            Vector3 groundHit = _characterController.GroundHit.point;
+            Vector3 prevOffset = groundHit - _characterController.transform.position;
+
+            _characterController.Move(delta);
+
+            if (wasGrounded
+                && !_characterController.IsGrounded
+                && delta.y <= 0f)
+            {
+                Vector3 postOffset = groundHit - _characterController.transform.position;
+                float prevHeight = RelativeGroundHeightNormalized(prevOffset);
+                float postHeight = RelativeGroundHeightNormalized(postOffset);
+                if (postHeight >= 0f)
+                {
+                    float deltaHeight = (prevHeight - postHeight) * radius + _characterController.SkinWidth;
+                    _characterController.TryGround(deltaHeight);
+                }
+            }
+
+            float RelativeGroundHeightNormalized(Vector3 delta)
+            {
+                float x = Mathf.Clamp01((delta.x * delta.x + delta.z * delta.z) / (radius * radius));
+                return Mathf.Sqrt(1f - x);
+            }
         }
 
         private void UpdateVelocity()

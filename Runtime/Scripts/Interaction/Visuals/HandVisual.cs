@@ -184,7 +184,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
             if (Root == null && Joints.Count > 0 && Joints[0] != null)
             {
                 Root = Joints[0].parent;

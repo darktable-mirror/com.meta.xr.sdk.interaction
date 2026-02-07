@@ -40,7 +40,9 @@ namespace Oculus.Interaction.Locomotion
             Run,
             Walk,
             ToggleRun,
-            Jump
+            Jump,
+            InvalidTarget,
+            Select
         }
 
         [SerializeField, Optional]
@@ -63,7 +65,17 @@ namespace Oculus.Interaction.Locomotion
         /// <param name="action">The action to be sent</param>
         public void SendLocomotionAction(LocomotionAction action)
         {
-            LocomotionEvent locomotionEvent = CreateLocomotionEventAction(Identifier, action, Pose.identity, _context);
+            SendLocomotionAction(action, Pose.identity);
+        }
+
+        /// <summary>
+        /// Sends an Action down the LocomotionEvent pipeline and inmediately disposes it
+        /// </summary>
+        /// <param name="action">The action to be sent</param>
+        /// <param name="target">The pose to associate with the action</param>
+        public void SendLocomotionAction(LocomotionAction action, Pose target)
+        {
+            LocomotionEvent locomotionEvent = CreateLocomotionEventAction(Identifier, action, target, _context);
             WhenLocomotionPerformed.Invoke(locomotionEvent);
             //Decorations are disposed immediately after sending them
             DisposeLocomotionAction(locomotionEvent);
@@ -120,13 +132,37 @@ namespace Oculus.Interaction.Locomotion
         }
 
         /// <summary>
-        /// Sends an immediate Jump Action down the LocomotionEvent pipeline
+        /// Sends an immediate default Jump Action down the LocomotionEvent pipeline
         /// </summary>
         public void Jump()
         {
-            SendLocomotionAction(LocomotionAction.Jump);
+            SendLocomotionAction(LocomotionAction.Jump, Pose.identity);
         }
 
+        /// <summary>
+        /// Sends an immediate Jump Action down the LocomotionEvent pipeline
+        /// </summary>
+        /// <param name="force">The force to be applied to the jump</param>
+        public void Jump(Vector3 force)
+        {
+            SendLocomotionAction(LocomotionAction.Jump, new Pose(force, Quaternion.identity));
+        }
+
+        /// <summary>
+        /// Marks the locomotionEvent as an invalid target
+        /// </summary>
+        public void Invalid(Pose pose)
+        {
+            SendLocomotionAction(LocomotionAction.InvalidTarget, pose);
+        }
+
+        /// <summary>
+        /// Marks the LocomotionEvent as a Select event
+        /// </summary>
+        public void Select()
+        {
+            SendLocomotionAction(LocomotionAction.Select);
+        }
         #endregion
 
         #region Injects

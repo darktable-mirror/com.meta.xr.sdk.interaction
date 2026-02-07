@@ -50,7 +50,7 @@ MonoBehaviour:
   _updateAfter: {fileID: 0}
   _hmdData: {fileID: 7812832258085037633}
   _updateType: 0
-  _handedness: 0
+  _handedness: 1
   _trackingToWorldTransformer: {fileID: 6761089005363507734}
   _metaAimHandBindingsLeft:
     m_Name: MetaAimHand
@@ -301,8 +301,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateMode: 8
-  _updateAfter: {fileID: 4947008218866333257}
-  _iModifyDataFromSourceMono: {fileID: 4947008218866333257}
+  _updateAfter: {fileID: 8513819877912742975}
+  _iModifyDataFromSourceMono: {fileID: 8513819877912742975}
   _applyModifier: 1
 --- !u!114 &6203093554349782801
 MonoBehaviour:
@@ -1526,7 +1526,7 @@ MonoBehaviour:
   _updateAfter: {fileID: 0}
   _hmdData: {fileID: 7812832258085037633}
   _updateType: 0
-  _handedness: 1
+  _handedness: 0
   _trackingToWorldTransformer: {fileID: 6761089005363507734}
   _metaAimHandBindingsLeft:
     m_Name: MetaAimHand
@@ -1777,8 +1777,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _updateMode: 8
-  _updateAfter: {fileID: 8513819877912742975}
-  _iModifyDataFromSourceMono: {fileID: 8513819877912742975}
+  _updateAfter: {fileID: 4947008218866333257}
+  _iModifyDataFromSourceMono: {fileID: 4947008218866333257}
   _applyModifier: 1
 --- !u!114 &4725833468299248058
 MonoBehaviour:
@@ -2495,6 +2495,10 @@ PrefabInstance:
       propertyPath: _handler
       value: 
       objectReference: {fileID: 5919308797522143802}
+    - target: {fileID: 1887754296954971289, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2299588712439859523, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2547,6 +2551,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RightInteractors
       objectReference: {fileID: 0}
+    - target: {fileID: 3329137081504052891, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3350117026361071730, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: _updateAfter
       value: 
@@ -2571,6 +2579,10 @@ PrefabInstance:
       propertyPath: _transformer
       value: 
       objectReference: {fileID: 6761089005363507734}
+    - target: {fileID: 7705770683564737000, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8740363671655526733, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: _transformer
       value: 
@@ -2635,6 +2647,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1887754296954971289, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2299588712439859523, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2695,6 +2711,14 @@ PrefabInstance:
       propertyPath: _iModifyDataFromSourceMono
       value: 
       objectReference: {fileID: 6134504721619514660}
+    - target: {fileID: 4255632403514076100, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4941806096649205721, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5229246636172021162, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -2711,10 +2735,22 @@ PrefabInstance:
       propertyPath: _transformer
       value: 
       objectReference: {fileID: 6761089005363507734}
+    - target: {fileID: 6382472335886650821, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6807122164123869216, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8740363671655526733, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
       propertyPath: _transformer
       value: 
       objectReference: {fileID: 6761089005363507734}
+    - target: {fileID: 8846879682527375766, guid: 46a17985c3f323a49a075ccb386282e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

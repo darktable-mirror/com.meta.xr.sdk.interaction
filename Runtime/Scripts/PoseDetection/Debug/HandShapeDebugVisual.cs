@@ -122,7 +122,7 @@ namespace Oculus.Interaction.PoseDetection.Debug
                 shapeNames += shapeRecognizer.ShapeName;
             }
 
-            _targetText.text = $"{_shapeRecognizerActiveState.Handedness} Hand: {shapeNames} ";
+            _targetText.text = $"{_shapeRecognizerActiveState.name} Hand: {shapeNames} ";
         }
 
         private IEnumerable<ValueTuple<HandFinger, IReadOnlyList<ShapeRecognizer.FingerFeatureConfig>>> AllFeatureStates()

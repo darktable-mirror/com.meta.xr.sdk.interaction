@@ -34,10 +34,9 @@ namespace Oculus.Interaction
     {
         private Rigidbody _rigidbody;
         private IPointable _pointable;
-
         private HashSet<int> _selectors;
-
         private Func<float> _timeProvider = () => Time.time;
+
         /// <summary>
         /// Sets the function that provides with the time in order
         /// to measure the velocities of the rigidbody
@@ -46,6 +45,15 @@ namespace Oculus.Interaction
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
+        }
+
+        /// <summary>
+        /// Sets the Rigidbody used for the throw velocity calculation
+        /// </summary>
+        /// <param name="rigidbody">The rigidbody to apply velocity to and measure deltas from</param>
+        public void SetRigidBody(Rigidbody rigidbody)
+        {
+            _rigidbody = rigidbody;
         }
 
         /// <summary>
@@ -210,6 +218,12 @@ namespace Oculus.Interaction
 
         private void Process(bool saveAsPreviousFrame)
         {
+            if (_rigidbody == null)
+            {
+                _isHighConfidence = false;
+                return;
+            }
+
             float time = _timeProvider.Invoke();
             Pose pose = _rigidbody.transform.GetPose();
 
@@ -229,11 +243,13 @@ namespace Oculus.Interaction
         {
             if (TryGetVelocities(out Vector3 velocity, out Vector3 torque))
             {
+                if (_rigidbody != null && !_rigidbody.isKinematic)
+                {
 #pragma warning disable CS0618 // Type or member is obsolete
-                _rigidbody.velocity = velocity;
+                    _rigidbody.velocity = velocity;
 #pragma warning restore CS0618 // Type or member is obsolete
-                _rigidbody.angularVelocity = torque;
-
+                    _rigidbody.angularVelocity = torque;
+                }
                 WhenThrown.Invoke(velocity, torque);
             }
         }

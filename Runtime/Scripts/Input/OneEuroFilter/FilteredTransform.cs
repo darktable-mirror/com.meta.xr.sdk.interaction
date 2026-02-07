@@ -57,7 +57,6 @@ namespace Oculus.Interaction.Utils
         {
             if (_filterPosition)
             {
-                Vector3 position = _sourceTransform.position;
                 _positionFilter.SetProperties(_positionFilterProperties);
                 transform.position =
                     _positionFilter.Step(_sourceTransform.position, Time.deltaTime);

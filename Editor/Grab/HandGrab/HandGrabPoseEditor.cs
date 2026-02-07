@@ -63,6 +63,9 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         protected override void OnEnable()
         {
+            if (!target)
+                return;
+
             base.OnEnable();
 
             _editorDrawer.Hide("_ovrOffsetMode");

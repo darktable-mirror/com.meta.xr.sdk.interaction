@@ -89,6 +89,9 @@ namespace Oculus.Interaction.Locomotion
             nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
         private IHmd Hmd { get; set; }
 
+        [SerializeField, Optional]
+        private Context _context;
+
         /// <summary>
         /// The starting point of the teleport arc.
         /// </summary>
@@ -286,9 +289,10 @@ namespace Oculus.Interaction.Locomotion
 
             if (!HasValidDestination())
             {
-                LocomotionEvent deniedLocomotionEvent = new LocomotionEvent(this.Identifier, target,
-                    LocomotionEvent.TranslationType.None, LocomotionEvent.RotationType.None);
+                LocomotionEvent deniedLocomotionEvent = LocomotionActionsBroadcaster.CreateLocomotionEventAction(
+                    this.Identifier, LocomotionActionsBroadcaster.LocomotionAction.InvalidTarget, target, _context);
                 _whenLocomotionPerformed.Invoke(deniedLocomotionEvent);
+                LocomotionActionsBroadcaster.DisposeLocomotionAction(deniedLocomotionEvent);
                 return;
             }
 
@@ -372,6 +376,11 @@ namespace Oculus.Interaction.Locomotion
         public void InjectOptionalCandidateComputer(ComputeCandidateDelegate candidateComputer)
         {
             _computeCandidate = candidateComputer;
+        }
+
+        public void InjectOptionalContext(Context context)
+        {
+            _context = context;
         }
         #endregion
     }

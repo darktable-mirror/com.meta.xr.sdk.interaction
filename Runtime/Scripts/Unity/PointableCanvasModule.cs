@@ -203,7 +203,10 @@ namespace Oculus.Interaction
             {
                 case PointerEventType.Hover:
                     pointer = new PointerImpl(evt.Identifier, canvas);
-                    pointer.PointerEventData = new PointerEventData(eventSystem);
+                    pointer.PointerEventData = new PointerEventData(eventSystem)
+                    {
+                        pointerId = evt.Identifier
+                    };
                     pointer.SetPosition(evt.Pose.position);
                     _pointerMap.Add(evt.Identifier, pointer);
                     WhenPointerStarted?.Invoke(pointer);

@@ -84,7 +84,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5568758620505594000}
-  - {fileID: 5568758620118834338}
   - {fileID: 5568758618800073510}
   - {fileID: 5568758620461634119}
   - {fileID: 5568758619574605688}
@@ -148,6 +147,7 @@ MonoBehaviour:
   _handler: {fileID: 0}
   _handlers:
   - {fileID: 3162065387456349882}
+  - {fileID: 609183853692604661}
 --- !u!1 &5568758619574605695
 GameObject:
   m_ObjectHideFlags: 0
@@ -211,275 +211,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5568758619574605688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5568758620118834347
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5568758620118834338}
-  - component: {fileID: 5568758620118834337}
-  - component: {fileID: 5568758620118834340}
-  - component: {fileID: 5568758620118834336}
-  - component: {fileID: 5568758620118834343}
-  - component: {fileID: 5568758620118834342}
-  - component: {fileID: 5568758620118834341}
-  - component: {fileID: 5638230483326723118}
-  - component: {fileID: 4255218727687351022}
-  - component: {fileID: 8596244716211811157}
-  - component: {fileID: 2595509757813100727}
-  - component: {fileID: 3463899404005865348}
-  m_Layer: 0
-  m_Name: SmoothControls
-  m_TagString: Player
-  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5568758620118834338
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5568758619435239319}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5568758620118834337
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3673df66324d8f34d9433049c54de631, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758619435239312}
---- !u!114 &5568758620118834340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3673df66324d8f34d9433049c54de631, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758619435239314}
---- !u!114 &5568758620118834336
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad374a43a946e7d4496818c6b194809f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758620118834340}
-  _controllerButtonUsage: 1
---- !u!114 &5568758620118834343
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d2705674196dfc4da9c25fbacda72d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _activeState: {fileID: 5568758620118834336}
-  _whenActivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2595509757813100727}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
-          Oculus.Interaction
-        m_MethodName: Jump
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _whenDeactivated:
-    m_PersistentCalls:
-      m_Calls: []
-  _emitOnFirstUpdate: 0
---- !u!114 &5568758620118834342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad374a43a946e7d4496818c6b194809f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758620118834337}
-  _controllerButtonUsage: 128
---- !u!114 &5568758620118834341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d2705674196dfc4da9c25fbacda72d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _activeState: {fileID: 5568758620118834342}
-  _whenActivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2595509757813100727}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
-          Oculus.Interaction
-        m_MethodName: Run
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  _whenDeactivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2595509757813100727}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
-          Oculus.Interaction
-        m_MethodName: Walk
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _emitOnFirstUpdate: 0
---- !u!114 &5638230483326723118
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 990692c9edb7a214d9b122856cf44929, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758619435239314}
-  _axis: 1
---- !u!114 &4255218727687351022
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 592ac3f1a010f3d48970c5beb7e4f68f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _inputAxis: {fileID: 5638230483326723118}
-  _checkAxis: 2
-  _comparison: 1
-  _absoluteValues: 0
-  _thresold: {x: 0, y: -0.8}
---- !u!114 &8596244716211811157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d2705674196dfc4da9c25fbacda72d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _activeState: {fileID: 4255218727687351022}
-  _whenActivated:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2595509757813100727}
-        m_TargetAssemblyTypeName: Oculus.Interaction.Locomotion.LocomotionActionBroadcaster,
-          Oculus.Interaction
-        m_MethodName: ToggleCrouch
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  _whenDeactivated:
-    m_PersistentCalls:
-      m_Calls: []
-  _emitOnFirstUpdate: 0
---- !u!114 &2595509757813100727
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 949e33eb3289ef04ebbeb5f045a5add6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _context: {fileID: 0}
---- !u!114 &3463899404005865348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620118834347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4ad4f1ddee798f45a20be4efda35c8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _broadcasters:
-  - {fileID: 2595509757813100727}
-  _handler: {fileID: 0}
-  _handlers:
-  - {fileID: 2808450065386463857}
 --- !u!1 &5568758620377301194
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,12 +221,12 @@ GameObject:
   m_Component:
   - component: {fileID: 5568758620377301195}
   - component: {fileID: 5568758620377301184}
-  - component: {fileID: 5568758620377301191}
   - component: {fileID: 5568758620377301190}
+  - component: {fileID: 609183853692604661}
   - component: {fileID: 5568758620377301189}
   - component: {fileID: 5568758620377301188}
   m_Layer: 0
-  m_Name: TeleportControllerInteractor
+  m_Name: BodyTeleportInteractor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -534,25 +265,11 @@ MonoBehaviour:
   _candidateTiebreaker: {fileID: 0}
   _maxIterationsPerFrame: 3
   _data: {fileID: 0}
-  _selector: {fileID: 5568758620377301191}
+  _selector: {fileID: 609183853692604661}
   _teleportArc: {fileID: 5568758620377301190}
   _equalDistanceThreshold: 0.1
   _hmd: {fileID: 0}
---- !u!114 &5568758620377301191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5568758620377301194}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d2303af7d4c7114681742031c4a0ac6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 5568758619435239312}
-  _controllerButtonUsage: 1
-  _requireButtonUsages: 0
+  _context: {fileID: 0}
 --- !u!114 &5568758620377301190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -568,6 +285,19 @@ MonoBehaviour:
   _transforms:
   - {fileID: 5568758620461634119}
   - {fileID: 5568758619748523253}
+--- !u!114 &609183853692604661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5568758620377301194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115a4fd4ac2e6844daa2305603ce9688, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _context: {fileID: 0}
 --- !u!114 &5568758620377301189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -815,6 +545,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   _velocityDisabled: 0
   _maxStartGroundDistance: 10
+  _context: {fileID: 0}
 --- !u!1 &8787784729061583929
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,21 +589,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SmoothMovementTunneling
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _leftEyeAnchor
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _rightEyeAnchor
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _centerEyeCamera
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7698934013279838103, guid: 704aaafc8c443aa4885edd487063cea3,
         type: 3}
@@ -962,7 +678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3952177e694781b48a591cf609642190, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _locomotor: {fileID: 2808450065386463857}
+  _locomotor: {fileID: 3162065387456349882}
   _tunneling: {fileID: 6561596850968630206}
   _rotationStrength:
     serializedVersion: 2
@@ -1062,21 +778,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: WallPenetrationTunneling
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _leftEyeAnchor
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _rightEyeAnchor
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
-        type: 3}
-      propertyPath: _centerEyeCamera
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1338596495858261096, guid: 704aaafc8c443aa4885edd487063cea3,
         type: 3}

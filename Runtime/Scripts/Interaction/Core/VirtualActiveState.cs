@@ -35,5 +35,13 @@ namespace Oculus.Interaction.Locomotion
             get => _active;
             set => _active = value;
         }
+
+        /// <summary>
+        /// Toggles the <see cref="Active"/> state of this <see cref="VirtualActiveState"/>
+        /// </summary>
+        public void Toggle()
+        {
+            _active = !_active;
+        }
     }
 }

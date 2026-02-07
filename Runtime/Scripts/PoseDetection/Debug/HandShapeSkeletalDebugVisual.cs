@@ -32,6 +32,10 @@ namespace Oculus.Interaction.PoseDetection.Debug
     /// </summary>
     public class HandShapeSkeletalDebugVisual : MonoBehaviour
     {
+        [SerializeField, Interface(typeof(IHand))]
+        private UnityEngine.Object _hand;
+        protected IHand Hand { get; set; }
+
         [SerializeField]
         private ShapeRecognizerActiveState _shapeRecognizerActiveState;
 
@@ -40,12 +44,18 @@ namespace Oculus.Interaction.PoseDetection.Debug
 
         protected virtual void Awake()
         {
-            this.AssertField(_shapeRecognizerActiveState, nameof(_shapeRecognizerActiveState));
-            this.AssertField(_fingerFeatureDebugVisualPrefab, nameof(_fingerFeatureDebugVisualPrefab));
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
         {
+            this.AssertField(_shapeRecognizerActiveState, nameof(_shapeRecognizerActiveState));
+            this.AssertField(_fingerFeatureDebugVisualPrefab, nameof(_fingerFeatureDebugVisualPrefab));
+            this.AssertField(Hand, nameof(_hand));
+
             var statesByFinger = AllFeatureStates()
                 .GroupBy(s => s.Item1)
                 .Select(group => new
@@ -60,7 +70,7 @@ namespace Oculus.Interaction.PoseDetection.Debug
                     var boneDebugObject = Instantiate(_fingerFeatureDebugVisualPrefab);
                     var skeletalComp = boneDebugObject.GetComponent<FingerFeatureSkeletalDebugVisual>();
 
-                    skeletalComp.Initialize(_shapeRecognizerActiveState.Hand, g.HandFinger, feature);
+                    skeletalComp.Initialize(Hand, g.HandFinger, feature);
 
                     var debugVisTransform = boneDebugObject.transform;
 

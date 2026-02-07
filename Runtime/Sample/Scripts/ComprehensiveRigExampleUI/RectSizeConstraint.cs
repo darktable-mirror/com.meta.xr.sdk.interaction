@@ -27,13 +27,19 @@ public class RectSizeConstraint : UIBehaviour
 {
     public RectTransform target;
 
+    private RectTransform _rectTransform;
+
+    protected override void Awake()
+    {
+        _rectTransform = (RectTransform)transform;
+    }
+
     protected virtual void LateUpdate()
     {
         if (target != null)
         {
-            var rectTransform = (RectTransform)transform;
-            rectTransform.sizeDelta = new Vector2(target.rect.width, target.rect.height);
-            rectTransform.ForceUpdateRectTransforms();
+            _rectTransform.sizeDelta = new Vector2(target.rect.width, target.rect.height);
+            _rectTransform.ForceUpdateRectTransforms();
         }
     }
 }

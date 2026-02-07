@@ -60,6 +60,11 @@ namespace Oculus.Interaction.Throw
         private RandomSampleConsensus<Vector3> _ransac;
         private RingBuffer<TimedPose> _poses;
 
+        private RandomSampleConsensus<Vector3>.GenerateModel _velocityModel;
+        private RandomSampleConsensus<Vector3>.EvaluateModelScore _velocityScorer;
+        private RandomSampleConsensus<Vector3>.GenerateModel _torqueModel;
+        private RandomSampleConsensus<Vector3>.EvaluateModelScore _torqueScorer;
+
         [Obsolete("The minHighConfidenceSamples parameter will be ignored. Use the constructor without it")]
         public RANSACVelocity(int samplesCount = 10, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
             : this(samplesCount, samplesDeadZone)
@@ -156,10 +161,17 @@ namespace Oculus.Interaction.Throw
         {
             if (_poses.Count >= 2)
             {
+                if (_velocityModel == null)
+                {
+                    _velocityModel = CalculateVelocityFromSamples;
+                    _velocityScorer = ScoreDistance;
+                    _torqueModel = CalculateTorqueFromSamples;
+                    _torqueScorer = ScoreAngularDistance;
+                }
                 velocity = _ransac.FindOptimalModel(
-                    CalculateVelocityFromSamples, ScoreDistance, _poses.Count);
+                    _velocityModel, _velocityScorer, _poses.Count);
                 torque = _ransac.FindOptimalModel(
-                    CalculateTorqueFromSamples, ScoreAngularDistance, _poses.Count);
+                    _torqueModel, _torqueScorer, _poses.Count);
             }
             else
             {

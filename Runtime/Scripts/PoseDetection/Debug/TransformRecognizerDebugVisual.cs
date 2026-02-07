@@ -99,7 +99,7 @@ namespace Oculus.Interaction.PoseDetection.Debug
                 var featureDebugVis = Instantiate(_transformFeatureDebugVisualPrefab, _debugVisualParent);
                 var debugVisComp = featureDebugVis.GetComponent<TransformFeatureDebugVisual>();
 
-                debugVisComp.Initialize(_transformRecognizerActiveState.Hand.Handedness,
+                debugVisComp.Initialize(_hand.Handedness,
                     featureConfig,
                     _transformFeatureStateProvider,
                     _transformRecognizerActiveState);
@@ -111,7 +111,7 @@ namespace Oculus.Interaction.PoseDetection.Debug
                 totalDisp += _featureSpacingVec;
 
                 if (!String.IsNullOrEmpty(shapeNames)) { shapeNames += "\n  "; }
-                shapeNames += $"{featureConfig.Mode} {featureConfig.State} ({_transformRecognizerActiveState.Hand.Handedness})";
+                shapeNames += $"{featureConfig.Mode} {featureConfig.State} ({_hand.Handedness})";
             }
 
             _targetText.text = $"{shapeNames}";

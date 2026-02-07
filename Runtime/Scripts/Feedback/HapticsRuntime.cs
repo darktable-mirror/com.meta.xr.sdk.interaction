@@ -103,6 +103,7 @@ namespace Oculus.Interaction.Feedback
         /// <summary>
         /// Retrieves the <see cref="InputDevice"/> associated with the given Interactor or pointer ID.
         /// Uses a cache for efficiency. Relies on <see cref="_manager"/> to map IDs to <see cref="IController"/> instances.
+        /// Returns an invalid device if no controller is found.
         /// </summary>
         InputDevice GetDevice(int id)
         {
@@ -128,7 +129,6 @@ namespace Oculus.Interaction.Feedback
                 return device;
             }
 
-            Debug.LogWarning($"[UnityXRPlayer] No controller for interactor {id}");
             return default;
         }
     }

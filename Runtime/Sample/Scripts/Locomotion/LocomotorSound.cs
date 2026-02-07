@@ -41,6 +41,13 @@ namespace Oculus.Interaction.Locomotion
         private AnimationCurve _rotationCurve = AnimationCurve.EaseInOut(0f, 0f, 180f, 1f);
         [SerializeField]
         private float _pitchVariance = 0.05f;
+        [SerializeField]
+        private float _distanceThreshold = 0.5f;
+        [SerializeField]
+        private float _angleThreshold = 0.01f;
+
+        [SerializeField, Optional]
+        private Context _context;
 
         protected bool _started;
 
@@ -81,16 +88,25 @@ namespace Oculus.Interaction.Locomotion
                 || locomotionEvent.Translation == LocomotionEvent.TranslationType.AbsoluteEyeLevel
                 || locomotionEvent.Translation == LocomotionEvent.TranslationType.Relative)
             {
-                PlayTranslationSound(delta.position.magnitude);
+                if (delta.position.sqrMagnitude > _distanceThreshold * _distanceThreshold)
+                {
+                    PlayTranslationSound(delta.position.magnitude);
+                }
             }
             if (locomotionEvent.Rotation == LocomotionEvent.RotationType.Relative)
             {
-                PlayRotationSound(delta.rotation.y * delta.rotation.w);
+                float angle = delta.rotation.y * delta.rotation.w;
+                if (Mathf.Abs(angle) > _angleThreshold)
+                {
+                    PlayRotationSound(angle);
+                }
             }
             if (locomotionEvent.Translation == LocomotionEvent.TranslationType.None
-                && locomotionEvent.Rotation == LocomotionEvent.RotationType.None)
+                && locomotionEvent.Rotation == LocomotionEvent.RotationType.None
+                && LocomotionActionsBroadcaster.TryGetLocomotionActions(locomotionEvent, out var action, _context)
+                && action == LocomotionActionsBroadcaster.LocomotionAction.InvalidTarget)
             {
-                PlayDenialSound(delta.position.magnitude);
+                PlayDenialSound(1f);
             }
         }
 
@@ -127,6 +143,12 @@ namespace Oculus.Interaction.Locomotion
             _locomotor = locomotor as UnityEngine.Object;
             Locomotor = locomotor;
         }
+
+        public void InjectOptionalContext(Context context)
+        {
+            _context = context;
+        }
+
         #endregion
     }
 }

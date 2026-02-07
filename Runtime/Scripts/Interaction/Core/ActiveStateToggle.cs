@@ -40,7 +40,7 @@ namespace Oculus.Interaction
         private UnityEngine.Object _on;
         private IActiveState On;
 
-        [Tooltip("When this ActiveState is Inactive, the " +
+        [Tooltip("When this ActiveState is Active, the " +
             "ActiveStateToggle will be Inactive.")]
         [SerializeField]
         [Interface(typeof(IActiveState))]

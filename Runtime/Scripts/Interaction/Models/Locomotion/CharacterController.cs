@@ -134,6 +134,10 @@ namespace Oculus.Interaction.Locomotion
         /// Current Pose of the capsule
         /// </summary>
         public Pose Pose => _capsule.transform.GetPose();
+        /// <summary>
+        /// Current hit of the ground against the capsule
+        /// </summary>
+        public RaycastHit GroundHit => _groundHit;
 
         protected RaycastHit _groundHit;
         protected bool _isGrounded;
@@ -200,17 +204,10 @@ namespace Oculus.Interaction.Locomotion
         {
             if (CalculateGround(out RaycastHit groundHit, extraDistance) && IsFlat(groundHit.normal))
             {
-                Vector3 capsulePosition = _capsule.transform.position;
-                RaycastHitPlane(groundHit, capsulePosition, Vector3.down, out float enter);
-                capsulePosition.y = capsulePosition.y - enter
-                    + _capsule.height * 0.5f + _skinWidth;
-                _capsule.transform.position = capsulePosition;
-
-                _groundHit = groundHit;
                 _isGrounded = true;
-
+                _groundHit = groundHit;
+                _capsule.transform.position += Vector3.down * groundHit.distance;
                 UpdateAnchorPoints();
-
                 return true;
             }
 
@@ -221,20 +218,29 @@ namespace Oculus.Interaction.Locomotion
         /// Sets the global rotation of the character.
         /// </summary>
         /// <param name="rotation">The desired global rotation</param>
-        public void SetRotation(Quaternion rotation)
+        public void SetRotation(in Quaternion rotation)
         {
             _capsule.transform.rotation = rotation;
             UpdateAnchorPoints();
         }
 
         /// <summary>
-        /// Sets the global position of the character and tries
-        /// to ground it.
+        /// Sets the global position of the character.
         /// </summary>
-        /// <param name="position">The desired global rotation</param>
-        public void SetPosition(Vector3 position)
+        /// <param name="position">The desired global position</param>
+        public void SetPosition(in Vector3 position)
         {
             _capsule.transform.position = position;
+            UpdateAnchorPoints();
+        }
+
+        /// <summary>
+        /// Sets the global pose of the character
+        /// </summary>
+        /// <param name="pose">The desired global pose</param>
+        public void SetPose(in Pose pose)
+        {
+            _capsule.transform.SetPose(pose);
             UpdateAnchorPoints();
         }
 
@@ -297,10 +303,10 @@ namespace Oculus.Interaction.Locomotion
 
                 //check when we collided, whether it was a step that we can climb
                 if (_isGrounded
-                    && _maxStep > 0f
-                    && moveHit.HasValue
-                    //early exit if the hitpoint is already too high
-                    && moveHit.Value.point.y - (capsuleBase.y - radius - _skinWidth) <= _maxStep)
+                     && _maxStep > 0f
+                     && moveHit.HasValue
+                     //early exit if the hitpoint is already too high
+                     && moveHit.Value.point.y - (capsuleBase.y - radius - _skinWidth) <= _maxStep)
                 {
                     bool stepClimbed = ClimbStep(capsuleBase, capsuleTop, radius, extraDelta,
                         out Vector3 climbDelta, out stepHit);
@@ -336,7 +342,7 @@ namespace Oculus.Interaction.Locomotion
             stepHit = null;
             climbDelta = Vector3.zero;
             //step climbing just happens in the XZ plane
-            delta = Vector3.ProjectOnPlane(delta, Vector3.up);
+            delta.y = 0;
 
             float baseOffset = Mathf.Min(_maxStep, capsuleTop.y - capsuleBase.y);
             float topOffset = Mathf.Max(0f, _maxStep - baseOffset);
@@ -349,7 +355,6 @@ namespace Oculus.Interaction.Locomotion
                 stepHit = hit;
                 //check if we hit one of the caps
                 //if so, correct the surface normal in case it is a corner
-
                 Vector3 capsuleDir = capsuleTop - capsuleBase;
                 if (Mathf.Approximately(capsuleDir.sqrMagnitude, 0f)
                     || Mathf.Abs(Vector3.Dot(hit.Value.normal, capsuleDir.normalized)) > _cornerHitEpsilon)
@@ -368,20 +373,19 @@ namespace Oculus.Interaction.Locomotion
             }
 
             //then we try to grow the base back to its original height to check for the ground
-            bool groundCollided = CalculateGround(capsuleTop + delta, radius, _capsule.height - radius,
+            bool groundCollided = GroundSphereCast(
+                origin: capsuleTop + delta,
+                radius: radius + _skinWidth,
+                maxDistance: _capsule.height - 2 * radius,
                 out RaycastHit stepDownHit);
 
             if (groundCollided)
             {
-                bool hitBase = RaycastSphere(stepDownHit.point, Vector3.up,
-                    capsuleMaxStepBase + delta, radius + _skinWidth,
-                    out float verticalDistance);
-
-                if (hitBase
-                    && stepDownHit.point.y - (capsuleBase.y - radius) <= _maxStep
+                stepDownHit.distance = Mathf.Max(0, _capsule.height - 2 * radius) - stepDownHit.distance;
+                if (stepDownHit.distance <= _maxStep
                     && IsFlat(stepDownHit.normal))
                 {
-                    delta.y = Mathf.Max(delta.y, baseOffset - verticalDistance);
+                    delta.y = Mathf.Max(delta.y, stepDownHit.distance);
                     //now that we know the size of the step, we must also check that the capsule
                     //can move up that amount before going forward
                     Vector3 stepUp = Vector3.up * delta.y;
@@ -482,61 +486,57 @@ namespace Oculus.Interaction.Locomotion
         private bool CalculateGround(out RaycastHit groundHit, float extraDistance = 0f)
         {
             //check just the feet
-            Vector3 capsuleBase = _capsule.transform.position + Vector3.down * (_capsule.height * 0.5f - _capsule.radius);
-            bool feetHit = CalculateGround(capsuleBase,
-                _capsule.radius + _skinWidth,
-                _capsule.radius + _skinWidth + extraDistance,
+            float sphereOffset = _capsule.height * 0.5f - _capsule.radius;
+            Vector3 capsuleBase = _capsule.transform.position + Vector3.down * sphereOffset;
+            bool feetHit = GroundSphereCast(
+                origin: capsuleBase + Vector3.up * _skinWidth,
+                radius: _capsule.radius + _skinWidth,
+                maxDistance: _skinWidth + extraDistance,
                 out groundHit);
 
             if (feetHit)
             {
+                groundHit.distance -= _skinWidth * 0.5f;
                 return true;
             }
 
-            //check half the body
-            bool halfBodyHit = CalculateGround(_capsule.transform.position,
-                _capsule.radius + _skinWidth,
-                _capsule.height * 0.5f + _skinWidth + extraDistance,
+            //check inside body under the head
+            Vector3 capsuleTop = _capsule.transform.position + Vector3.up * sphereOffset;
+            bool halfBodyHit = GroundSphereCast(
+                origin: capsuleTop,
+                radius: _capsule.radius,
+                maxDistance: Mathf.Max(0, _capsule.height - 2 * _capsule.radius + _skinWidth),
                 out groundHit);
 
-            return halfBodyHit;
+            if (halfBodyHit)
+            {
+                groundHit.distance -= Mathf.Max(0, _capsule.height - 2 * _capsule.radius);
+                return true;
+            }
+
+            return false;
         }
 
-        private bool CalculateGround(Vector3 origin, float radius, float distance, out RaycastHit groundHit)
+        private bool GroundSphereCast(Vector3 origin, float radius, float maxDistance, out RaycastHit groundHit)
         {
-            Vector3 downDir = Vector3.down;
-
-            bool rayCollided = Physics.Raycast(
-                origin, downDir,
-                out RaycastHit rayHit, distance, _layerMask.value, QueryTriggerInteraction.Ignore);
-
-            bool sphereCollided = Physics.SphereCast(origin, radius, downDir,
-                out RaycastHit sphereHit, distance - radius,
+            Vector3 down = Vector3.down;
+            bool sphereCollided = Physics.SphereCast(origin, radius, down,
+                out groundHit, maxDistance,
                  _layerMask.value, QueryTriggerInteraction.Ignore);
 
             if (sphereCollided)
             {
-                bool collided = Physics.Raycast(
-                    sphereHit.point - downDir * 0.01f, downDir,
-                    out RaycastHit preciseHit, 0.011f, _layerMask.value, QueryTriggerInteraction.Ignore);
+                bool collided = groundHit.collider.Raycast(
+                    new Ray(groundHit.point - down * _skinWidth, down),
+                    out RaycastHit preciseHit, _skinWidth * 2);
                 if (collided)
                 {
-                    sphereHit.normal = preciseHit.normal;
+                    groundHit.normal = preciseHit.normal;
                 }
-            }
-
-            if (sphereCollided && rayCollided)
-            {
-                //pick the flattest one
-                groundHit = sphereHit.normal.y > rayHit.normal.y ? sphereHit : rayHit;
-                groundHit.distance = Vector3.Project(groundHit.point - origin, downDir).magnitude;
-                return true;
-            }
-            else if (sphereCollided || rayCollided)
-            {
-                groundHit = sphereCollided ? sphereHit : rayHit;
-                groundHit.normal = rayCollided ? rayHit.normal : sphereHit.normal;
-                groundHit.distance = Vector3.Project(groundHit.point - origin, downDir).magnitude;
+                else
+                {
+                    groundHit.normal = -down;
+                }
                 return true;
             }
 
@@ -561,44 +561,6 @@ namespace Oculus.Interaction.Locomotion
             }
         }
 
-
-        #region Capsule Physics
-
-        private static bool RaycastSphere(Vector3 origin, Vector3 direction, Vector3 sphereCenter, float radius, out float distance)
-        {
-            distance = float.MaxValue;
-            Vector3 os = origin - sphereCenter;
-            float a = Vector3.Dot(direction, direction);
-            float b = 2.0f * Vector3.Dot(os, direction);
-            float c = Vector3.Dot(os, os) - radius * radius;
-            float discriminant = b * b - 4.0f * a * c;
-
-            if (discriminant < 0)
-            {
-                return false;
-            }
-            else
-            {
-                distance = (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
-                return true;
-            }
-        }
-
-        private bool RaycastHitPlane(RaycastHit hit, Vector3 origin, Vector3 direction, out float enter)
-        {
-            enter = 0f;
-            float pointAlignment = Vector3.Dot(hit.normal, hit.point) - Vector3.Dot(origin, hit.normal);
-            float normalAlignment = Vector3.Dot(direction, hit.normal);
-            if (!Mathf.Approximately(normalAlignment, 0f))
-            {
-                enter = pointAlignment / normalAlignment;
-                return true;
-            }
-            return false;
-        }
-
-        #endregion Capsule Physics
-
         #region Inject
 
         public void InjectAllCharacterController(CapsuleCollider capsule)
@@ -611,7 +573,6 @@ namespace Oculus.Interaction.Locomotion
             _capsule = capsule;
         }
 
-
         public void InjectOptionalFeetAnchor(Transform feetAnchor)
         {
             _feetAnchor = feetAnchor;
@@ -621,7 +582,6 @@ namespace Oculus.Interaction.Locomotion
         {
             _headAnchor = headAnchor;
         }
-
 
         #endregion
     }

@@ -144,7 +144,10 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
 
             _state = new FingerFeatureStateDictionary();
             _handJointPoses = ReadOnlyHandJointPoses.Empty;
@@ -288,6 +291,10 @@ namespace Oculus.Interaction.PoseDetection
         public bool IsStateActive(HandFinger finger, FingerFeature feature, FeatureStateActiveMode mode, string stateId)
         {
             var currentState = GetCurrentFingerFeatureState(finger, feature);
+            if (currentState == null)
+            {
+                return false;
+            }
             switch (mode)
             {
                 case FeatureStateActiveMode.Is:

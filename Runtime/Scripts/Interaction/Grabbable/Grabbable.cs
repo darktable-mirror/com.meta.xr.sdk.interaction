@@ -76,8 +76,12 @@ namespace Oculus.Interaction
         [Tooltip("Locks the referenced rigidbody to a kinematic while selected.")]
         private bool _kinematicWhileSelected = true;
         [SerializeField]
-        [Tooltip("Applies throwing velocities to the rigidbody when fully released.")]
+        [Tooltip("Applies throwing velocities to the rigidbody when fully released. Use 'Force Kinematic Disabled' sub-option to control isKinematic behavior.")]
         private bool _throwWhenUnselected = true;
+        [SerializeField]
+        [ConditionalHide(nameof(_throwWhenUnselected), true, ConditionalHideAttribute.DisplayMode.ShowIfTrue)]
+        [Tooltip("When enabled, forces isKinematic to false during throw. When disabled, respects the original isKinematic setting.")]
+        private bool _forceKinematicDisabled = false;
 
         /// <summary>
         /// Gets or sets the maximum number of grab points. This property is crucial for defining how many points can be used to interact with the object.
@@ -91,6 +95,21 @@ namespace Oculus.Interaction
             set
             {
                 _maxGrabPoints = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether to force isKinematic to false during throw physics. When disabled, respects the original isKinematic setting.
+        /// </summary>
+        public bool ForceKinematicDisabled
+        {
+            get
+            {
+                return _forceKinematicDisabled;
+            }
+            set
+            {
+                _forceKinematicDisabled = value;
             }
         }
 
@@ -113,9 +132,9 @@ namespace Oculus.Interaction
         public void SetTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
-            if (_velocityThrow != null)
+            if (VelocityThrow != null)
             {
-                _velocityThrow.SetTimeProvider(timeProvider);
+                VelocityThrow.SetTimeProvider(timeProvider);
             }
         }
 
@@ -129,7 +148,17 @@ namespace Oculus.Interaction
         /// This component is used to apply velocity to the object when it is released.
         /// Note that this property is only set during Start and if the ThrowWhenUnselected and Rigidbody fields are set.
         /// </summary>
-        public ThrowWhenUnselected VelocityThrow => _velocityThrow;
+        public ThrowWhenUnselected VelocityThrow
+        {
+            get
+            {
+                if (_velocityThrow == null)
+                {
+                    _velocityThrow = new ThrowWhenUnselected(_rigidbody, this);
+                }
+                return _velocityThrow;
+            }
+        }
 
         private bool _isKinematicLocked = false;
 
@@ -177,8 +206,8 @@ namespace Oculus.Interaction
 
             if (_rigidbody != null && _throwWhenUnselected)
             {
-                _velocityThrow = new ThrowWhenUnselected(_rigidbody, this);
-                _velocityThrow.SetTimeProvider(this._timeProvider);
+                VelocityThrow.SetRigidBody(_rigidbody);
+                VelocityThrow.SetTimeProvider(this._timeProvider);
             }
 
             this.EndStart(ref _started);
@@ -267,6 +296,12 @@ namespace Oculus.Interaction
             {
                 _isKinematicLocked = false;
                 _rigidbody.UnlockKinematic();
+
+                // Ensure throwing works when enabled
+                if (_throwWhenUnselected && _forceKinematicDisabled)
+                {
+                    _rigidbody.isKinematic = false;
+                }
             }
         }
 

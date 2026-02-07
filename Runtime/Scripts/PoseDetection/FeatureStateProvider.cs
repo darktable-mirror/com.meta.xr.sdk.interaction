@@ -99,8 +99,6 @@ namespace Oculus.Interaction.PoseDetection
         private readonly Func<TFeature, int> _featureToInt;
         private readonly Func<float> _timeProvider;
 
-
-
         #region Lookup Helpers
         private int EnumToInt(TFeature value) => _featureToInt(value);
 
@@ -240,7 +238,7 @@ namespace Oculus.Interaction.PoseDetection
             }
 
             // If the desired state is different from the previous frame, reset the timer
-            var currentTime = _timeProvider();
+            float currentTime = _timeProvider();
             if (!desiredState.Equals(currentState.DesiredState))
             {
                 currentState.DesiredStateEntryTime = currentTime;

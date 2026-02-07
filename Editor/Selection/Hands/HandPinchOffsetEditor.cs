@@ -41,6 +41,9 @@ namespace Oculus.Interaction.Editor
 
         protected override void OnEnable()
         {
+            if (!target)
+                return;
+
             base.OnEnable();
 #if ISDK_OPENXR_HAND
             _unrollConverter = NeedsConversion(serializedObject);

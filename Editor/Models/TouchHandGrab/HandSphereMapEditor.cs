@@ -41,6 +41,9 @@ namespace Oculus.Interaction.Editor.Models.TouchHandGrab
 
         protected override void OnEnable()
         {
+            if (!target)
+                return;
+            
             base.OnEnable();
             _unrollConverter = NeedsConversion(serializedObject);
         }

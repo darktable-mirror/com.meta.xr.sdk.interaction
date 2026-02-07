@@ -412,8 +412,8 @@ namespace Oculus.Interaction.HandGrab.Editor
             handRef.InjectAllHandRef(fingerFeatureStateProvider.Hand);
             fingerFeatureStateProviderRef.InjectAllFingerFeatureStateProviderRef(fingerFeatureStateProvider);
             transformFeatureStateProviderRef.InjectAllTransformFeatureStateProviderRef(transformFeatureStateProvider);
-            shapeRecognizer.InjectAllShapeRecognizerActiveState(handRef, fingerFeatureStateProviderRef, new ShapeRecognizer[] { recognizer });
-            transformRecognizer.InjectAllTransformRecognizerActiveState(handRef, transformFeatureStateProviderRef, transformFeatureConfigList, transformConfig);
+            shapeRecognizer.InjectAllShapeRecognizerActiveState(fingerFeatureStateProviderRef, new ShapeRecognizer[] { recognizer });
+            transformRecognizer.InjectAllTransformRecognizerActiveState(transformFeatureStateProviderRef, transformFeatureConfigList, transformConfig);
             activeState.InjectAllActiveStateGroup(new() { shapeRecognizer, transformRecognizer });
             selector.InjectAllActiveStateSelector(activeState);
             selectorUnityEventWrapper.InjectAllSelectorUnityEventWrapper(selector);

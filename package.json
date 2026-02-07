@@ -1,7 +1,7 @@
 {
   "name": "com.meta.xr.sdk.interaction",
   "displayName": "Meta XR Interaction SDK Essentials",
-  "version": "81.0.1",
+  "version": "83.0.0",
   "description": "Provides the core implementations of all the provided interaction models along with necessary shaders, materials, and prefabs.",
   "samples": [
     {
@@ -24,12 +24,12 @@
   "licensesUrl": "https://developers.meta.com/horizon/licenses/oculussdk/",
   "licenseMessage": "By adding or using this package you agree to the terms and conditions of the Meta Platforms Technologies SDK License Agreement: https://developer.oculus.com/licenses/oculussdk",
   "keywords": [
-    "Interaction",
-    "XR",
-    "Oculus",
-    "Meta",
     "SDK",
-    "Quest"
+    "XR",
+    "Meta",
+    "Quest",
+    "Oculus",
+    "Interaction"
   ],
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6",

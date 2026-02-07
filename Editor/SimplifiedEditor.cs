@@ -34,6 +34,9 @@ namespace Oculus.Interaction.Editor
 
         protected virtual void OnEnable()
         {
+            if (!target)
+                return;
+
             _editorDrawer = new EditorBase(serializedObject);
 
             Dictionary<string, string[]> sections = FindCustomSections(serializedObject);
