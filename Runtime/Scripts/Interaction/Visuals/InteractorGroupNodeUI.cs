@@ -22,11 +22,10 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
-using Oculus.Interaction.DebugTree;
 
-namespace Oculus.Interaction.PoseDetection.Debug
+namespace Oculus.Interaction.DebugTree
 {
-    public class ActiveStateNodeUIVertical : MonoBehaviour, INodeUI<IActiveState>
+    public class InteractorGroupNodeUI : MonoBehaviour, INodeUI<IInteractor>
     {
         [SerializeField]
         private RectTransform _childArea;
@@ -41,20 +40,23 @@ namespace Oculus.Interaction.PoseDetection.Debug
         private Image _activeImage;
 
         [SerializeField]
-        private Color _activeColor = Color.green;
-
+        private Color _selectColor = Color.green;
         [SerializeField]
-        private Color _inactiveColor = Color.red;
+        private Color _hoverColor = Color.blue;
+        [SerializeField]
+        private Color _normalColor = Color.red;
+        [SerializeField]
+        private Color _disabledColor = Color.grey;
 
         private const string OBJNAME_FORMAT = "<color=#dddddd><size=85%>{0}</size></color>";
 
         public RectTransform ChildArea => _childArea;
 
-        private ITreeNode<IActiveState> _boundNode;
+        private ITreeNode<IInteractor> _boundNode;
         private bool _isRoot = false;
         private bool _isDuplicate = false;
 
-        public void Bind(ITreeNode<IActiveState> node, bool isRoot, bool isDuplicate)
+        public void Bind(ITreeNode<IInteractor> node, bool isRoot, bool isDuplicate)
         {
             Assert.IsNotNull(node);
 
@@ -74,12 +76,23 @@ namespace Oculus.Interaction.PoseDetection.Debug
 
         protected virtual void Update()
         {
-            _activeImage.color = _boundNode.Value.Active ? _activeColor : _inactiveColor;
+            switch (_boundNode.Value.State)
+            {
+                case InteractorState.Select:
+                    _activeImage.color = _selectColor; break;
+                case InteractorState.Hover:
+                    _activeImage.color = _hoverColor; break;
+                case InteractorState.Normal:
+                    _activeImage.color = _normalColor; break;
+                case InteractorState.Disabled:
+                    _activeImage.color = _disabledColor; break;
+            }
+
             _childArea.gameObject.SetActive(_childArea.childCount > 0);
             _connectingLine.gameObject.SetActive(!_isRoot);
         }
 
-        private string GetLabelText(ITreeNode<IActiveState> node)
+        private string GetLabelText(ITreeNode<IInteractor> node)
         {
             string label = _isDuplicate ? "<i>" : "";
             if (node.Value is UnityEngine.Object obj)
