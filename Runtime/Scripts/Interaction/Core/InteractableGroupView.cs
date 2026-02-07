@@ -26,15 +26,15 @@ using UnityEngine;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This class implements higher level logic to forward the highest IInteractable
+    /// This class implements higher level logic to forward the highest IInteractableView
     /// state of any of the interactables in its list
     /// </summary>
     public class InteractableGroupView : MonoBehaviour, IInteractableView
     {
-        [SerializeField, Interface(typeof(IInteractable))]
+        [SerializeField, Interface(typeof(IInteractableView))]
         private List<UnityEngine.Object> _interactables;
 
-        private List<IInteractable> Interactables;
+        private List<IInteractableView> Interactables;
 
         [SerializeField, Optional]
         private UnityEngine.Object _data = null;
@@ -45,7 +45,7 @@ namespace Oculus.Interaction
             get
             {
                 int count = 0;
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     count += interactable.InteractorViews.Count();
                 }
@@ -59,7 +59,7 @@ namespace Oculus.Interaction
             get
             {
                 int count = 0;
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     count += interactable.SelectingInteractorViews.Count();
                 }
@@ -84,7 +84,7 @@ namespace Oculus.Interaction
             get
             {
                 int max = 0;
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     max = Mathf.Max(interactable.MaxInteractors, max);
                 }
@@ -98,7 +98,7 @@ namespace Oculus.Interaction
             get
             {
                 int max = 0;
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     max = Mathf.Max(interactable.MaxSelectingInteractors, max);
                 }
@@ -146,7 +146,7 @@ namespace Oculus.Interaction
         {
             if (_interactables != null)
             {
-                Interactables = _interactables.ConvertAll(mono => mono as IInteractable);
+                Interactables = _interactables.ConvertAll(mono => mono as IInteractableView);
             }
         }
 
@@ -170,7 +170,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     interactable.WhenStateChanged += HandleStateChange;
                     interactable.WhenInteractorViewAdded += HandleInteractorViewAdded;
@@ -185,7 +185,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                foreach (IInteractable interactable in Interactables)
+                foreach (IInteractableView interactable in Interactables)
                 {
                     interactable.WhenStateChanged -= HandleStateChange;
                     interactable.WhenInteractorViewAdded -= HandleInteractorViewAdded;
@@ -223,12 +223,12 @@ namespace Oculus.Interaction
 
         #region Inject
 
-        public void InjectAllInteractableGroupView(List<IInteractable> interactables)
+        public void InjectAllInteractableGroupView(List<IInteractableView> interactables)
         {
             InjectInteractables(interactables);
         }
 
-        public void InjectInteractables(List<IInteractable> interactables)
+        public void InjectInteractables(List<IInteractableView> interactables)
         {
             Interactables = interactables;
             _interactables =

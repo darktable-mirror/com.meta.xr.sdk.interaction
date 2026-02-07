@@ -63,7 +63,7 @@ namespace Oculus.Interaction.InterfaceSupport
 
         public static bool AnyOpen => HasOpenInstances<InterfacePicker>();
 
-        private Object _target;
+        private Object[] _targets;
         private string _propertyPath;
         private List<MonoInspector> _monoInspectors;
         private Vector2 _scrollPos = Vector2.zero;
@@ -80,7 +80,7 @@ namespace Oculus.Interaction.InterfaceSupport
             InterfacePicker picker = GetWindow<InterfacePicker>(true);
 
             picker._propertyPath = prop.propertyPath;
-            picker._target = prop.serializedObject.targetObject;
+            picker._targets = prop.serializedObject.targetObjects;
             picker._monoInspectors?.ForEach((mi) => mi.Destroy());
             picker._monoInspectors = new List<MonoInspector>();
             picker.titleContent = new GUIContent(monos[0].gameObject.name);
@@ -91,7 +91,7 @@ namespace Oculus.Interaction.InterfaceSupport
 
         private void OnGUI()
         {
-            if (_target == null)
+            if (_targets == null || _targets.Length == 0)
             {
                 Close();
                 return;
@@ -136,8 +136,11 @@ namespace Oculus.Interaction.InterfaceSupport
             if (GUILayout.Button($"{monoInspector.Mono.GetType().Name}",
                 GUILayout.Height(SELECT_BUTTON_HEIGHT_PX)))
             {
-                Apply(monoInspector.Mono);
-                Close();
+                EditorApplication.delayCall += () =>
+                {
+                    Apply(monoInspector.Mono);
+                    Close();
+                };
             }
         }
 
@@ -151,10 +154,13 @@ namespace Oculus.Interaction.InterfaceSupport
 
         private void Apply(MonoBehaviour mono)
         {
-            SerializedProperty property =
-                new SerializedObject(_target).FindProperty(_propertyPath);
-            property.objectReferenceValue = mono;
-            property.serializedObject.ApplyModifiedProperties();
+            foreach (var target in _targets)
+            {
+                SerializedProperty property =
+                    new SerializedObject(target).FindProperty(_propertyPath);
+                property.objectReferenceValue = mono;
+                property.serializedObject.ApplyModifiedProperties();
+            }
         }
     }
 }

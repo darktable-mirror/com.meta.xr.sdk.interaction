@@ -45,10 +45,13 @@ namespace Oculus.Interaction
         public class TwoGrabFreeConstraints
         {
             [Tooltip("If true then the constraints are relative to the initial scale of the object " +
-                     "if false, constraints are absolute with respect to the object's x-axis scale.")]
+                     "if false, constraints are absolute with respect to the object's selected axes.")]
             public bool ConstraintsAreRelative;
             public FloatConstraint MinScale;
             public FloatConstraint MaxScale;
+            public bool ConstrainXScale = true;
+            public bool ConstrainYScale = false;
+            public bool ConstrainZScale = false;
         }
 
         [SerializeField]
@@ -139,14 +142,42 @@ namespace Oculus.Interaction
             float previousScale = _activeScale;
             _activeScale = _initialScale * scalePercentage;
 
-            if(_constraints.MinScale.Constrain)
+            var nextScale = _activeScale * _initialLocalScale;
+            if (_constraints.MinScale.Constrain)
             {
-                _activeScale = Mathf.Max(_constraints.MinScale.Value, _activeScale);
+                float scalar = 1f;
+                if (_constraints.ConstrainXScale)
+                {
+                    scalar = Mathf.Max(scalar, _constraints.MinScale.Value / nextScale.x);
+                }
+                if (_constraints.ConstrainYScale)
+                {
+                    scalar = Mathf.Max(scalar, _constraints.MinScale.Value / nextScale.y);
+                }
+                if (_constraints.ConstrainZScale)
+                {
+                    scalar = Mathf.Max(scalar, _constraints.MinScale.Value / nextScale.z);
+                }
+                nextScale *= scalar;
             }
-            if(_constraints.MaxScale.Constrain)
+            if (_constraints.MaxScale.Constrain)
             {
-                _activeScale = Mathf.Min(_constraints.MaxScale.Value, _activeScale);
+                float scalar = 1f;
+                if (_constraints.ConstrainXScale)
+                {
+                    scalar = Mathf.Min(scalar, _constraints.MaxScale.Value / nextScale.x);
+                }
+                if (_constraints.ConstrainYScale)
+                {
+                    scalar = Mathf.Min(scalar, _constraints.MaxScale.Value / nextScale.y);
+                }
+                if (_constraints.ConstrainZScale)
+                {
+                    scalar = Mathf.Min(scalar, _constraints.MaxScale.Value / nextScale.z);
+                }
+                nextScale *= scalar;
             }
+            _activeScale = nextScale.x / _initialLocalScale.x;
 
             // Apply the positional delta initialCenter -> targetCenter and the
             // rotational delta initialRotation -> targetRotation to the target transform
@@ -159,7 +190,7 @@ namespace Oculus.Interaction
 
             targetTransform.position = (targetRotation * (_activeScale * offsetInTargetSpace)) + targetCenter;
             targetTransform.rotation = targetRotation * rotationInTargetSpace;
-            targetTransform.localScale = _activeScale * _initialLocalScale;
+            targetTransform.localScale = nextScale;
 
             _previousGrabPointA = new Pose(grabA.position, grabA.rotation);
             _previousGrabPointB = new Pose(grabB.position, grabB.rotation);

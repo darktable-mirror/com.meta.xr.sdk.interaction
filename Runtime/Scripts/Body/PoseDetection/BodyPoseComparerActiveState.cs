@@ -29,7 +29,7 @@ namespace Oculus.Interaction.Body.PoseDetection
     /// Compares a user-provided set of joints between two Body Poses.
     /// </summary>
     public class BodyPoseComparerActiveState :
-        MonoBehaviour, IActiveState
+        MonoBehaviour, IActiveState, ITimeConsumer
     {
         public struct BodyPoseComparerFeatureState
         {
@@ -91,13 +91,18 @@ namespace Oculus.Interaction.Body.PoseDetection
             set => _minTimeInState = value;
         }
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         public IReadOnlyDictionary<JointComparerConfig, BodyPoseComparerFeatureState> FeatureStates =>
             _featureStates;
 
         private Dictionary<JointComparerConfig, BodyPoseComparerFeatureState> _featureStates =
             new Dictionary<JointComparerConfig, BodyPoseComparerFeatureState>();
 
-        private Func<float> _timeProvider;
         private bool _isActive;
         private bool _internalActive;
         private float _lastStateChangeTime;
@@ -106,7 +111,6 @@ namespace Oculus.Interaction.Body.PoseDetection
         {
             PoseA = _poseA as IBodyPose;
             PoseB = _poseB as IBodyPose;
-            _timeProvider = () => Time.time;
         }
 
         protected virtual void Start()
@@ -190,6 +194,7 @@ namespace Oculus.Interaction.Body.PoseDetection
             _configs = new List<JointComparerConfig>(configs);
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

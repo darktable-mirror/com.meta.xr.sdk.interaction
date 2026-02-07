@@ -33,7 +33,7 @@ namespace Oculus.Interaction
     }
 
     /// <summary>
-    /// Creates and renders a tube mesh from sequence of points.
+    /// Creates and renders a tube mesh from a sequence of points.
     /// </summary>
     public class TubeRenderer : MonoBehaviour
     {
@@ -45,14 +45,34 @@ namespace Oculus.Interaction
             public Vector2 uv;
         }
 
+        /// <summary>
+        /// The Mesh Filter that's included in the ReticleLine prefab.
+        /// </summary>
+        [Tooltip("The Mesh Filter that's included in the ReticleLine prefab.")]
         [SerializeField]
         private MeshFilter _filter;
+        /// <summary>
+        /// The Mesh Renderer that's included in the ReticleLine prefab.
+        /// </summary>
+        [Tooltip("The Mesh Renderer that's included in the ReticleLine prefab.")]
         [SerializeField]
         private MeshRenderer _renderer;
+        /// <summary>
+        /// The number of divisions to use when calculating the tube mesh's vertices.
+        /// </summary>
+        [Tooltip("The number of divisions to use when calculating the tube mesh's vertices.")]
         [SerializeField]
         private int _divisions = 6;
+        /// <summary>
+        /// The number of bevels to use when calculating the tube mesh's vertices.
+        /// </summary>
+        [Tooltip("The number of bevels to use when calculating the tube mesh's vertices.")]
         [SerializeField]
         private int _bevel = 4;
+        /// <summary>
+        /// Unity shader queue that determines when the tube is rendered. Defaults to -1, which uses the render queue of the shader.
+        /// </summary>
+        [Tooltip("Unity shader queue that determines when the tube is rendered. Defaults to -1, which uses the render queue of the shader.")]
         [SerializeField]
         private int _renderQueue = -1;
         public int RenderQueue
@@ -79,7 +99,10 @@ namespace Oculus.Interaction
                 _renderOffset = value;
             }
         }
-
+        /// <summary>
+        /// The thickness of the tube.
+        /// </summary>
+        [Tooltip("The thickness of the tube.")]
         [SerializeField]
         private float _radius = 0.005f;
         public float Radius
@@ -93,7 +116,10 @@ namespace Oculus.Interaction
                 _radius = value;
             }
         }
-
+        /// <summary>
+        /// The gradient of the tube.
+        /// </summary>
+        [Tooltip("The gradient of the tube.")]
         [SerializeField]
         private Gradient _gradient;
         public Gradient Gradient
@@ -107,7 +133,10 @@ namespace Oculus.Interaction
                 _gradient = value;
             }
         }
-
+        /// <summary>
+        /// The color of the tube.
+        /// </summary>
+        [Tooltip("The color of the tube.")]
         [SerializeField]
         private Color _tint = Color.white;
         public Color Tint
@@ -134,6 +163,10 @@ namespace Oculus.Interaction
                 _progressFade = value;
             }
         }
+        /// <summary>
+        /// Defines the length of the transparent portion at the beginning of the tube. The higher the value, the longer the transparent portion.
+        /// </summary>
+        [Tooltip("Defines the length of the transparent portion at the beginning of the tube. The higher the value, the longer the transparent portion.")]
         [SerializeField]
         private float _startFadeThresold = 0.2f;
         public float StartFadeThresold
@@ -147,6 +180,10 @@ namespace Oculus.Interaction
                 _startFadeThresold = value;
             }
         }
+        /// <summary>
+        /// Defines the length of the transparent portion at the end of the tube. The higher the value, the longer the transparent portion.
+        /// </summary>
+        [Tooltip("Defines the length of the transparent portion at the end of the tube. The higher the value, the longer the transparent portion.")]
         [SerializeField]
         private float _endFadeThresold = 0.2f;
         public float EndFadeThresold
@@ -160,6 +197,10 @@ namespace Oculus.Interaction
                 _endFadeThresold = value;
             }
         }
+        /// <summary>
+        /// Determines if the transparent portion of the tube should be in the middle instead of at the beginning and end.
+        /// </summary>
+        [Tooltip("Should the transparent portion of the tube be in the middle instead of at the beginning and end?")]
         [SerializeField]
         private bool _invertThreshold = false;
         public bool InvertThreshold

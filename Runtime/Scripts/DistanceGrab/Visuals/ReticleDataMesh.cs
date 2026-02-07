@@ -22,8 +22,15 @@ using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Part of the ghost mesh reticle used for distance grabs. Attached to each GameObject that should be outlined in your hand during a hover. Pairs with ReticleMeshDrawer.
+    /// </summary>
     public class ReticleDataMesh : MonoBehaviour, IReticleData
     {
+    /// <summary>
+    /// The mesh of the GameObject to outline.
+    /// </summary>
+    [Tooltip("The mesh of the GameObject to outline.")]
         [SerializeField]
         private MeshFilter _filter;
         public MeshFilter Filter

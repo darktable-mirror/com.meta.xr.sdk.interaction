@@ -32,15 +32,28 @@ namespace Oculus.Interaction
     public class IndexPinchSafeReleaseSelector : MonoBehaviour,
         ISelector, IActiveState
     {
+        /// <summary>
+        /// The hand to check.
+        /// </summary>
+        [Tooltip("The hand to check.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        /// <summary>
+        /// If checked, the selector will select during the frame when the pinch is released as opposed to when it's pinching.
+        /// </summary>
+        [Tooltip("If checked, the selector will select during the frame when the pinch is released as opposed to when it's pinching.")]
         [SerializeField]
         private bool _selectOnRelease = true;
 
         public bool Active => this.enabled && _isIndexFingerPinching && !_cancelled;
 
+        /// <summary>
+        /// An <see cref="IActiveState"/> that confirms a release actually happened. To confirm a release happened, the <see cref="IActiveState"/> should
+        /// check either a pose or the distance between the index finger and thumb.
+        /// </summary>
+        [Tooltip("Confirms that a release actually happened by checking either a pose or the distance between the index finger and thumb.")]
         [SerializeField, Interface(typeof(IActiveState))]
         private UnityEngine.Object _indexReleaseSafeguard;
         private IActiveState IndexReleaseSafeguard;

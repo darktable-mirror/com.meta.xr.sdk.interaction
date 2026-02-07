@@ -23,8 +23,8 @@ using UnityEngine;
 namespace Oculus.Interaction.Input
 {
     /// <summary>
-    /// Alters hand data piped into this modifier to lock and unlock joints (wrist position and rotation,
-    /// finger joint rotations)  When switching between locked and unlocked states, additionally smooths
+    /// Used primarily for touch limiting during pokes and custom poses during grabs. Alters hand data piped into this modifier to lock and unlock joints (wrist position and rotation,
+    /// finger joint rotations).  When switching between locked and unlocked states, additionally smooths
     /// out transitions by easing between source hand data and target hand data.
     /// </summary>
     public class SyntheticHand : Hand

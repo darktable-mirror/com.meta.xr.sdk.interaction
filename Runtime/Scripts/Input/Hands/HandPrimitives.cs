@@ -103,6 +103,7 @@ namespace Oculus.Interaction.Input
         Pinky1 = 1 << HandJointId.HandPinky1,
         Pinky2 = 1 << HandJointId.HandPinky2,
         Pinky3 = 1 << HandJointId.HandPinky3,
+        HandMaxSkinnable = 1 << HandJointId.HandMaxSkinnable,
         ThumbTip = 1 << HandJointId.HandThumbTip,
         IndexTip = 1 << HandJointId.HandIndexTip,
         MiddleTip = 1 << HandJointId.HandMiddleTip,

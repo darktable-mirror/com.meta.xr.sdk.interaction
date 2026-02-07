@@ -22,6 +22,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Specifies a teleport location.
+    /// </summary>
     public class ReticleDataTeleport : MonoBehaviour, IReticleData
     {
         [SerializeField, Optional]
@@ -39,6 +42,10 @@ namespace Oculus.Interaction.DistanceReticles
             InvalidTarget
         }
 
+        /// <summary>
+        /// Determines if the teleport reticle is hidden or marked as either valid or invalid when hovering over this spot.
+        /// </summary>
+        [Tooltip("Determines if the teleport reticle is hidden or marked as either valid or invalid when hovering over this spot.")]
         [SerializeField]
         private TeleportReticleMode _reticleMode = TeleportReticleMode.ValidTarget;
         public TeleportReticleMode ReticleMode

@@ -29,6 +29,9 @@ namespace Oculus.Interaction
     /// </summary>
     public class ActiveStateSelector : MonoBehaviour, ISelector
     {
+        /// <summary>
+        /// ISelector events will be raised based on state changes of this IActiveState.
+        /// </summary>
         [Tooltip("ISelector events will be raised " +
             "based on state changes of this IActiveState.")]
         [SerializeField, Interface(typeof(IActiveState))]

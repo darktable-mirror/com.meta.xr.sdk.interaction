@@ -18,16 +18,12 @@
  * limitations under the License.
  */
 
-using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using Oculus.Interaction.Grab;
 using Oculus.Interaction.GrabAPI;
-using Oculus.Interaction.Input;
-using System;
-using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 using Oculus.Interaction.HandGrab;
+using Oculus.Interaction.Input;
+using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
@@ -149,11 +145,11 @@ namespace Oculus.Interaction
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-
             Assert.IsNotNull(_materialEditor);
             Assert.IsNotNull(HandGrabInteractor);
             Assert.IsNotNull(Interactor);
             Assert.IsNotNull(_handVisual);
+
             HandFingerMaskGenerator.GenerateFingerMask(_handRenderer, _handVisual,
                 _materialEditor.MaterialPropertyBlock);
 
@@ -202,7 +198,7 @@ namespace Oculus.Interaction
                 block.SetFloat(_fingersGlowIDs[i], Mathf.Clamp01(_glowStregth[i]));
             }
 
-            block.SetInt(_glowTypeID, (int) _glowType);
+            block.SetInt(_glowTypeID, (int)_glowType);
         }
 
         private void UpdateFingerGlowStrength(int fingerIndex, float strength)

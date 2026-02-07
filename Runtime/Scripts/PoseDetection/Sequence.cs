@@ -49,7 +49,8 @@ namespace Oculus.Interaction.PoseDetection
     /// is true. If _remainActiveCooldown > 0, Sequence.Active will remain active even after RemainActiveWhile becomes
     /// false until the cooldown timer is met. The timer is reset if RemainActiveWhile becomes true again.
     /// </summary>
-    public class Sequence : MonoBehaviour, IActiveState
+    public class Sequence : MonoBehaviour,
+        IActiveState, ITimeConsumer
     {
         [Serializable]
         public class ActivationStep
@@ -112,6 +113,12 @@ namespace Oculus.Interaction.PoseDetection
         [SerializeField, Optional]
         private float _remainActiveCooldown;
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         private IActiveState RemainActiveWhile { get; set; }
 
         /// <summary>
@@ -125,7 +132,6 @@ namespace Oculus.Interaction.PoseDetection
         private float _currentStepActivatedTime;
         private float _stepFailedTime;
         private bool _currentStepWasActive;
-        Func<float> _timeProvider;
 
         private float _cooldownExceededTime;
         private bool _wasRemainActive;
@@ -141,11 +147,6 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Start()
         {
-            if (_timeProvider == null)
-            {
-                _timeProvider = () => Time.time;
-            }
-
             if (_stepsToActivate == null)
             {
                 _stepsToActivate = Array.Empty<ActivationStep>();
@@ -266,7 +267,7 @@ namespace Oculus.Interaction.PoseDetection
 
         #endregion
 
-        public bool Active { get; private set;  }
+        public bool Active { get; private set; }
 
         static Sequence()
         {
@@ -297,6 +298,7 @@ namespace Oculus.Interaction.PoseDetection
             RemainActiveWhile = activeState;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

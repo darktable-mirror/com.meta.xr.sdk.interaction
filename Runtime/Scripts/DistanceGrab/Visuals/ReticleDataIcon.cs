@@ -22,11 +22,22 @@ using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Part of the ghost icon reticle used for distance grabs. Attached to each GameObject that the icon can appear on. Pairs with ReticleIconDrawer.
+    /// </summary>
     public class ReticleDataIcon : MonoBehaviour, IReticleData
     {
+        /// <summary>
+        /// The Mesh Renderer of the GameObject that the icon can appear on.
+        /// </summary>
+        [Tooltip("The Mesh Renderer of the GameObject that the icon can appear on.")]
         [SerializeField, Optional]
         private MeshRenderer _renderer;
 
+        /// <summary>
+        /// The icon's appearance.
+        /// </summary>
+        [Tooltip("The icon's appearance.")]
         [SerializeField, Optional]
         private Texture _customIcon;
         public Texture CustomIcon

@@ -24,16 +24,31 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Draws a mesh outline of any GameObject that has a Reticle Data Mesh component and is currently hovered or selected by a hand grab interactor. Included in the ReticleMesh prefab. Pairs with ReticleDataMesh.
+    /// </summary>
     public class ReticleMeshDrawer : InteractorReticle<ReticleDataMesh>
     {
+        /// <summary>
+        /// The hand grab interactor that uses the reticle.
+        /// </summary>
+        [Tooltip("The hand grab interactor that uses the reticle.")]
         [FormerlySerializedAs("_handGrabber")]
         [SerializeField, Interface(typeof(IHandGrabInteractor), typeof(IInteractorView))]
         private UnityEngine.Object _handGrabInteractor;
         private IHandGrabInteractor HandGrabInteractor { get; set; }
 
+        /// <summary>
+        /// The ReticleMesh prefab's mesh filter.
+        /// </summary>
+        [Tooltip("The ReticleMesh prefab's mesh filter.")]
         [SerializeField]
         private MeshFilter _filter;
 
+        /// <summary>
+        /// The ReticleMesh prefab's mesh renderer.
+        /// </summary>
+        [Tooltip("The ReticleMesh prefab's mesh renderer.")]
         [SerializeField]
         private MeshRenderer _renderer;
 

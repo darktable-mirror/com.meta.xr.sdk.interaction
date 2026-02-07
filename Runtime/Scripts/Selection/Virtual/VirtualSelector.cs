@@ -25,10 +25,14 @@ namespace Oculus.Interaction
 {
     /// <summary>
     /// This Virtual Selector can provide interactions with a sample selector
-    /// that can be toggled from within the Unity insepctor using the HandleSelected Flag
+    /// that can be toggled from within the Unity inspector using the HandleSelected Flag.
     /// </summary>
     public class VirtualSelector : MonoBehaviour, ISelector
     {
+        /// <summary>
+        ///
+        /// </summary>
+        [Tooltip("Toggles the selector from within the Unity inspector.")]
         [SerializeField]
         private bool _selectFlag;
 

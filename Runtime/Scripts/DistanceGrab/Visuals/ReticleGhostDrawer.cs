@@ -26,17 +26,32 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Used in the OVRLeftHandReticle and OVRRightHandReticle prefabs. Draws and manages the ghost hand reticle. Pairs with ReticleDataGhost.
+    /// </summary>
     public class ReticleGhostDrawer : InteractorReticle<ReticleDataGhost>
     {
+        /// <summary>
+        /// The hand grab interactor that the ghost hand will mimic.
+        /// </summary>
+        [Tooltip("The hand grab interactor to use for pose data.")]
         [FormerlySerializedAs("_handGrabber")]
         [SerializeField, Interface(typeof(IHandGrabInteractor), typeof(IInteractorView))]
         private UnityEngine.Object _handGrabInteractor;
         private IHandGrabInteractor HandGrabInteractor { get; set; }
 
+        /// <summary>
+        /// Provides pose data for the ghost hand.
+        /// </summary>
+        [Tooltip("Provides pose data for the ghost hand.")]
         [FormerlySerializedAs("_modifier")]
         [SerializeField]
         private SyntheticHand _syntheticHand;
 
+        /// <summary>
+        /// Determines the visuals of the ghost hand.
+        /// </summary>
+        [Tooltip("Determines the visuals of the hand.")]
         [SerializeField, Interface(typeof(IHandVisual))]
         [FormerlySerializedAs("_visualHand")]
         private UnityEngine.Object _handVisual;

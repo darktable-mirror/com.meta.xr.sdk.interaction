@@ -40,6 +40,16 @@ namespace Oculus.Interaction.Editor
             );
 
             AutoWiring.Register(
+                typeof(HmdRef),
+                new[] {
+                    new ComponentWiringStrategyConfig("_hmd", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors,
+                            FieldWiringStrategies.WireFieldToSceneComponent
+                        })
+                }
+            );
+            AutoWiring.Register(
                 typeof(ControllerRef),
                 new[]
                 {

@@ -32,7 +32,7 @@ namespace Oculus.Interaction
     /// A few helper methods are provided to track progress through the animation.
     /// </summary>
     [Serializable]
-    public class ProgressCurve
+    public class ProgressCurve : ITimeConsumer
     {
         [SerializeField]
         private AnimationCurve _animationCurve;
@@ -63,6 +63,7 @@ namespace Oculus.Interaction
         }
 
         private Func<float> _timeProvider = () => Time.time;
+        [Obsolete("Use SetTimeProvider()")]
         public Func<float> TimeProvider
         {
             get
@@ -73,6 +74,11 @@ namespace Oculus.Interaction
             {
                 _timeProvider = value;
             }
+        }
+
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
         }
 
         private float _animationStartTime;

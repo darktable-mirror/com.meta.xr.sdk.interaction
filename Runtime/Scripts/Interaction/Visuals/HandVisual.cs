@@ -22,10 +22,12 @@ using Oculus.Interaction.Input;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Renders the hand.
+    /// </summary>
     public class HandVisual : MonoBehaviour, IHandVisual
     {
         [SerializeField, Interface(typeof(IHand))]
@@ -57,6 +59,7 @@ namespace Oculus.Interaction
         private int _wristScalePropertyId;
 
         public IList<Transform> Joints => _jointTransforms;
+        public Transform Root => _root;
 
         public bool ForceOffVisibility { get; set; }
 

@@ -76,10 +76,10 @@ namespace Oculus.Interaction.Body.Input
         [InspectorName("Right Arm/Right Hand Wrist Twist")]
         Body_RightHandWristTwist = Body_Start + 17,
 
-        [InspectorName("Left Hand/Left Hand Wrist")]
-        Body_LeftHandWrist = Body_Start + 18,
         [InspectorName("Left Hand/Left Hand Palm")]
-        Body_LeftHandPalm = Body_Start + 19,
+        Body_LeftHandPalm = Body_Start + 18,
+        [InspectorName("Left Hand/Left Hand Wrist")]
+        Body_LeftHandWrist = Body_Start + 19,
         [InspectorName("Left Hand/Left Hand Thumb Metacarpal")]
         Body_LeftHandThumbMetacarpal = Body_Start + 20,
         [InspectorName("Left Hand/Left Hand Thumb Proximal")]
@@ -129,10 +129,10 @@ namespace Oculus.Interaction.Body.Input
         [InspectorName("Left Hand/Left Hand Little Tip")]
         Body_LeftHandLittleTip = Body_Start + 43,
 
-        [InspectorName("Right Hand/Right Hand Wrist")]
-        Body_RightHandWrist = Body_Start + 44,
         [InspectorName("Right Hand/Right Hand Palm")]
-        Body_RightHandPalm = Body_Start + 45,
+        Body_RightHandPalm = Body_Start + 44,
+        [InspectorName("Right Hand/Right Hand Wrist")]
+        Body_RightHandWrist = Body_Start + 45,
         [InspectorName("Right Hand/Right Hand Thumb Metacarpal")]
         Body_RightHandThumbMetacarpal = Body_Start + 46,
         [InspectorName("Right Hand/Right Hand Thumb Proximal")]

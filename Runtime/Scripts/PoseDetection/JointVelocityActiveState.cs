@@ -26,7 +26,8 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.PoseDetection
 {
-    public class JointVelocityActiveState : MonoBehaviour, IActiveState
+    public class JointVelocityActiveState : MonoBehaviour,
+        IActiveState, ITimeConsumer
     {
         public enum RelativeTo
         {
@@ -171,6 +172,12 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         public IReadOnlyList<JointVelocityFeatureConfig> FeatureConfigs =>
             _featureConfigs.Values;
 
@@ -182,7 +189,6 @@ namespace Oculus.Interaction.PoseDetection
 
         private JointDeltaConfig _jointDeltaConfig;
 
-        private Func<float> _timeProvider;
         private int _lastStateUpdateFrame;
         private float _lastStateChangeTime;
         private float _lastUpdateTime;
@@ -195,7 +201,6 @@ namespace Oculus.Interaction.PoseDetection
         {
             Hand = _hand as IHand;
             JointDeltaProvider = _jointDeltaProvider as IJointDeltaProvider;
-            _timeProvider = () => Time.time;
 
             if (_hmd != null)
             {
@@ -443,11 +448,11 @@ namespace Oculus.Interaction.PoseDetection
             _jointDeltaProvider = jointDeltaProvider as UnityEngine.Object;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
         }
-
 
         public void InjectOptionalHmd(IHmd hmd)
         {

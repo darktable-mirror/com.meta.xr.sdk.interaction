@@ -68,6 +68,7 @@ namespace Oculus.Interaction.HandGrab
         private bool _handGrabShouldUnselect = false;
 
         private HandGrabResult _cachedResult = new HandGrabResult();
+        private GrabTypeFlags _currentGrabType = GrabTypeFlags.None;
 
         #region IHandGrabInteractor
         public IMovement Movement { get; set; }
@@ -144,7 +145,9 @@ namespace Oculus.Interaction.HandGrab
             }
 
             UpdateTarget(Interactable);
-            if (this.ComputeShouldSelect(Interactable, out _))
+
+            _currentGrabType = this.ComputeShouldSelect(Interactable);
+            if (_currentGrabType != GrabTypeFlags.None)
             {
                 _handGrabShouldSelect = true;
             }
@@ -177,7 +180,13 @@ namespace Oculus.Interaction.HandGrab
             Movement.UpdateTarget(handGrabPose);
             Movement.Tick();
 
-            if (this.ComputeShouldUnselect(SelectedInteractable))
+            GrabTypeFlags selectingGrabs = this.ComputeShouldSelect(SelectedInteractable);
+            GrabTypeFlags unselectingGrabs = this.ComputeShouldUnselect(SelectedInteractable);
+            _currentGrabType |= selectingGrabs;
+            _currentGrabType &= ~unselectingGrabs;
+
+            if (unselectingGrabs != GrabTypeFlags.None
+                && _currentGrabType == GrabTypeFlags.None)
             {
                 _handGrabShouldUnselect = true;
             }
@@ -199,6 +208,7 @@ namespace Oculus.Interaction.HandGrab
         {
             base.InteractableUnselected(interactable);
             this.Movement = null;
+            _currentGrabType = GrabTypeFlags.None;
 
             ReleaseVelocityInformation throwVelocity = VelocityCalculator != null ?
                 VelocityCalculator.CalculateThrowVelocity(interactable.transform) :
@@ -285,7 +295,7 @@ namespace Oculus.Interaction.HandGrab
         {
             GrabTypeFlags selectingGrabTypes;
             if (State == InteractorState.Select
-                || !this.ComputeShouldSelect(interactable, out selectingGrabTypes))
+                || (selectingGrabTypes = this.ComputeShouldSelect(interactable)) == GrabTypeFlags.None)
             {
                 HandGrabInteraction.ComputeHandGrabScore(this, interactable, out selectingGrabTypes);
             }

@@ -71,8 +71,15 @@ namespace Oculus.Interaction.GrabAPI
                     SerializedProperty finger = property.FindPropertyRelative(FINGER_PROPERTY_NAMES[i]);
                     HandFinger fingerID = (HandFinger)i;
                     FingerRequirement current = (FingerRequirement)finger.intValue;
+
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.showMixedValue = finger.hasMultipleDifferentValues;
                     FingerRequirement selected = (FingerRequirement)EditorGUI.EnumPopup(rowRect, $"{fingerID}: ", current);
-                    finger.intValue = (int)selected;
+                    EditorGUI.showMixedValue = false;
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        finger.intValue = (int)selected;
+                    }
                 }
 
                 rowRect.y += EditorConstants.ROW_HEIGHT;
@@ -81,6 +88,7 @@ namespace Oculus.Interaction.GrabAPI
             }
             EditorGUI.EndProperty();
         }
+
 
         private void InitializeUnfold(SerializedProperty property)
         {

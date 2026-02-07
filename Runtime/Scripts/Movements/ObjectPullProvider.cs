@@ -22,6 +22,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.HandGrab
 {
+    /// <summary>
+    /// Pulls the selected interactable towards the interactor.
+    /// </summary>
     public class ObjectPullProvider : MonoBehaviour, IMovementProvider
     {
         [SerializeField]

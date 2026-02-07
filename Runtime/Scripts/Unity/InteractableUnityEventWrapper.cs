@@ -25,29 +25,71 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This component makes it possible to connect Interactables in the
-    /// inspector to Unity Events that are broadcast on state changes.
+    /// Exposes Unity events that broadcast state changes from an ‹see cref="IInteractableView"/› (an Interactable).
     /// </summary>
     public class InteractableUnityEventWrapper : MonoBehaviour
     {
+        /// <summary>
+        /// The ‹see cref="IInteractableView"/› (Interactable) component to wrap.
+        /// </summary>
+        [Tooltip("The IInteractableView (Interactable) component to wrap.")]
         [SerializeField, Interface(typeof(IInteractableView))]
         private UnityEngine.Object _interactableView;
         private IInteractableView InteractableView;
 
+        /// <summary>
+        /// Raised when an Interactor hovers over the Interactable.
+        /// </summary>
+        [Tooltip("Raised when an Interactor hovers over the Interactable.")]
         [SerializeField]
         private UnityEvent _whenHover;
+
+        /// <summary>
+        /// Raised when the Interactable was being hovered but now it isn't.
+        /// </summary>
+        [Tooltip("Raised when the Interactable was being hovered but now it isn't.")]
         [SerializeField]
         private UnityEvent _whenUnhover;
+
+        /// <summary>
+        /// Raised when an Interactor selects the Interactable.
+        /// </summary>
+        [Tooltip("Raised when an Interactor selects the Interactable.")]
         [SerializeField]
         private UnityEvent _whenSelect;
+
+        /// <summary>
+        /// Raised when the Interactable was being selected but now it isn't.
+        /// </summary>
+        [Tooltip("Raised when the Interactable was being selected but now it isn't.")]
         [SerializeField]
         private UnityEvent _whenUnselect;
+
+        /// <summary>
+        /// Raised each time an Interactor hovers over the Interactable, even if the Interactable is already being hovered by a different Interactor.
+        /// </summary>
+        [Tooltip("Raised each time an Interactor hovers over the Interactable, even if the Interactable is already being hovered by a different Interactor.")]
         [SerializeField]
         private UnityEvent _whenInteractorViewAdded;
+
+        /// <summary>
+        /// Raised each time an Interactor stops hovering over the Interactable, even if the Interactable is still being hovered by a different Interactor.
+        /// </summary>
+        [Tooltip("Raised each time an Interactor stops hovering over the Interactable, even if the Interactable is still being hovered by a different Interactor.")]
         [SerializeField]
         private UnityEvent _whenInteractorViewRemoved;
+
+        /// <summary>
+        /// Raised each time an Interactor selects the Interactable, even if the Interactable is already being selected by a different Interactor.
+        /// </summary>
+        [Tooltip("Raised each time an Interactor selects the Interactable, even if the Interactable is already being selected by a different Interactor.")]
         [SerializeField]
         private UnityEvent _whenSelectingInteractorViewAdded;
+
+        /// <summary>
+        /// Raised each time an Interactor stops selecting the Interactable, even if the Interactable is still being selected by a different Interactor.
+        /// </summary>
+        [Tooltip("Raised each time an Interactor stops selecting the Interactable, even if the Interactable is still being selected by a different Interactor.")]
         [SerializeField]
         private UnityEvent _whenSelectingInteractorViewRemoved;
 

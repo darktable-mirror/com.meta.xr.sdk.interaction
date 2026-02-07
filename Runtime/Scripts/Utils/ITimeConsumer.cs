@@ -18,26 +18,33 @@
  * limitations under the License.
  */
 
-using UnityEngine;
+using System;
 
-namespace Oculus.Interaction.DistanceReticles
+namespace Oculus.Interaction
 {
     /// <summary>
-    /// Part of the ghost hand reticle used for distance grabs. Attached to each GameObject that the ghost hand can interact with. Pairs with ReticleGhostDrawer.
+    /// A general interface for replacing the global time provider used
+    /// in an object. Grouping classes that use this pattern under this
+    /// interface allows changing multiple objects easily.
     /// </summary>
-    public class ReticleDataGhost : MonoBehaviour, IReticleData
+    public interface ITimeConsumer
     {
         /// <summary>
-        /// The GameObject that the ghost hand can interact with.
+        /// Sets a function that returns the current time in seconds
         /// </summary>
-        [Tooltip("The GameObject that the ghost hand can interact with.")]
-        [SerializeField, Optional]
-        private Transform _targetPoint;
+        void SetTimeProvider(Func<float> timeProvider);
+    }
 
-        public Vector3 ProcessHitPoint(Vector3 hitPoint)
-        {
-            return _targetPoint != null ? _targetPoint.position
-                : this.transform.position;
-        }
+    /// <summary>
+    /// A general interface for replacing the delta time provider used
+    /// in an object. Grouping classes that use this pattern under this
+    /// interface allows changing multiple objects easily.
+    /// </summary>
+    public interface IDeltaTimeConsumer
+    {
+        /// <summary>
+        /// Sets a function that returns the last delta time in seconds
+        /// </summary>
+        void SetDeltaTimeProvider(Func<float> deltaTimeProvider);
     }
 }

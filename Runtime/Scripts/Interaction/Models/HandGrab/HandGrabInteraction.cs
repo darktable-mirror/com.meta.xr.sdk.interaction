@@ -196,17 +196,16 @@ namespace Oculus.Interaction.HandGrab
             return handGrabScore;
         }
 
-        public static bool ComputeShouldSelect(this IHandGrabInteractor handGrabInteractor,
-            IHandGrabInteractable handGrabInteractable, out GrabTypeFlags selectingGrabTypes)
+        public static GrabTypeFlags ComputeShouldSelect(this IHandGrabInteractor handGrabInteractor,
+            IHandGrabInteractable handGrabInteractable)
         {
             if (handGrabInteractable == null)
             {
-                selectingGrabTypes = GrabTypeFlags.None;
-                return false;
+                return GrabTypeFlags.None;
             }
 
             HandGrabAPI api = handGrabInteractor.HandGrabApi;
-            selectingGrabTypes = GrabTypeFlags.None;
+            GrabTypeFlags selectingGrabTypes = GrabTypeFlags.None;
             if (SupportsPinch(handGrabInteractor, handGrabInteractable) &&
                  api.IsHandSelectPinchFingersChanged(handGrabInteractable.PinchGrabRules))
             {
@@ -219,10 +218,10 @@ namespace Oculus.Interaction.HandGrab
                 selectingGrabTypes |= GrabTypeFlags.Palm;
             }
 
-            return selectingGrabTypes != GrabTypeFlags.None;
+            return selectingGrabTypes;
         }
 
-        public static bool ComputeShouldUnselect(this IHandGrabInteractor handGrabInteractor,
+        public static GrabTypeFlags ComputeShouldUnselect(this IHandGrabInteractor handGrabInteractor,
             IHandGrabInteractable handGrabInteractable)
         {
             HandGrabAPI api = handGrabInteractor.HandGrabApi;
@@ -234,35 +233,27 @@ namespace Oculus.Interaction.HandGrab
                 if (!api.IsSustainingGrab(GrabbingRule.FullGrab, pinchFingers) &&
                     !api.IsSustainingGrab(GrabbingRule.FullGrab, palmFingers))
                 {
-                    return true;
+                    return GrabTypeFlags.All;
                 }
-                return false;
+                return GrabTypeFlags.None;
             }
 
-            bool pinchHolding = false;
-            bool palmHolding = false;
-            bool pinchReleased = false;
-            bool palmReleased = false;
-
-            if (SupportsPinch(handGrabInteractor, handGrabInteractable.SupportedGrabTypes))
+            GrabTypeFlags unselectingGrabTypes = GrabTypeFlags.None;
+            if (SupportsPinch(handGrabInteractor, handGrabInteractable.SupportedGrabTypes)
+                && !api.IsSustainingGrab(handGrabInteractable.PinchGrabRules, pinchFingers)
+                && api.IsHandUnselectPinchFingersChanged(handGrabInteractable.PinchGrabRules))
             {
-                pinchHolding = api.IsSustainingGrab(handGrabInteractable.PinchGrabRules, pinchFingers);
-                if (api.IsHandUnselectPinchFingersChanged(handGrabInteractable.PinchGrabRules))
-                {
-                    pinchReleased = true;
-                }
+                unselectingGrabTypes |= GrabTypeFlags.Pinch;
             }
 
-            if (SupportsPalm(handGrabInteractor, handGrabInteractable.SupportedGrabTypes))
+            if (SupportsPalm(handGrabInteractor, handGrabInteractable.SupportedGrabTypes)
+                && !api.IsSustainingGrab(handGrabInteractable.PalmGrabRules, palmFingers)
+                && api.IsHandUnselectPalmFingersChanged(handGrabInteractable.PalmGrabRules))
             {
-                palmHolding = api.IsSustainingGrab(handGrabInteractable.PalmGrabRules, palmFingers);
-                if (api.IsHandUnselectPalmFingersChanged(handGrabInteractable.PalmGrabRules))
-                {
-                    palmReleased = true;
-                }
+                unselectingGrabTypes |= GrabTypeFlags.Palm;
             }
 
-            return !pinchHolding && !palmHolding && (pinchReleased || palmReleased);
+            return unselectingGrabTypes;
         }
 
         public static HandFingerFlags GrabbingFingers(this IHandGrabInteractor handGrabInteractor,

@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.Input.Filter
 {
+
     // Temporary structure used to pass data to and from native components
     [StructLayout(LayoutKind.Sequential)]
 
@@ -84,6 +85,11 @@ namespace Oculus.Interaction.Input.Filter
         }
     }
 
+    /// <summary>
+    /// Smoothes hand position input data. If you want to fine-tune the smoothing, it also accepts an optional set of Filter Parameters.
+    /// Use High if your app requires a very steady hand and can tolerate some lag. High should probably only be used in controller circumstances.
+    /// Use Low if only a small amount of steadiness needs to be added to the hand. For example, to do a steady raycast from a hand.
+    /// </summary>
     public class HandFilter : Hand
     {
         #region Oculus Library Methods and Constants

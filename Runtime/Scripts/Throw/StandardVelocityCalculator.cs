@@ -30,7 +30,8 @@ namespace Oculus.Interaction.Throw
     /// Velocity calculator that depends only on an IPoseInputDevice,
     /// which means its input agnostic.
     /// </summary>
-    public class StandardVelocityCalculator : MonoBehaviour, IVelocityCalculator
+    public class StandardVelocityCalculator : MonoBehaviour,
+        IVelocityCalculator, ITimeConsumer
     {
         [Serializable]
         public class BufferingParams
@@ -194,6 +195,12 @@ namespace Oculus.Interaction.Throw
             }
         }
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         public Vector3 AddedInstantLinearVelocity { get; private set; }
         public Vector3 AddedTrendLinearVelocity { get; private set; }
         public Vector3 AddedTangentialLinearVelocity { get; private set; }
@@ -226,14 +233,11 @@ namespace Oculus.Interaction.Throw
         private List<SamplePoseData> _windowWithMovement = new List<SamplePoseData>();
         private List<SamplePoseData> _tempWindow = new List<SamplePoseData>();
 
-        private Func<float> _timeProvider;
-
         private const float _TREND_DOT_THRESHOLD = 0.6f;
 
         protected virtual void Awake()
         {
             ThrowInputDevice = _throwInputDevice as IPoseInputDevice;
-            _timeProvider = () => Time.time;
         }
 
         protected virtual void Start()
@@ -716,6 +720,7 @@ namespace Oculus.Interaction.Throw
             _bufferingParams = bufferingParams;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

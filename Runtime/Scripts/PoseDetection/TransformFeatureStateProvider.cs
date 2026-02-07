@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.PoseDetection
 {
@@ -171,7 +170,8 @@ namespace Oculus.Interaction.PoseDetection
     /// frame and the given state thresholds to apply a buffer between
     /// state transition edges.
     /// </summary>
-    public class TransformFeatureStateProvider : MonoBehaviour, ITransformFeatureStateProvider
+    public class TransformFeatureStateProvider : MonoBehaviour,
+        ITransformFeatureStateProvider, ITimeConsumer
     {
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
@@ -194,9 +194,15 @@ namespace Oculus.Interaction.PoseDetection
                  "transitions between states.")]
         private bool _disableProactiveEvaluation;
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         private TransformJointData _jointData = new TransformJointData();
         private TransformFeatureStateCollection _transformFeatureStateCollection;
-        private Func<float> _timeProvider;
+
 
         protected bool _started = false;
 
@@ -206,7 +212,6 @@ namespace Oculus.Interaction.PoseDetection
             Hmd = _hmd as IHmd;
             TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
             _transformFeatureStateCollection = new TransformFeatureStateCollection();
-            _timeProvider = () => Time.time;
         }
 
         public void RegisterConfig(TransformConfig transformConfig)
@@ -376,6 +381,7 @@ namespace Oculus.Interaction.PoseDetection
             _disableProactiveEvaluation = disabled;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

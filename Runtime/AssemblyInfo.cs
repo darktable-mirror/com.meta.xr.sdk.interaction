@@ -18,26 +18,4 @@
  * limitations under the License.
  */
 
-using UnityEngine;
-
-namespace Oculus.Interaction.DistanceReticles
-{
-    /// <summary>
-    /// Part of the ghost hand reticle used for distance grabs. Attached to each GameObject that the ghost hand can interact with. Pairs with ReticleGhostDrawer.
-    /// </summary>
-    public class ReticleDataGhost : MonoBehaviour, IReticleData
-    {
-        /// <summary>
-        /// The GameObject that the ghost hand can interact with.
-        /// </summary>
-        [Tooltip("The GameObject that the ghost hand can interact with.")]
-        [SerializeField, Optional]
-        private Transform _targetPoint;
-
-        public Vector3 ProcessHitPoint(Vector3 hitPoint)
-        {
-            return _targetPoint != null ? _targetPoint.position
-                : this.transform.position;
-        }
-    }
-}
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.Editor")]

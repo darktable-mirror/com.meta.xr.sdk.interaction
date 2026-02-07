@@ -25,6 +25,9 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.HandGrab
 {
+    /// <summary>
+    /// Gradually pulls the selected interactable towards your interactor.
+    /// </summary>
     public class AutoMoveTowardsTargetProvider : MonoBehaviour, IMovementProvider
     {
         [SerializeField]

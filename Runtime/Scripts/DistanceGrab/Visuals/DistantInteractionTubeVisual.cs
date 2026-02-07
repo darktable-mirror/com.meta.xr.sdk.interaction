@@ -23,6 +23,9 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Used in the ReticleLine prefab.
+    /// </summary>
     public class DistantInteractionTubeVisual : DistantInteractionLineVisual
     {
         [SerializeField]

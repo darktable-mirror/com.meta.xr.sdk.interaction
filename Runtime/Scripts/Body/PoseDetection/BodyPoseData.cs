@@ -30,8 +30,10 @@ namespace Oculus.Interaction.Body.PoseDetection
     public class BodyPoseData : ScriptableObject,
         IBodyPose, ISerializationCallbackReceiver
     {
+        internal const int DATA_VERSION = 1;
+
         [System.Serializable]
-        private struct JointData
+        internal struct JointData
         {
             public BodyJointId JointId;
             public BodyJointId ParentId;
@@ -54,6 +56,9 @@ namespace Oculus.Interaction.Body.PoseDetection
         }
 
         public event Action WhenBodyPoseUpdated = delegate { };
+
+        [SerializeField, HideInInspector]
+        private int _serializedVersion;
 
         [SerializeField, HideInInspector]
         private List<JointData> _jointData = new List<JointData>();
@@ -88,10 +93,11 @@ namespace Oculus.Interaction.Body.PoseDetection
                         JointId = joint,
                         ParentId = parent,
                         PoseFromRoot = fromRoot,
-                        LocalPose = local,
+                        LocalPose = local
                     });
                 }
             }
+            _serializedVersion = DATA_VERSION;
             Rebuild();
             WhenBodyPoseUpdated.Invoke();
         }

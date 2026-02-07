@@ -101,6 +101,8 @@ namespace Oculus.Interaction.PoseDetection
         private readonly Func<TFeature, int> _featureToInt;
         private readonly Func<float> _timeProvider;
 
+
+
         #region Lookup Helpers
         private int EnumToInt(TFeature value) => _featureToInt(value);
 

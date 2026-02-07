@@ -21,15 +21,20 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.Input
 {
     public class HandPhysicsCapsules : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHandVisual))]
+        [Obsolete("Replaced by _hand")]
         private UnityEngine.Object _handVisual;
+        [Obsolete("Replaced by Hand")]
         private IHandVisual HandVisual;
+
+        [SerializeField, Interface(typeof(IHand))]
+        private UnityEngine.Object _hand;
+        private IHand Hand;
 
         [SerializeField]
         private JointsRadiusFeature _jointsRadiusFeature;
@@ -78,26 +83,52 @@ namespace Oculus.Interaction.Input
         protected virtual void Reset()
         {
             _useLayer = this.gameObject.layer;
-            this.TryGetComponent(out HandVisual);
         }
         #endregion
 
         protected virtual void Awake()
         {
             HandVisual = _handVisual as IHandVisual;
+            Hand = _hand as IHand;
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertField(HandVisual, nameof(HandVisual));
+            if (Hand == null && HandVisual != null)
+            {
+                Hand = HandVisual.Hand;
+            }
+            this.AssertField(Hand, nameof(Hand));
             this.AssertField(_jointsRadiusFeature, nameof(_jointsRadiusFeature));
-            GenerateCapsules();
             this.EndStart(ref _started);
         }
 
+        protected virtual void OnEnable()
+        {
+            if (_started)
+            {
+                _capsulesAreActive = true;
+                Hand.WhenHandUpdated += HandleHandUpdated;
+            }
+        }
+
+        protected virtual void OnDisable()
+        {
+            if (_started)
+            {
+                Hand.WhenHandUpdated -= HandleHandUpdated;
+                DisableRigidbodies();
+            }
+        }
+
+
         private void GenerateCapsules()
         {
+            if (!Hand.IsTrackedDataValid)
+            {
+                return;
+            }
             _rigidbodies = new Rigidbody[(int)HandJointId.HandMaxSkinnable];
 
             Transform _holder = new GameObject("Capsules").transform;
@@ -119,13 +150,11 @@ namespace Oculus.Interaction.Input
                     continue;
                 }
 
-
-                Vector3 boneEnd = HandVisual.GetJointPose(currentJoint, Space.World).position;
-
+                Hand.GetJointPose(parentJoint, out Pose parentPose);
                 if (!TryGetJointRigidbody(parentJoint, out Rigidbody body))
                 {
-                    Pose parentPose = HandVisual.GetJointPose(parentJoint, Space.World);
                     body = CreateJointRigidbody(parentJoint, _holder, parentPose);
+                    _rigidbodies[(int)parentJoint] = body;
                 }
 
                 string boneName = $"{parentJoint}-{currentJoint} CapsuleCollider";
@@ -134,8 +163,10 @@ namespace Oculus.Interaction.Input
                     : parentJoint == HandJointId.HandStart ? boneRadius
                     : 0f;
 
+                Hand.GetJointPose(currentJoint, out Pose jointPose);
+
                 CapsuleCollider collider = CreateCollider(boneName,
-                    body.transform, boneEnd, boneRadius, offset);
+                    body.transform, parentPose.position, jointPose.position, boneRadius, offset);
 
                 BoneCapsule capsule = new BoneCapsule(parentJoint, currentJoint, body, collider);
                 _capsules.Add(capsule);
@@ -143,7 +174,6 @@ namespace Oculus.Interaction.Input
             }
 
             IgnoreSelfCollisions();
-            _capsulesAreActive = false;
             _capsulesGenerated = true;
             _whenCapsulesGenerated.Invoke();
         }
@@ -161,7 +191,15 @@ namespace Oculus.Interaction.Input
 
         private bool TryGetJointRigidbody(HandJointId joint, out Rigidbody body)
         {
-            body = _rigidbodies[(int)joint];
+            int index = (int)joint;
+            if (_rigidbodies == null
+                || index < 0
+                || index >= _rigidbodies.Length)
+            {
+                body = null;
+                return false;
+            }
+            body = _rigidbodies[index];
             return body != null;
         }
 
@@ -178,25 +216,23 @@ namespace Oculus.Interaction.Input
 
             rigidbody.transform.SetParent(holder, false);
             rigidbody.transform.SetPose(pose);
+            rigidbody.Sleep();
             rigidbody.gameObject.SetActive(false);
             rigidbody.gameObject.layer = _useLayer;
 
-            _rigidbodies[(int)joint] = rigidbody;
             return rigidbody;
         }
 
         private CapsuleCollider CreateCollider(string name,
-            Transform from, Vector3 to, float radius, float offset)
+            Transform holder, Vector3 from, Vector3 to, float radius, float offset)
         {
             CapsuleCollider collider = new GameObject(name)
                 .AddComponent<CapsuleCollider>();
             collider.isTrigger = _asTriggers;
 
-            Vector3 boneDirection = to - from.position;
+            Vector3 boneDirection = to - from;
             Quaternion boneRotation = Quaternion.LookRotation(boneDirection);
-            float boneLength = boneDirection.magnitude;
-
-            boneLength -= Mathf.Abs(offset);
+            float boneLength = boneDirection.magnitude - Mathf.Abs(offset);
 
             collider.radius = radius;
             collider.height = boneLength + radius * 2.0f;
@@ -204,91 +240,72 @@ namespace Oculus.Interaction.Input
             collider.center = Vector3.forward * (boneLength * 0.5f + Mathf.Max(0f, offset));
 
             Transform capsuleTransform = collider.transform;
-            capsuleTransform.SetParent(from, false);
-            capsuleTransform.SetPositionAndRotation(from.position, boneRotation);
+            capsuleTransform.SetParent(holder, false);
+            capsuleTransform.SetPositionAndRotation(from, boneRotation);
             collider.gameObject.layer = _useLayer;
 
             return collider;
         }
 
-        protected virtual void OnEnable()
+        private void DisableRigidbodies()
         {
-            if (_started)
-            {
-                HandVisual.WhenHandVisualUpdated += HandleHandVisualUpdated;
-            }
-        }
-
-        protected virtual void OnDisable()
-        {
-            if (_started)
-            {
-                HandVisual.WhenHandVisualUpdated -= HandleHandVisualUpdated;
-                EnableRigidbodies(false);
-            }
-        }
-
-        protected virtual void LateUpdate()
-        {
-            if (_capsulesAreActive && !HandVisual.IsVisible)
-            {
-                EnableRigidbodies(false);
-            }
-        }
-
-        private void EnableRigidbodies(bool enable)
-        {
-            if (_rigidbodies != null
-                || enable == _capsulesAreActive)
+            if (!_capsulesAreActive)
             {
                 return;
             }
-            foreach (Rigidbody body in _rigidbodies)
-            {
-                body.gameObject.SetActive(enable);
-            }
-            _capsulesAreActive = enable;
-        }
 
-        private void HandleHandVisualUpdated()
-        {
-            _capsulesAreActive = HandVisual.IsVisible;
-
-            for (int i = 0; i < (int)HandJointId.HandMaxSkinnable; ++i)
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandMaxSkinnable; ++jointId)
             {
-                Rigidbody jointbody = _rigidbodies[i];
-                if (jointbody == null)
+                if (!TryGetJointRigidbody(jointId, out Rigidbody jointbody))
                 {
                     continue;
                 }
-                GameObject jointGO = jointbody.gameObject;
-                if (_capsulesAreActive)
+
+                jointbody.Sleep();
+                jointbody.gameObject.SetActive(false);
+            }
+            _capsulesAreActive = false;
+        }
+
+        private void HandleHandUpdated()
+        {
+            if (!_capsulesGenerated)
+            {
+                GenerateCapsules();
+            }
+
+            if (_capsulesGenerated)
+            {
+                UpdateRigidbodies();
+            }
+
+        }
+
+        private void UpdateRigidbodies()
+        {
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandMaxSkinnable; ++jointId)
+            {
+                if (!TryGetJointRigidbody(jointId, out Rigidbody jointbody))
                 {
-                    Pose bonePose = HandVisual.GetJointPose((HandJointId)i, Space.World);
-                    bool justActivated = false;
+                    continue;
+                }
+
+                GameObject jointGO = jointbody.gameObject;
+                if (_capsulesAreActive
+                    && Hand.GetJointPose(jointId, out Pose bonePose))
+                {
+                    jointbody.MovePosition(bonePose.position);
+                    jointbody.MoveRotation(bonePose.rotation);
+
                     if (!jointGO.activeSelf)
                     {
                         jointGO.SetActive(true);
-                        justActivated = true;
-                    }
-
-                    if (_asTriggers)
-                    {
-                        jointbody.transform.SetPositionAndRotation(bonePose.position, bonePose.rotation);
-                    }
-                    else if (justActivated)
-                    {
-                        jointbody.position = bonePose.position;
-                        jointbody.rotation = bonePose.rotation;
-                    }
-                    else
-                    {
-                        jointbody.MovePosition(bonePose.position);
-                        jointbody.MoveRotation(bonePose.rotation);
+                        jointbody.WakeUp();
                     }
                 }
                 else if (jointGO.activeSelf)
                 {
+                    jointbody.Sleep();
                     jointGO.SetActive(false);
                 }
             }
@@ -296,18 +313,18 @@ namespace Oculus.Interaction.Input
 
         #region Inject
 
-        public void InjectAllOVRHandPhysicsCapsules(IHandVisual handVisual,
+        public void InjectAllOVRHandPhysicsCapsules(IHand hand,
             bool asTriggers, int useLayer)
         {
-            InjectHandVisual(handVisual);
+            InjectHand(hand);
             InjectAsTriggers(asTriggers);
             InjectUseLayer(useLayer);
         }
 
-        public void InjectHandVisual(IHandVisual handVisual)
+        public void InjectHand(IHand hand)
         {
-            _handVisual = handVisual as UnityEngine.Object;
-            HandVisual = handVisual;
+            _hand = hand as UnityEngine.Object;
+            Hand = hand;
         }
 
         public void InjectAsTriggers(bool asTriggers)

@@ -22,8 +22,6 @@ using Oculus.Interaction.Input;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.PoseDetection
 {
@@ -65,7 +63,7 @@ namespace Oculus.Interaction.PoseDetection
     /// feature state from the previous frame and the given state thresholds to apply a buffer
     /// between state transition edges.
     /// </summary>
-    public class FingerFeatureStateProvider : MonoBehaviour, IFingerFeatureStateProvider
+    public class FingerFeatureStateProvider : MonoBehaviour, IFingerFeatureStateProvider, ITimeConsumer
     {
         [SerializeField, Interface(typeof(IHand))]
         [Tooltip("Data source used to retrieve finger bone rotations.")]
@@ -99,7 +97,12 @@ namespace Oculus.Interaction.PoseDetection
         protected bool _started = false;
 
         private FingerFeatureStateDictionary _state;
-        Func<float> _timeProvider;
+
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public static FingerShapes DefaultFingerShapes { get; } = new FingerShapes();
         private FingerShapes _fingerShapes = DefaultFingerShapes;
@@ -119,10 +122,6 @@ namespace Oculus.Interaction.PoseDetection
         {
             this.BeginStart(ref _started);
             this.AssertField(Hand, nameof(Hand));
-            if (_timeProvider == null)
-            {
-                _timeProvider = () => Time.time;
-            }
             this.EndStart(ref _started);
         }
 
@@ -298,6 +297,7 @@ namespace Oculus.Interaction.PoseDetection
             _disableProactiveEvaluation = disableProactiveEvaluation;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

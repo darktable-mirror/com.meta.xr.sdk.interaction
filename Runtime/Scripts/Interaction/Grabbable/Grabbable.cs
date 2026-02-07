@@ -23,6 +23,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Moves the object it's attached to when an Interactor selects that object.
+    /// </summary>
     public class Grabbable : PointableElement, IGrabbable
     {
         [SerializeField, Interface(typeof(ITransformer))]

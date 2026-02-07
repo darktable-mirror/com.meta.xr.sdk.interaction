@@ -25,19 +25,18 @@ using UnityEditor.Animations;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Oculus.Interaction.HandGrab.Editor
+namespace Oculus.Interaction.Utils
 {
     /// <summary>
     /// This wizard helps creating a set of fixed Animation Clips using HandTracking
     /// to be used in a skinned synthetic hand with an Animator.
-    /// Assign a HandSkeletonVisual and click the buttons as you perform the relevant
+    /// Assign a HandVisual and click the buttons as you perform the relevant
     /// poses with your tracked hand. The output will be an Animator that can be directly
     /// used in a Skinned hand. Once you are done you can automatically create the opposite
     /// hand data by providing the strings internally used for differentiating the left and
     /// right transforms. (typically _l_ and _r_)
-    /// Works great in conjunction with FromOVRControllerHandData.cs
     /// </summary>
-    public class HandAnimatorWizard : ScriptableWizard
+    public class ControllerDrivenHandAnimatorWizard : EditorWindow
     {
         [SerializeField]
         private HandVisual _handVisual;
@@ -46,73 +45,37 @@ namespace Oculus.Interaction.HandGrab.Editor
         [SerializeField]
         private string _controllerName = "HandController";
 
-        [Space]
-        [InspectorButton("RecordHandFist")]
-        [SerializeField]
-        private string _recordHandFist;
         [SerializeField]
         private AnimationClip _handFist;
-
-        [InspectorButton("RecordHand3qtrFist")]
-        [SerializeField]
-        private string _recordHand3qtrFist;
         [SerializeField]
         private AnimationClip _hand3qtrFist;
-
-        [InspectorButton("RecordHandMidFist")]
-        [SerializeField]
-        private string _recordHandMidFist;
         [SerializeField]
         private AnimationClip _handMidFist;
-
-        [InspectorButton("RecordHandPinch")]
-        [SerializeField]
-        private string _recordHandPinch;
         [SerializeField]
         private AnimationClip _handPinch;
-
-        [InspectorButton("RecordHandCap")]
         [SerializeField]
-        private string _recordHandCap;
+        private AnimationClip _handSlide;
         [SerializeField]
         private AnimationClip _handCap;
-
-        [InspectorButton("RecordThumbUp")]
-        [SerializeField]
-        private string _recordThumbUp;
         [SerializeField]
         private AnimationClip _thumbUp;
-
-        [InspectorButton("RecordIndexPoint")]
-        [SerializeField]
-        private string _recordIndexPoint;
         [SerializeField]
         private AnimationClip _indexPoint;
 
-        [Space]
-        [InspectorButton("GenerateMasks")]
-        [SerializeField]
-        private string _generateMasks;
         [SerializeField]
         private AvatarMask _indexMask;
         [SerializeField]
         private AvatarMask _thumbMask;
 
-        [Space]
-        [InspectorButton("GenerateAnimatorAsset")]
-        [SerializeField]
-        private string _generateAnimator;
-
-        [Space(40f)]
         [SerializeField]
         private string _handLeftPrefix = "_l_";
         [SerializeField]
         private string _handRightPrefix = "_r_";
-        [InspectorButton("GenerateMirrorAnimatorAsset")]
-        [SerializeField]
-        private string _generateMirrorAnimator;
 
         private Transform Root => _handVisual.Joints[0].parent;
+
+        private GUIStyle _richTextStyle;
+        private Vector2 _scrollPos = Vector2.zero;
 
         private static readonly List<HandJointId> INDEX_MASK = new List<HandJointId>()
         {
@@ -133,81 +96,91 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private const string FLEX_PARAM = "Flex";
         private const string PINCH_PARAM = "Pinch";
+        private const string INDEXSLIDE_PARAM = "IndexSlide";
 
-        [MenuItem("Oculus/Interaction/Hand Animator Generator")]
+        [MenuItem("Oculus/Interaction/Controller Driven Hand Animator Generator")]
         private static void CreateWizard()
         {
-            ScriptableWizard.DisplayWizard<HandAnimatorWizard>("Hand Animator Generator", "Close");
+            ControllerDrivenHandAnimatorWizard window = EditorWindow.GetWindow<ControllerDrivenHandAnimatorWizard>();
+            window.titleContent = new GUIContent("Controller Driven Hand Animator Generator");
+            window.Show();
         }
 
-        private void OnWizardCreate() { }
-
-        private bool TryGetHand(out IHand hand)
+        private void OnEnable()
         {
-            hand = null;
+            _richTextStyle = EditorGUIUtility.GetBuiltinSkin(EditorGUIUtility.isProSkin ? EditorSkin.Scene : EditorSkin.Inspector).label;
+            _richTextStyle.richText = true;
+            _richTextStyle.wordWrap = true;
+        }
 
-            if (_handVisual == null)
+        private void OnGUI()
+        {
+            GUILayout.Label("This tool generates an Animator for a Skinned Hand that moves accordingly to the controller input.", _richTextStyle);
+
+            _scrollPos = GUILayout.BeginScrollView(_scrollPos);
+
+            GUILayout.Label("<b>1</b> Assign the Hand Visual to record animations from in <b>Play Mode</b> and paths to store the generated files. ", _richTextStyle);
+
+            HandAnimationUtils.GenerateObjectField(ref _handVisual, "Hand Visual");
+            _folder = EditorGUILayout.TextField("Assets sub-folder", _folder);
+            _controllerName = EditorGUILayout.TextField("Animator name", _controllerName);
+
+            GUILayout.Space(20);
+            GUILayout.Label("<b>2</b> Record the HandVisual poses in <b>Play Mode</b> or directly assign the animation clips to use for the different animator states.", _richTextStyle);
+            DrawAnimationControls(ref _handFist, "HandFist");
+            DrawAnimationControls(ref _hand3qtrFist, "Hand3qtrFist");
+            DrawAnimationControls(ref _handMidFist, "HandMidFist");
+            DrawAnimationControls(ref _handPinch, "HandPinch");
+            DrawAnimationControls(ref _handSlide, "HandSlide");
+            DrawAnimationControls(ref _handCap, "HandCap");
+            DrawAnimationControls(ref _thumbUp, "ThumbUp");
+            DrawAnimationControls(ref _indexPoint, "IndexPoint");
+
+            GUILayout.Space(20);
+            GUILayout.Label("<b>3</b> Generate the AvatarMasks for the Thumb and Index fingers from the HandVisual", _richTextStyle);
+            DrawMaskControls(ref _indexMask, INDEX_MASK, "indexMask");
+            DrawMaskControls(ref _thumbMask, THUMB_MASK, "thumbMask");
+
+            GUILayout.Space(20);
+            GUILayout.Label("<b>4</b> With all the clips and masks, generate the animator", _richTextStyle);
+
+            if (GUILayout.Button("Generate Animator", GUILayout.Height(40)))
             {
-                return false;
+                GenerateAnimatorAsset();
             }
 
-            if (_handVisual.Hand != null)
+            GUILayout.Space(20);
+            GUILayout.Label("<b>5</b> Generate a mirrored copy of the Animator for the opposite hand", _richTextStyle);
+            _handLeftPrefix = EditorGUILayout.TextField("Left prefix", _handLeftPrefix);
+            _handRightPrefix = EditorGUILayout.TextField("Right prefix", _handRightPrefix);
+            if (GUILayout.Button("Generate Mirrored Animator"))
             {
-                hand = _handVisual.Hand;
-                return true;
+                GenerateMirrorAnimatorAsset();
             }
 
-            System.Type targetObjectClassType = _handVisual.GetType();
-            System.Reflection.FieldInfo field = targetObjectClassType.GetField("_hand",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null)
+            GUILayout.EndScrollView();
+        }
+
+        private void DrawAnimationControls(ref AnimationClip clip, string name)
+        {
+            GUILayout.BeginHorizontal();
+            HandAnimationUtils.GenerateObjectField(ref clip, name);
+            if (GUILayout.Button("Record"))
             {
-                object value = field.GetValue(_handVisual);
-                hand = value as IHand;
-                return hand != null;
+                clip = GenerateClipAsset(name);
             }
-            return false;
+            GUILayout.EndHorizontal();
         }
 
-        private void RecordHandFist()
+        private void DrawMaskControls(ref AvatarMask mask, List<HandJointId> maskedJoints, string name)
         {
-            _handFist = GenerateClipAsset("HandFist");
-        }
-
-        private void RecordHand3qtrFist()
-        {
-            _hand3qtrFist = GenerateClipAsset("Hand3qtrFist");
-        }
-
-        private void RecordHandMidFist()
-        {
-            _handMidFist = GenerateClipAsset("HandMidFist");
-        }
-
-        private void RecordHandPinch()
-        {
-            _handPinch = GenerateClipAsset("HandPinch");
-        }
-
-        private void RecordHandCap()
-        {
-            _handCap = GenerateClipAsset("HandCap");
-        }
-
-        private void RecordThumbUp()
-        {
-            _thumbUp = GenerateClipAsset("ThumbUp");
-        }
-
-        private void RecordIndexPoint()
-        {
-            _indexPoint = GenerateClipAsset("IndexPoint");
-        }
-
-        public void GenerateMasks()
-        {
-            _indexMask = GenerateMaskAsset(INDEX_MASK, "indexMask");
-            _thumbMask = GenerateMaskAsset(THUMB_MASK, "thumbMask");
+            GUILayout.BeginHorizontal();
+            HandAnimationUtils.GenerateObjectField(ref mask, name);
+            if (GUILayout.Button("Generate"))
+            {
+                mask = GenerateMaskAsset(maskedJoints, name);
+            }
+            GUILayout.EndHorizontal();
         }
 
         private void GenerateAnimatorAsset()
@@ -218,6 +191,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                 hand3qtrFist = _hand3qtrFist,
                 handMidFist = _handMidFist,
                 handPinch = _handPinch,
+                handSlide = _handSlide,
                 handCap = _handCap,
                 thumbUp = _thumbUp,
                 indexPoint = _indexPoint,
@@ -226,8 +200,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                 thumbMask = _thumbMask
             };
 
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
-            string path = GenerateAnimatorPath(prefix);
+            string path = GenerateAnimatorPath(string.Empty);
             CreateAnimator(path, clips);
         }
 
@@ -237,6 +210,7 @@ namespace Oculus.Interaction.HandGrab.Editor
             AnimationClip hand3qtrFist = GenerateMirrorClipAsset(_hand3qtrFist);
             AnimationClip handMidFist = GenerateMirrorClipAsset(_handMidFist);
             AnimationClip handPinch = GenerateMirrorClipAsset(_handPinch);
+            AnimationClip handSlide = GenerateMirrorClipAsset(_handSlide);
             AnimationClip handCap = GenerateMirrorClipAsset(_handCap);
             AnimationClip thumbUp = GenerateMirrorClipAsset(_thumbUp);
             AnimationClip indexPoint = GenerateMirrorClipAsset(_indexPoint);
@@ -250,6 +224,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                 hand3qtrFist = hand3qtrFist,
                 handMidFist = handMidFist,
                 handPinch = handPinch,
+                handSlide = handSlide,
                 handCap = handCap,
                 thumbUp = thumbUp,
                 indexPoint = indexPoint,
@@ -257,30 +232,30 @@ namespace Oculus.Interaction.HandGrab.Editor
                 thumbMask = thumbMask
             };
 
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
-            string path = GenerateAnimatorPath(mirrorPrefix);
+            string path = GenerateAnimatorPath("_mirror");
             CreateAnimator(path, clips);
         }
 
         private AnimationClip GenerateClipAsset(string title)
         {
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
             AnimationClip clip = new AnimationClip();
 
-            for (int i = (int)HandJointId.HandStart; i < (int)HandJointId.HandEnd; ++i)
+            for (HandJointId jointId = HandJointId.HandStart; jointId < HandJointId.HandEnd; ++jointId)
             {
-                Transform jointTransform = _handVisual.Joints[i];
+                Transform jointTransform = _handVisual.GetTransformByHandJointId(jointId);
                 string path = GetGameObjectPath(jointTransform, Root);
-                RegisterLocalPose(ref clip, jointTransform.GetPose(Space.Self), path);
+                JointRecord record = new JointRecord(jointId, path);
+                Pose pose = jointTransform.GetPose(Space.Self);
+                record.RecordPose(0f, pose);
+                HandAnimationUtils.WriteAnimationCurves(ref clip, record, false);
             }
 
-            StoreAsset(clip, $"{title}{prefix}.anim");
+            HandAnimationUtils.StoreAsset(clip, _folder, $"{title}.anim");
             return clip;
         }
 
         private AvatarMask GenerateMaskAsset(List<HandJointId> maskData, string title)
         {
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
             AvatarMask mask = new AvatarMask();
             List<string> paths = new List<string>(maskData.Count);
 
@@ -298,37 +273,15 @@ namespace Oculus.Interaction.HandGrab.Editor
                 mask.SetTransformActive(i, true);
             }
 
-            StoreAsset(mask, $"{title}{prefix}.mask");
+            HandAnimationUtils.StoreAsset(mask, _folder, $"{title}.mask");
             return mask;
         }
 
         private AnimationClip GenerateMirrorClipAsset(AnimationClip originalClip)
         {
-            if (originalClip == null)
-            {
-                Debug.LogError("Please generate a valid Clip first");
-                return null;
-            }
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
-
-            AnimationClip mirrorClip = new AnimationClip();
-
-            EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(originalClip);
-            foreach (EditorCurveBinding curveBinding in curveBindings)
-            {
-                string mirrorPath = curveBinding.path.Replace(prefix, mirrorPrefix);
-                AnimationCurve curve = AnimationUtility.GetEditorCurve(originalClip, curveBinding);
-                float invertFactor = curveBinding.propertyName.Contains("LocalPosition") ? -1f : 1f;
-
-                AnimationCurve mirrorCurve = new AnimationCurve();
-
-                for (int i = 0; i < curve.length; i++)
-                {
-                    mirrorCurve.AddKey(curve[i].time, curve[i].value * invertFactor);
-                }
-                mirrorClip.SetCurve(mirrorPath, curveBinding.type, curveBinding.propertyName, mirrorCurve);
-            }
-            StoreAsset(mirrorClip, $"{originalClip.name.Replace(prefix, mirrorPrefix)}.anim");
+            AnimationClip mirrorClip = HandAnimationUtils.Mirror(originalClip,
+                _handLeftPrefix, _handRightPrefix, true);
+            HandAnimationUtils.StoreAsset(mirrorClip, _folder, $"{originalClip.name}_mirror.anim");
             return mirrorClip;
         }
 
@@ -339,35 +292,28 @@ namespace Oculus.Interaction.HandGrab.Editor
                 Debug.LogError("Please generate a valid mask first");
                 return null;
             }
-            GetHandPrefixes(out string prefix, out string mirrorPrefix);
 
             AvatarMask mirrorMask = new AvatarMask();
-
             mirrorMask.transformCount = originalMask.transformCount;
             for (int i = 0; i < originalMask.transformCount; ++i)
             {
-                string mirrorPath = originalMask.GetTransformPath(i).Replace(prefix, mirrorPrefix);
+                string path = originalMask.GetTransformPath(i);
+                if (path.Contains(_handLeftPrefix))
+                {
+                    path = path.Replace(_handLeftPrefix, _handRightPrefix);
+                }
+                else
+                {
+                    path = path.Replace(_handRightPrefix, _handLeftPrefix);
+                }
                 bool active = originalMask.GetTransformActive(i);
-                mirrorMask.SetTransformPath(i, mirrorPath);
+                mirrorMask.SetTransformPath(i, path);
                 mirrorMask.SetTransformActive(i, active);
             }
 
-            StoreAsset(mirrorMask, $"{originalMask.name.Replace(prefix, mirrorPrefix)}.mask");
+            HandAnimationUtils.StoreAsset(mirrorMask, _folder, $"{originalMask.name}_mirror.mask");
 
             return mirrorMask;
-        }
-
-        private void RegisterLocalPose(ref AnimationClip clip, Pose pose, string path)
-        {
-            Vector3 euler = pose.rotation.eulerAngles;
-            clip.SetCurve(path, typeof(Transform), "localEulerAngles.x", AnimationCurve.Constant(0f, 0.01f, euler.x));
-            clip.SetCurve(path, typeof(Transform), "localEulerAngles.y", AnimationCurve.Constant(0f, 0.01f, euler.y));
-            clip.SetCurve(path, typeof(Transform), "localEulerAngles.z", AnimationCurve.Constant(0f, 0.01f, euler.z));
-
-            Vector3 pos = pose.position;
-            clip.SetCurve(path, typeof(Transform), "localPosition.x", AnimationCurve.Constant(0f, 0.01f, pos.x));
-            clip.SetCurve(path, typeof(Transform), "localPosition.y", AnimationCurve.Constant(0f, 0.01f, pos.y));
-            clip.SetCurve(path, typeof(Transform), "localPosition.z", AnimationCurve.Constant(0f, 0.01f, pos.z));
         }
 
         private AnimatorController CreateAnimator(string path, HandClips clips)
@@ -381,6 +327,7 @@ namespace Oculus.Interaction.HandGrab.Editor
 
             animator.AddParameter(FLEX_PARAM, AnimatorControllerParameterType.Float);
             animator.AddParameter(PINCH_PARAM, AnimatorControllerParameterType.Float);
+            animator.AddParameter(INDEXSLIDE_PARAM, AnimatorControllerParameterType.Float);
 
             animator.RemoveLayer(0);
 
@@ -416,7 +363,18 @@ namespace Oculus.Interaction.HandGrab.Editor
             blendTree.blendType = BlendTreeType.FreeformCartesian2D;
             blendTree.blendParameter = FLEX_PARAM;
             blendTree.blendParameterY = PINCH_PARAM;
-            blendTree.AddChild(clips.handCap, new Vector2(0f, 0f));
+
+            {
+                BlendTree blendTreeSlide = blendTree.CreateBlendTreeChild(new Vector2(0f, 0f));
+                blendTreeSlide.blendType = BlendTreeType.FreeformCartesian2D;
+                blendTreeSlide.blendParameter = PINCH_PARAM;
+                blendTreeSlide.blendParameterY = INDEXSLIDE_PARAM;
+
+                blendTreeSlide.AddChild(clips.handCap, new Vector2(0f, 0f));
+                blendTreeSlide.AddChild(clips.handPinch, new Vector2(1f, 0f));
+                blendTreeSlide.AddChild(clips.handSlide, new Vector2(0f, 1f));
+            }
+
             blendTree.AddChild(clips.handPinch, new Vector2(0f, 0.835f));
             blendTree.AddChild(clips.handPinch, new Vector2(0f, 1f));
             blendTree.AddChild(clips.handMidFist, new Vector2(0.5f, 0f));
@@ -425,6 +383,9 @@ namespace Oculus.Interaction.HandGrab.Editor
             blendTree.AddChild(clips.hand3qtrFist, new Vector2(0.835f, 1f));
             blendTree.AddChild(clips.handFist, new Vector2(1f, 0f));
             blendTree.AddChild(clips.handFist, new Vector2(1f, 1f));
+
+
+
             animator.layers[layerIndex].stateMachine.defaultState = flexState;
         }
 
@@ -451,30 +412,10 @@ namespace Oculus.Interaction.HandGrab.Editor
             animator.layers[layerIndex].stateMachine.defaultState = flexState;
         }
 
-        private void StoreAsset(Object asset, string name)
-        {
-#if UNITY_EDITOR
-            string targetFolder = Path.Combine("Assets", _folder);
-            CreateFolder(targetFolder);
-            string path = Path.Combine(targetFolder, name);
-            AssetDatabase.CreateAsset(asset, path);
-#endif
-        }
-
-        private void CreateFolder(string targetFolder)
-        {
-#if UNITY_EDITOR
-            if (!Directory.Exists(targetFolder))
-            {
-                Directory.CreateDirectory(targetFolder);
-            }
-#endif
-        }
-
         private string GenerateAnimatorPath(string prefix)
         {
             string targetFolder = Path.Combine("Assets", _folder);
-            CreateFolder(targetFolder);
+            HandAnimationUtils.CreateFolder(targetFolder);
             string path = Path.Combine(targetFolder, $"{_controllerName}{prefix}.controller");
             return path;
         }
@@ -491,26 +432,13 @@ namespace Oculus.Interaction.HandGrab.Editor
             return path;
         }
 
-        private void GetHandPrefixes(out string prefix, out string mirrorPrefix)
-        {
-            if (!TryGetHand(out IHand hand))
-            {
-                Debug.LogError("Hand not found");
-                prefix = mirrorPrefix = string.Empty;
-                return;
-            }
-
-            Handedness originalHandedness = hand.Handedness;
-            prefix = originalHandedness == Handedness.Left ? _handLeftPrefix : _handRightPrefix;
-            mirrorPrefix = originalHandedness == Handedness.Left ? _handRightPrefix : _handLeftPrefix;
-        }
-
         private class HandClips
         {
             public AnimationClip handFist;
             public AnimationClip hand3qtrFist;
             public AnimationClip handMidFist;
             public AnimationClip handPinch;
+            public AnimationClip handSlide;
             public AnimationClip handCap;
             public AnimationClip thumbUp;
             public AnimationClip indexPoint;
@@ -524,6 +452,7 @@ namespace Oculus.Interaction.HandGrab.Editor
                     && hand3qtrFist != null
                     && handMidFist != null
                     && handPinch != null
+                    && handSlide != null
                     && handCap != null
                     && thumbUp != null
                     && indexPoint != null

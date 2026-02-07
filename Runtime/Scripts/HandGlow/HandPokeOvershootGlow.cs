@@ -21,7 +21,6 @@
 using Oculus.Interaction.Input;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Rendering;
 
 namespace Oculus.Interaction
 {
@@ -95,7 +94,10 @@ namespace Oculus.Interaction
             Assert.IsNotNull(Hand);
             Assert.IsNotNull(_pokeInteractor);
             Assert.IsNotNull(_materialEditor);
-            HandFingerMaskGenerator.GenerateFingerMask(_handRenderer, _handVisual, _materialEditor.MaterialPropertyBlock);
+
+            HandFingerMaskGenerator.GenerateFingerMask(_handRenderer, _handVisual,
+                _materialEditor.MaterialPropertyBlock);
+
             this.EndStart(ref _started);
         }
 
@@ -115,7 +117,7 @@ namespace Oculus.Interaction
             }
         }
 
-        private void UpdateOvershoot(float normalizedDistance )
+        private void UpdateOvershoot(float normalizedDistance)
         {
             if (_materialEditor == null) return;
             var _block = _materialEditor.MaterialPropertyBlock;

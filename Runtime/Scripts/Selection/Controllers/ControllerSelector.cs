@@ -26,6 +26,9 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Broadcasts whether the controller is selecting or unselecting. The controller is selecting if the required controller buttons are pressed.
+    /// </summary>
     public class ControllerSelector : MonoBehaviour, ISelector
     {
         public enum ControllerSelectorLogicOperator
@@ -34,12 +37,24 @@ namespace Oculus.Interaction
             All = 1
         }
 
+        /// <summary>
+        /// The controller to check.
+        /// </summary>
+        [Tooltip("The controller to check.")]
         [SerializeField, Interface(typeof(IController))]
         private UnityEngine.Object _controller;
 
+        /// <summary>
+        /// The buttons to check.
+        /// </summary>
+        [Tooltip("The buttons to check.")]
         [SerializeField]
         private ControllerButtonUsage _controllerButtonUsage;
 
+        /// <summary>
+        /// Determines how many of the checked buttons must be pressed for the controller to be selecting. 'All' requires all of the buttons to be pressed. 'Any' requires only one to be pressed.
+        /// </summary>
+        [Tooltip("Determines how many of the checked buttons must be pressed for the controller to be selecting. 'All' requires all of the buttons to be pressed. 'Any' requires only one to be pressed.")]
         [SerializeField]
         private ControllerSelectorLogicOperator _requireButtonUsages =
             ControllerSelectorLogicOperator.Any;

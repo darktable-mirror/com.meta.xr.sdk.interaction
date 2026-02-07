@@ -20,7 +20,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -63,6 +62,13 @@ namespace Oculus.Interaction
                 _isKinematicGrab = value;
             }
         }
+
+        /// <summary>
+        /// Newly created rigidbodies will be appended to this transform
+        /// </summary>
+        [SerializeField, Optional]
+        [Tooltip("Newly created rigidbodies will be appended to this transform")]
+        private Transform _rigidbodiesRoot;
 
         private Joint _joint;
         private Rigidbody _grabbingRigidbody;
@@ -184,7 +190,7 @@ namespace Oculus.Interaction
         /// <returns>The generated rigidbody.</returns>
         private Rigidbody GetGrabRigidbody()
         {
-            Rigidbody rigidbody = _cachedGrabbingRigidbodies.Find(rb => !rb.gameObject.activeSelf);
+            Rigidbody rigidbody = _cachedGrabbingRigidbodies.Find(rb => rb != null && !rb.gameObject.activeSelf);
             if (rigidbody == null)
             {
                 rigidbody = CreateRigidBody();
@@ -218,7 +224,7 @@ namespace Oculus.Interaction
             GameObject go = new GameObject();
             go.name = "Proxy RigidBody";
             go.SetActive(false);
-            go.transform.SetParent(null);
+            go.transform.SetParent(_rigidbodiesRoot);
             Rigidbody body = go.AddComponent<Rigidbody>();
             body.useGravity = false;
             body.isKinematic = false;
@@ -318,6 +324,10 @@ namespace Oculus.Interaction
             _customJoint = customJoint;
         }
 
+        public void InjectOptionalRigidbodiesRoot(Transform rigidbodiesRoot)
+        {
+            _rigidbodiesRoot = rigidbodiesRoot;
+        }
         #endregion
-    }
+        }
 }

@@ -23,6 +23,9 @@ using UnityEngine.Events;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Exposes Unity events that broadcast state changes from an ‹see cref="IActiveState"/› component.
+    /// </summary>
     public class ActiveStateUnityEventWrapper : MonoBehaviour
     {
         [Tooltip("Events will fire based on the state of this IActiveState.")]

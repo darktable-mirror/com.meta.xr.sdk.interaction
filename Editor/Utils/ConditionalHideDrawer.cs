@@ -20,13 +20,14 @@
 
 using UnityEditor;
 using UnityEngine;
+using static Oculus.Interaction.ConditionalHideAttribute;
 
 namespace Oculus.Interaction.Editor
 {
     [CustomPropertyDrawer(typeof(ConditionalHideAttribute))]
     public class ConditionalHideDrawer : PropertyDrawer
     {
-        bool FulfillsCondition(SerializedProperty property)
+        private bool ShouldDisplay(SerializedProperty property)
         {
             ConditionalHideAttribute hideAttribute = (ConditionalHideAttribute)attribute;
 
@@ -35,37 +36,46 @@ namespace Oculus.Interaction.Editor
             string conditionPath = containerPath + hideAttribute.ConditionalFieldPath;
             SerializedProperty conditionalProperty = property.serializedObject.FindProperty(conditionPath);
 
-            if (conditionalProperty.type == "Enum")
+            return ShouldDisplay(conditionalProperty, hideAttribute.Value, hideAttribute.Display);
+        }
+
+        public static bool ShouldDisplay(SerializedProperty property, object value, DisplayMode displayMode)
+        {
+            if (displayMode == DisplayMode.Always)
             {
-                return conditionalProperty.enumValueIndex == (int)hideAttribute.HideValue;
-            }
-            if (conditionalProperty.type == "int")
-            {
-                return conditionalProperty.intValue == (int)hideAttribute.HideValue;
-            }
-            if (conditionalProperty.type == "float")
-            {
-                return conditionalProperty.floatValue == (float)hideAttribute.HideValue;
-            }
-            if (conditionalProperty.type == "string")
-            {
-                return conditionalProperty.stringValue == (string)hideAttribute.HideValue;
-            }
-            if (conditionalProperty.type == "double")
-            {
-                return conditionalProperty.doubleValue == (double)hideAttribute.HideValue;
-            }
-            if (conditionalProperty.type == "bool")
-            {
-                return conditionalProperty.boolValue == (bool)hideAttribute.HideValue;
+                return true;
             }
 
-            return conditionalProperty.objectReferenceValue == (object)hideAttribute.HideValue;
+            if (displayMode == DisplayMode.Never)
+            {
+                return false;
+            }
+
+            bool areEqual;
+            switch (property.type)
+            {
+                case "Enum":
+                    areEqual = property.enumValueIndex == (int)value; break;
+                case "int":
+                    areEqual = property.intValue == (int)value; break;
+                case "float":
+                    areEqual = property.floatValue == (float)value; break;
+                case "double":
+                    areEqual = property.doubleValue == (double)value; break;
+                case "bool":
+                    areEqual = property.boolValue == (bool)value; break;
+                case "string":
+                    areEqual = property.stringValue == (string)value; break;
+                default:
+                    areEqual = property.objectReferenceValue == (object)value; break;
+            }
+            return (areEqual && displayMode == DisplayMode.ShowIfTrue)
+                || (!areEqual && displayMode == DisplayMode.HideIfTrue);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (FulfillsCondition(property))
+            if (ShouldDisplay(property))
             {
                 EditorGUI.PropertyField(position, property, label, true);
             }
@@ -73,7 +83,7 @@ namespace Oculus.Interaction.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (FulfillsCondition(property))
+            if (ShouldDisplay(property))
             {
                 return EditorGUI.GetPropertyHeight(property, label, true);
             }

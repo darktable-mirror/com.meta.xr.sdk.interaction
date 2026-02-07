@@ -110,6 +110,11 @@ namespace Oculus.Interaction.Editor
                 return;
             }
 
+            if (!selection.scene.isLoaded)
+            {
+                return;
+            }
+
             if (!knownIds.Contains(selection.GetInstanceID()))
             {
                 AddInstanceIdsFromSubHierarchyToCache(knownIds, selection);

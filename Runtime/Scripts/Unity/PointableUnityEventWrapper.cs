@@ -25,29 +25,66 @@ using UnityEngine.Events;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This componenet makes it possible to connect IPointables in the
-    /// inspector to Unity Events that are broadcast on IPointable events.
+    /// Exposes Unity pointer events that broadcast pointer events from an ‹see cref="IPointable"/› component (ex. a poke interactable on a button).
     /// </summary>
     public class PointableUnityEventWrapper : MonoBehaviour
     {
+        /// <summary>
+        /// The Pointable component to wrap.
+        /// </summary>
+        [Tooltip("The Pointable component to wrap.")]
         [SerializeField, Interface(typeof(IPointable))]
         private UnityEngine.Object _pointable;
         private IPointable Pointable;
 
         private HashSet<int> _pointers;
 
+        /// <summary>
+        /// Raised when the IPointable is released.
+        /// </summary>
+        [Tooltip("Raised when the IPointable is released.")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenRelease;
+
+        /// <summary>
+        /// Raised when the IPointable is hovered.
+        /// </summary>
+        [Tooltip("Raised when the IPointable is hovered.")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenHover;
+
+        /// <summary>
+        /// Raised when the IPointable is unhovered (it was hovered but now it isn't).
+        /// </summary>
+        [Tooltip("Raised when the IPointable is unhovered (it was hovered but now it isn't).")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenUnhover;
+
+        /// <summary>
+        /// Raised when the IPointable is selected.
+        /// </summary>
+        [Tooltip("Raised when the IPointable is selected.")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenSelect;
+
+        /// <summary>
+        /// Raised when the IPointable is unselected (it was selected but now it isn't).
+        /// </summary>
+        [Tooltip("Raised when the IPointable is unselected (it was selected but now it isn't).")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenUnselect;
+
+        /// <summary>
+        /// Raised when the IPointable moves.
+        /// </summary>
+        [Tooltip("Raised when the IPointable moves.")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenMove;
+
+        /// <summary>
+        /// Raised when the IPointable is canceled.
+        /// </summary>
+        [Tooltip("Raised when the IPointable is canceled.")]
         [SerializeField]
         private UnityEvent<PointerEvent> _whenCancel;
 

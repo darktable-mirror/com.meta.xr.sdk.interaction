@@ -24,12 +24,23 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Sets the origin of the ray used by hand ray interactors.
+    /// </summary>
     public class HandPointerPose : MonoBehaviour, IActiveState
     {
+        /// <summary>
+        /// A hand ray interactor.
+        /// </summary>
+        [Tooltip("A hand ray interactor.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }
 
+        /// <summary>
+        /// How much the ray origin is offset relative to the hand.
+        /// </summary>
+        [Tooltip("How much the ray origin is offset relative to the hand.")]
         [SerializeField]
         private Vector3 _offset;
 

@@ -25,6 +25,10 @@ namespace Oculus.Interaction.DistanceReticles
     public abstract class InteractorReticle<TReticleData> : MonoBehaviour
         where TReticleData : class, IReticleData
     {
+        /// <summary>
+        /// Determines if the reticle should be visible when you're selecting an object.
+        /// </summary>
+        [Tooltip("Should the reticle be visible when you're selecting an object?")]
         [SerializeField]
         private bool _visibleDuringSelect = false;
         private bool VisibleDuringSelect

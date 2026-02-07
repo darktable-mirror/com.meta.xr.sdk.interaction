@@ -22,6 +22,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.HandGrab
 {
+    /// <summary>
+    /// Moves the selected interactable 1 to 1 with the interactor. For example, if your interactor moves up and to the right, the selected interactable will also move up and to the right.
+    /// </summary>
     public class MoveFromTargetProvider : MonoBehaviour, IMovementProvider
     {
         public IMovement CreateMovement()

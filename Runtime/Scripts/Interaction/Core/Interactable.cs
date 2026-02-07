@@ -342,7 +342,10 @@ namespace Oculus.Interaction
 
             if (Data == null)
             {
-                _data = this;
+                if (_data == null)
+                {
+                    _data = this;
+                }
                 Data = _data;
             }
             this.EndStart(ref _started);

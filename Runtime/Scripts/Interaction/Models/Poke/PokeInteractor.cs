@@ -31,7 +31,8 @@ namespace Oculus.Interaction
     /// proximity computation and a raycast between the position
     /// recorded across two frames against a target surface.
     /// </summary>
-    public class PokeInteractor : PointerInteractor<PokeInteractor, PokeInteractable>
+    public class PokeInteractor : PointerInteractor<PokeInteractor, PokeInteractable>,
+        ITimeConsumer
     {
         private class SurfaceHitCache
         {
@@ -144,7 +145,11 @@ namespace Oculus.Interaction
         private float _reEnterDepth;
         private float _lastUpdateTime;
 
-        private Func<float> _timeProvider;
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         private bool _isPassedSurface;
         public bool IsPassedSurface
@@ -174,7 +179,6 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            _timeProvider = () => Time.time;
             _nativeId = 0x506f6b6549746f72;
         }
 
@@ -1064,6 +1068,7 @@ namespace Oculus.Interaction
             _equalDistanceThreshold = equalDistanceThreshold;
         }
 
+        [Obsolete("Use SetTimeProvider()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;

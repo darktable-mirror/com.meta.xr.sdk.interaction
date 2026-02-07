@@ -25,12 +25,23 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// The origin of the ray used by controller ray interactors.
+    /// </summary>
     public class ControllerPointerPose : MonoBehaviour, IActiveState
     {
+        /// <summary>
+        /// A controller ray interactor.
+        /// </summary>
+        [Tooltip("A controller ray interactor.")]
         [SerializeField, Interface(typeof(IController))]
         private UnityEngine.Object _controller;
         public IController Controller { get; private set; }
 
+        /// <summary>
+        /// How much the ray origin is offset relative to the controller.
+        /// </summary>
+        [Tooltip("How much the ray origin is offset relative to the controller.")]
         [SerializeField]
         private Vector3 _offset;
 

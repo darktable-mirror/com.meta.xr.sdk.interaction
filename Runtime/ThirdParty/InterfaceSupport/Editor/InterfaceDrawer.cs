@@ -34,7 +34,6 @@ namespace Oculus.Interaction.InterfaceSupport
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             _filteredObjectPickerID = GUIUtility.GetControlID(FocusType.Passive);
-            if (property.serializedObject.isEditingMultipleObjects) return;
 
             if (property.propertyType != SerializedPropertyType.ObjectReference)
             {
@@ -43,14 +42,15 @@ namespace Oculus.Interaction.InterfaceSupport
                 return;
             }
 
+            EditorGUI.BeginChangeCheck(); // Begin checking if any property values have changed.
+
             EditorGUI.BeginProperty(position, label, property);
 
-            Type[] attTypes = GetInterfaceTypes(property);
+            Type[] attTypes = GetInterfaceTypes(property, (InterfaceAttribute)attribute);
 
             // Pick a specific component
             UnityEngine.Object oldObject = property.objectReferenceValue;
             GameObject temporaryGameObject = null;
-            string oldObjectName = "";
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -60,11 +60,6 @@ namespace Oculus.Interaction.InterfaceSupport
                     temporaryGameObject = new GameObject("None" + " (" + attTypesName + ")");
                     temporaryGameObject.hideFlags = HideFlags.HideAndDontSave;
                     oldObject = temporaryGameObject;
-                }
-                else
-                {
-                    oldObjectName = oldObject.name;
-                    oldObject.name = oldObjectName + " (" + attTypesName + ")";
                 }
             }
 
@@ -82,9 +77,9 @@ namespace Oculus.Interaction.InterfaceSupport
             if (Event.current.type == EventType.Repaint)
             {
                 if (temporaryGameObject != null)
+                {
                     GameObject.DestroyImmediate(temporaryGameObject);
-                else
-                    oldObject.name = oldObjectName;
+                }
             }
 
             UnityEngine.Object matchingObject = null;
@@ -117,13 +112,21 @@ namespace Oculus.Interaction.InterfaceSupport
 
             if (candidateObject == null || matchingObject != null)
             {
-                property.objectReferenceValue = matchingObject;
+                if (property.objectReferenceValue != matchingObject)
+                {
+                    property.objectReferenceValue = matchingObject;
+                }
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.serializedObject.ApplyModifiedProperties();
             }
 
             EditorGUI.EndProperty();
         }
 
-        private bool IsAssignableFromTypes(Type source, Type[] targets)
+        private static bool IsAssignableFromTypes(Type source, Type[] targets)
         {
             foreach (Type t in targets)
             {
@@ -168,23 +171,22 @@ namespace Oculus.Interaction.InterfaceSupport
             return $"{attType.Name}<{string.Join(", ", genericTypeNames)}>";
         }
 
-        private Type[] GetInterfaceTypes(SerializedProperty property)
+        private static Type[] GetInterfaceTypes(SerializedProperty property, InterfaceAttribute attribute)
         {
-            InterfaceAttribute att = (InterfaceAttribute)attribute;
-            Type[] t = att.Types;
-            if (!String.IsNullOrEmpty(att.TypeFromFieldName))
+            Type[] t = attribute.Types;
+            if (!String.IsNullOrEmpty(attribute.TypeFromFieldName))
             {
                 var thisType = property.serializedObject.targetObject.GetType();
                 while (thisType != null)
                 {
-                    var referredFieldInfo = thisType.GetField(att.TypeFromFieldName,
+                    var referredFieldInfo = thisType.GetField(attribute.TypeFromFieldName,
                         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     if (referredFieldInfo != null)
                     {
                         t = new Type[1] { referredFieldInfo.FieldType };
                         break;
                     }
-                    var referredPropertyInfo = thisType.GetProperty(att.TypeFromFieldName,
+                    var referredPropertyInfo = thisType.GetProperty(attribute.TypeFromFieldName,
                         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     if (referredPropertyInfo != null)
                     {
@@ -229,7 +231,7 @@ namespace Oculus.Interaction.InterfaceSupport
             EditorGUIUtility.ShowObjectPicker<Component>(null, true, filter, _filteredObjectPickerID);
         }
 
-        private bool IsAssignableTo(Type fromType, Type toType)
+        private static bool IsAssignableTo(Type fromType, Type toType)
         {
             // is open interface
             if (toType.IsGenericType && toType.IsGenericTypeDefinition)
@@ -240,7 +242,7 @@ namespace Oculus.Interaction.InterfaceSupport
             return toType.IsAssignableFrom(fromType);
         }
 
-        private bool IsAssignableToGenericType(Type fromType, Type toType)
+        private static bool IsAssignableToGenericType(Type fromType, Type toType)
         {
             var interfaceTypes = fromType.GetInterfaces();
 

@@ -36,12 +36,21 @@ namespace Oculus.Interaction.HandGrab.Visuals
         private HandPuppet _puppet;
 
         /// <summary>
+        /// The actual root of the hand hierarchy
+        /// </summary>
+        [SerializeField, Optional]
+        private Transform _root;
+        public Transform Root => _root;
+
+        /// <summary>
         /// The HandGrab point can be set so the ghost automatically
         /// adopts the desired pose of said point.
         /// </summary>
         [SerializeField, Optional]
         [UnityEngine.Serialization.FormerlySerializedAs("_handGrabPoint")]
         private HandGrabPose _handGrabPose;
+
+
 
         #region editor events
         protected virtual void Reset()
@@ -75,6 +84,10 @@ namespace Oculus.Interaction.HandGrab.Visuals
         protected virtual void Start()
         {
             this.AssertField(_puppet, nameof(_puppet));
+            if (_root == null)
+            {
+                _root = this.transform;
+            }
         }
 
         /// <summary>
@@ -126,6 +139,10 @@ namespace Oculus.Interaction.HandGrab.Visuals
         public void InjectOptionalHandGrabPose(HandGrabPose handGrabPose)
         {
             _handGrabPose = handGrabPose;
+        }
+        public void InjectOptionalRoot(Transform root)
+        {
+            _root = root;
         }
         #endregion
     }

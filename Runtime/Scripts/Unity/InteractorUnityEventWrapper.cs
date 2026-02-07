@@ -26,25 +26,57 @@ using UnityEngine.Serialization;
 namespace Oculus.Interaction
 {
     /// <summary>
-    /// This component makes it possible to connect Interactors in the
-    /// inspector to Unity Events that broadcast on state changes
+    /// Exposes Unity events that broadcast state changes from an ‹see cref="IInteractorView"/› (an Interactor).
     /// </summary>
     public class InteractorUnityEventWrapper : MonoBehaviour
     {
+        /// <summary>
+        /// The ‹see cref="IInteractorView"/› (Interactor) component to wrap.
+        /// </summary>
+        [Tooltip("The IInteractorView (Interactor) component to wrap.")]
         [SerializeField, Interface(typeof(IInteractorView))]
         private UnityEngine.Object _interactorView;
         private IInteractorView InteractorView;
 
+        /// <summary>
+        /// Raised when the Interactor is enabled.
+        /// </summary>
+        [Tooltip("Raised when the Interactor is enabled.")]
         [SerializeField]
         private UnityEvent _whenEnabled;
+
+        /// <summary>
+        /// Raised when the Interactor is disabled.
+        /// </summary>
+        [Tooltip("Raised when the Interactor is disabled.")]
         [SerializeField]
         private UnityEvent _whenDisabled;
+
+        /// <summary>
+        /// Raised when the Interactor is hovering over an Interactable.
+        /// </summary>
+        [Tooltip("Raised when the Interactor is hovering over an Interactable.")]
         [SerializeField]
         private UnityEvent _whenHover;
+
+        /// <summary>
+        /// Raised when the Interactor stops hovering over an Interactable.
+        /// </summary>
+        [Tooltip("Raised when the stops hovering over an Interactable.")]
         [SerializeField]
         private UnityEvent _whenUnhover;
+
+        /// <summary>
+        /// Raised when the Interactor selects an Interactable.
+        /// </summary>
+        [Tooltip("Raised when the Interactor selects an Interactable.")]
         [SerializeField]
         private UnityEvent _whenSelect;
+
+        /// <summary>
+        /// Raised when the Interactor stops selecting an Interactable.
+        /// </summary>
+        [Tooltip("Raised when the Interactor stops selecting an Interactable.")]
         [SerializeField]
         private UnityEvent _whenUnselect;
 

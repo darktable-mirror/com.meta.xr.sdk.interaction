@@ -22,12 +22,23 @@ using UnityEngine;
 
 namespace Oculus.Interaction.DistanceReticles
 {
+    /// <summary>
+    /// Determines some visual properties of the ghost line reticle. Included in the ReticleLine prefab.
+    /// </summary>
     public abstract class DistantInteractionLineVisual : MonoBehaviour
     {
+        /// <summary>
+        /// The distance interactor used as the origin of the line visual.
+        /// </summary>
+        [Tooltip("The distance interactor used as the origin of the line visual.")]
         [SerializeField, Interface(typeof(IDistanceInteractor))]
         private UnityEngine.Object _distanceInteractor;
         public IDistanceInteractor DistanceInteractor { get; protected set; }
 
+        /// <summary>
+        /// Where the line visual begins relative to the hand or controller. The lower the value, the closer the line.
+        /// </summary>
+        [Tooltip("Where the line visual begins relative to the hand or controller. The lower the value, the closer the line.")]
         [SerializeField]
         private float _visualOffset = 0.07f;
         public float VisualOffset
@@ -44,14 +55,26 @@ namespace Oculus.Interaction.DistanceReticles
 
         private Vector3[] _linePoints;
 
+        /// <summary>
+        /// Determines if the line should be visible when the distance interactor is in a normal state (not selecting, hovering, or disabled).
+        /// </summary>
+        [Tooltip("Should the line be visible when the distance interactor is in a normal state (not selecting, hovering, or disabled)?")]
         [SerializeField]
         private bool _visibleDuringNormal;
         private IReticleData _target;
 
+        /// <summary>
+        /// The number of segments that make up the line. The more segments, the smoother the line.
+        /// </summary>
+        [Tooltip("The number of segments that make up the line. The more segments, the smoother the line.")]
         [SerializeField]
         private int _numLinePoints = 20;
         protected int NumLinePoints => _numLinePoints;
 
+        /// <summary>
+        /// The length of the line when the interactor is in a normal state. Only visible if the "Visible during normal" box is also checked.
+        /// </summary>
+        [Tooltip("The length of the line when the interactor is in a normal state. Only visible if the \"Visible during normal\" checkbox is also selected.")]
         [SerializeField]
         private float _targetlessLength = 0.5f;
         protected float TargetlessLength => _targetlessLength;

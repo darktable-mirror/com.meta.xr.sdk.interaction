@@ -22,6 +22,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.HandGrab
 {
+    /// <summary>
+    /// Moves the selected interactable around a fixed point at its current position.
+    /// </summary>
     public class MoveAtSourceProvider : MonoBehaviour, IMovementProvider
     {
         public IMovement CreateMovement()

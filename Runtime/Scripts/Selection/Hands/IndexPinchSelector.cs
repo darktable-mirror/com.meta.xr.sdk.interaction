@@ -26,8 +26,15 @@ using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// Broadcasts whether the hand's index finger is selecting or unselecting. The index finger is selecting if it's pinching.
+    /// </summary>
     public class IndexPinchSelector : MonoBehaviour, ISelector
     {
+        /// <summary>
+        /// The hand to check.
+        /// </summary>
+        [Tooltip("The hand to check.")]
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
         public IHand Hand { get; private set; }

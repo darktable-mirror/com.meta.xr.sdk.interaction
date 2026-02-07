@@ -18,12 +18,10 @@
  * limitations under the License.
  */
 
-using System;
-using UnityEngine;
-using UnityEngine.Assertions;
 using Oculus.Interaction.Input;
 using Oculus.Interaction.PoseDetection;
-using UnityEngine.Serialization;
+using System;
+using UnityEngine;
 
 namespace Oculus.Interaction
 {
@@ -34,7 +32,8 @@ namespace Oculus.Interaction
     /// determining the point of release: when fingers are outside of the cached distance.
     /// </summary>
     public class
-        TouchHandGrabInteractor : PointerInteractor<TouchHandGrabInteractor, TouchHandGrabInteractable>
+        TouchHandGrabInteractor : PointerInteractor<TouchHandGrabInteractor, TouchHandGrabInteractable>,
+        ITimeConsumer
     {
         [SerializeField, Interface(typeof(IHand))]
         private UnityEngine.Object _hand;
@@ -71,6 +70,12 @@ namespace Oculus.Interaction
 
         public event Action WhenFingerLocked = delegate () { };
 
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
+
         private Vector3 _saveOffset = Vector3.zero;
 
         private Vector3 GrabOffset = Vector3.zero;
@@ -94,7 +99,6 @@ namespace Oculus.Interaction
         private ShadowHand _fromShadow;
         private ShadowHand _toShadow;
         private ShadowHand _openShadow;
-        private Func<float> _timeProvider;
         private bool _firstSelect = false;
         private float _previousTime;
         private float _deltaTime;
@@ -123,8 +127,6 @@ namespace Oculus.Interaction
                     LocalJoints = new Pose[joints.Length]
                 };
             }
-
-            _timeProvider = () => Time.time;
         }
 
         protected override void Start()
@@ -589,6 +591,7 @@ namespace Oculus.Interaction
             _iterations = iterations;
         }
 
+        [Obsolete("Use SetTimeProvide()")]
         public void InjectOptionalTimeProvider(Func<float> timeProvider)
         {
             _timeProvider = timeProvider;
