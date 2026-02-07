@@ -30,6 +30,7 @@ namespace Oculus.Interaction
     [RequireComponent(typeof(Rigidbody))]
     public class RigidbodyKinematicLocker : MonoBehaviour
     {
+        public bool IsLocked => _counter != 0;
         private Rigidbody _rigidbody;
 
         private int _counter = 0;
@@ -82,6 +83,16 @@ namespace Oculus.Interaction
     /// </summary>
     public static class RigidbodyKinematicLockerExtension
     {
+        /// <summary>
+        /// Check whether the kinematic state of the Rigidbody is locked by some other caller.
+        /// If the Rigidbody does not have a RigidbodyKinematicLocker component, it returns false.
+        /// </summary>
+        /// <param name="rigidbody">The Rigidbody to check lock status on.</param>
+        /// <returns>Whether the rigidbody is currently locked</returns>
+        public static bool IsLocked(this Rigidbody rigidbody)
+        {
+            return rigidbody.TryGetComponent(out RigidbodyKinematicLocker component) && component.IsLocked;
+        }
         /// <summary>
         /// Locks to true the kinematic state of the Rigidbody this method is called on.
         /// If the Rigidbody does not have a RigidbodyKinematicLocker component, it adds one.

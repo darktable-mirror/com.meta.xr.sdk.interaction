@@ -23,6 +23,8 @@ using UnityEngine;
 using System.ComponentModel;
 using Oculus.Interaction.Grab;
 using Oculus.Interaction.HandGrab;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Oculus.Interaction.Editor.QuickActions
 {
@@ -60,6 +62,13 @@ namespace Oculus.Interaction.Editor.QuickActions
         private GrabTypeFlags _grabTypeFlags;
 
         [SerializeField]
+        [WizardSetting]
+        [BooleanDropdown(False = "Do Not Generate Collider", True = "Generate Collider")]
+        [Tooltip("If a collider is not present under the provided RigidBody, " +
+            "a collider will be auto-generated.")]
+        private bool _autoGenerateCollider = true;
+
+        [SerializeField]
         [Tooltip("The transform to be moved when grabbing the object.")]
         [WizardDependency(FindMethod = nameof(FindTransform), FixMethod = nameof(FixTransform))]
         private Transform _targetTransform;
@@ -68,12 +77,6 @@ namespace Oculus.Interaction.Editor.QuickActions
         [Tooltip("The rigidbody representing the physics object that will be moved.")]
         [WizardDependency(FindMethod = nameof(FindRigidbody), FixMethod = nameof(FixRigidbody))]
         private Rigidbody _rigidbody;
-
-        [SerializeField]
-        [InspectorName("Grab Detection Volume")]
-        [Tooltip("This collider determines the grab volume for this object.")]
-        [WizardDependency(FindMethod = nameof(FindCollider), FixMethod = nameof(FixCollider))]
-        private Collider _collider;
 
         #endregion Fields
 
@@ -99,15 +102,28 @@ namespace Oculus.Interaction.Editor.QuickActions
             _rigidbody.isKinematic = true;
         }
 
-        private void FindCollider()
+        private bool HasCollider()
         {
-            _collider = Target.GetComponentInChildren<Collider>();
+            return _rigidbody != null && _rigidbody.gameObject.
+                GetComponentInChildren<Collider>() != null;
         }
 
-        private void FixCollider()
+        private void GenerateCollider(GameObject root)
         {
-            _collider = AddComponent<SphereCollider>(Target);
-            _collider.isTrigger = true;
+            Collider collider;
+            if (Utils.TryEncapsulateRenderers(root,
+                out Bounds localBounds))
+            {
+                var boxCollider = AddComponent<BoxCollider>(root);
+                boxCollider.center = localBounds.center;
+                boxCollider.size = localBounds.size;
+                collider = boxCollider;
+            }
+            else
+            {
+                collider = AddComponent<SphereCollider>(root);
+            }
+            collider.isTrigger = true;
         }
 
         protected override void Create()
@@ -131,14 +147,31 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             grabInteractable.InjectRigidbody(_rigidbody);
 
-            obj.GetComponent<Grabbable>()
-                .InjectOptionalTargetTransform(_targetTransform);
+            Grabbable grabbable = obj.GetComponent<Grabbable>();
+            grabbable.InjectOptionalTargetTransform(_targetTransform);
+            grabbable.InjectOptionalRigidbody(_rigidbody);
 
-            obj.GetComponent<PhysicsGrabbable>()?
-                .InjectRigidbody(_rigidbody);
+            if (!HasCollider() && _autoGenerateCollider)
+            {
+                GenerateCollider(_rigidbody.gameObject);
+            }
 
             InteractorUtils.AddInteractorsToRig(
                 InteractorTypes.Grab, _deviceTypes);
+        }
+
+        protected override IEnumerable<MessageData> GetMessages()
+        {
+            IEnumerable<MessageData> messages = Enumerable.Empty<MessageData>();
+            if (_rigidbody != null && !HasCollider() && !_autoGenerateCollider)
+            {
+                messages = messages.Append(new MessageData(MessageType.Warning,
+                    "No collider(s) detected in the target rigidbody hierarchy. Grab " +
+                    "interaction uses physics collisions to find interactables in the scene, " +
+                    "and will not work without a collider(s) present.",
+                    new ButtonData("Enable Auto\nGeneration", () => _autoGenerateCollider = true)));
+            }
+            return messages;
         }
     }
 }

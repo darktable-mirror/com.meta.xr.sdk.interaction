@@ -117,7 +117,18 @@ namespace Oculus.Interaction.Editor.QuickActions
 
         private void FixCollider()
         {
-            _collider = AddComponent<SphereCollider>(Target);
+            if (Utils.TryEncapsulateRenderers(Target,
+                out Bounds localBounds))
+            {
+                var boxCollider = AddComponent<BoxCollider>(Target);
+                boxCollider.center = localBounds.center;
+                boxCollider.size = localBounds.size;
+                _collider = boxCollider;
+            }
+            else
+            {
+                _collider = AddComponent<SphereCollider>(Target);
+            }
             _collider.isTrigger = true;
         }
 
@@ -131,11 +142,9 @@ namespace Oculus.Interaction.Editor.QuickActions
             transform.localScale = Vector3.one;
             transform.localRotation = Quaternion.identity;
 
-            obj.GetComponent<Grabbable>()
-                .InjectOptionalTargetTransform(_targetTransform);
-
-            obj.GetComponent<PhysicsGrabbable>()?
-                .InjectRigidbody(_rigidbody);
+            Grabbable grabbable = obj.GetComponent<Grabbable>();
+            grabbable.InjectOptionalTargetTransform(_targetTransform);
+            grabbable.InjectOptionalRigidbody(_rigidbody);
 
             var rayInteractable = obj.GetComponent<RayInteractable>();
 

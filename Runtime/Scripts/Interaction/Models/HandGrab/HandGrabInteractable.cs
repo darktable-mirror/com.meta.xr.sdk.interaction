@@ -54,7 +54,8 @@ namespace Oculus.Interaction.HandGrab
         /// The <cref="PhysicsGrabbable" /> used when you grab the object.
         /// </summary>
         [Tooltip("The PhysicsGrabbable used when you grab the object.")]
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
         private PhysicsGrabbable _physicsGrabbable = null;
 
         /// <summary>
@@ -237,6 +238,7 @@ namespace Oculus.Interaction.HandGrab
         /// </summary>
         /// <param name="linearVelocity">The linear velocity to apply.</param>
         /// <param name="angularVelocity">The angular velocity to apply.</param>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -346,6 +348,7 @@ namespace Oculus.Interaction.HandGrab
         /// <summary>
         /// Adds a physics grabbable to a dynamically instantiated GameObject.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {
             _physicsGrabbable = physicsGrabbable;

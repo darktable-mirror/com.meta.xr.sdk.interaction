@@ -268,13 +268,21 @@ namespace Oculus.Interaction.GrabAPI
 
         public Vector3 GetPinchCenter()
         {
-            Vector3 localOffset = _fingerPinchGrabAPI.GetWristOffsetLocal();
+            Vector3 localOffset = Vector3.zero;
+            if (_fingerPinchGrabAPI != null)
+            {
+                localOffset = _fingerPinchGrabAPI.GetWristOffsetLocal();
+            }
             return WristOffsetToWorldPoint(localOffset);
         }
 
         public Vector3 GetPalmCenter()
         {
-            Vector3 localOffset = _fingerPalmGrabAPI.GetWristOffsetLocal();
+            Vector3 localOffset = Vector3.zero;
+            if (_fingerPalmGrabAPI != null)
+            {
+                localOffset = _fingerPalmGrabAPI.GetWristOffsetLocal();
+            }
             return WristOffsetToWorldPoint(localOffset);
         }
 

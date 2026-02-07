@@ -43,7 +43,11 @@ namespace Oculus.Interaction
             /// Indicates that even though the reference is Optional, it is important
             /// for the component to work as expected.
             /// </summary>
-            DontHide = 1 << 1
+            DontHide = 1 << 1,
+            /// <summary>
+            /// Indicates that the field is obsolete and should be avoided
+            /// </summary>
+            Obsolete = 1 << 2,
         }
 
         public Flag Flags { get; private set; } = Flag.None;

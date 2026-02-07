@@ -208,8 +208,6 @@ GameObject:
   - component: {fileID: 5815656163390384824}
   - component: {fileID: 4855911827874819509}
   - component: {fileID: 6033487181909556103}
-  - component: {fileID: 3478441092482092326}
-  - component: {fileID: 4937536880777309957}
   m_Layer: 0
   m_Name: Template_ControllerDistanceGrabInteractor
   m_TagString: Untagged
@@ -283,7 +281,7 @@ MonoBehaviour:
   _selector: {fileID: 6104459578317183004}
   _grabCenter: {fileID: 648957105356440474}
   _grabTarget: {fileID: 0}
-  _velocityCalculator: {fileID: 3478441092482092326}
+  _velocityCalculator: {fileID: 0}
   _distantCandidateComputer:
     _detectionFrustums:
       _selectionFrustum: {fileID: 3711507909617635040}
@@ -308,32 +306,6 @@ MonoBehaviour:
   _gameObjects: []
   _monoBehaviours:
   - {fileID: 4855911827874819509}
---- !u!114 &3478441092482092326
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6883381765911530544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac5f4553b7f0a60488f242f1f4cde468, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _poseInputDevice: {fileID: 4937536880777309957}
---- !u!114 &4937536880777309957
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6883381765911530544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05e1160b52479574a9092dd2fef44bfe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _controller: {fileID: 4891571258411979073}
 --- !u!1 &7534846438228349146
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Throw
@@ -26,6 +27,7 @@ namespace Oculus.Interaction.Throw
     /// Interface for velocity calculator used to make throwing
     /// possible.
     /// </summary>
+    [Obsolete("Use " + nameof(Grabbable) + " instead")]
     public interface IThrowVelocityCalculator
     {
         ReleaseVelocityInformation CalculateThrowVelocity(Transform objectThrown);

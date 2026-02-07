@@ -175,26 +175,70 @@ namespace Oculus.Interaction
             return constrainedPosition;
         }
 
-        public static Quaternion GetConstrainedTransformRotation(Quaternion unconstrainedRotation, RotationConstraints rotationConstraints)
+        public static Quaternion GetConstrainedTransformRotation(Quaternion unconstrainedRotation, RotationConstraints rotationConstraints, Transform relativeTransform = null)
         {
-            var newX = unconstrainedRotation.eulerAngles.x;
-            var newY = unconstrainedRotation.eulerAngles.y;
-            var newZ = unconstrainedRotation.eulerAngles.z;
+            if (relativeTransform != null)
+            {
+                unconstrainedRotation = Quaternion.Inverse(relativeTransform.rotation) * unconstrainedRotation;
+            }
+
+            Vector3 euler = unconstrainedRotation.eulerAngles;
+            float xAngle = euler.x;
+            float yAngle = euler.y;
+            float zAngle = euler.z;
 
             if (rotationConstraints.XAxis.ConstrainAxis)
             {
-                newX = Mathf.Clamp(unconstrainedRotation.eulerAngles.x, rotationConstraints.XAxis.AxisRange.Min, rotationConstraints.XAxis.AxisRange.Max);
+                xAngle = ClampAngle(xAngle, rotationConstraints.XAxis.AxisRange.Min, rotationConstraints.XAxis.AxisRange.Max);
             }
             if (rotationConstraints.YAxis.ConstrainAxis)
             {
-                newY = Mathf.Clamp(unconstrainedRotation.eulerAngles.y, rotationConstraints.YAxis.AxisRange.Min, rotationConstraints.YAxis.AxisRange.Max);
+                yAngle = ClampAngle(yAngle, rotationConstraints.YAxis.AxisRange.Min, rotationConstraints.YAxis.AxisRange.Max);
             }
             if (rotationConstraints.ZAxis.ConstrainAxis)
             {
-                newZ = Mathf.Clamp(unconstrainedRotation.eulerAngles.z, rotationConstraints.ZAxis.AxisRange.Min, rotationConstraints.ZAxis.AxisRange.Max);
+                zAngle = ClampAngle(zAngle, rotationConstraints.ZAxis.AxisRange.Min, rotationConstraints.ZAxis.AxisRange.Max);
             }
 
-            return Quaternion.Euler(newX, newY, newZ);
+            Quaternion constrainedRotation = Quaternion.Euler(xAngle, yAngle, zAngle);
+
+            // Convert the constrained position back to world space
+            if (relativeTransform != null)
+            {
+                constrainedRotation = relativeTransform.rotation * constrainedRotation;
+            }
+
+            return constrainedRotation.normalized;
+
+
+            float ClampAngle(float angle, float min, float max)
+            {
+                if (min == max)
+                {
+                    return min;
+                }
+
+                if (min <= max)
+                {
+                    if (angle >= min && angle <= max)
+                    {
+                        return angle;
+                    }
+                }
+                else
+                {
+                    if (angle >= min || angle <= max)
+                    {
+                        return angle;
+                    }
+                }
+
+                if (Mathf.Abs(Mathf.DeltaAngle(angle, min)) <= Mathf.Abs(Mathf.DeltaAngle(max, angle)))
+                {
+                    return min;
+                }
+                return max;
+            }
         }
 
         public static Vector3 GetConstrainedTransformScale(Vector3 unconstrainedScale, ScaleConstraints scaleConstraints)
@@ -215,6 +259,53 @@ namespace Oculus.Interaction
             }
 
             return constrainedScale;
+        }
+
+        public static Pose WorldToLocalPose(Pose worldPose, Matrix4x4 worldToLocal)
+        {
+            return new Pose(worldToLocal.MultiplyPoint3x4(worldPose.position),
+                            worldToLocal.rotation * worldPose.rotation);
+        }
+
+        public static Pose AlignLocalToWorldPose(Matrix4x4 localToWorld, Pose local, Pose world)
+        {
+            var basePose = new Pose(localToWorld.MultiplyPoint3x4(local.position),
+                                    localToWorld.rotation * local.rotation);
+            Pose baseInverse = new Pose();
+            PoseUtils.Inverse(basePose, ref baseInverse);
+            Pose poseInBase = PoseUtils.Multiply(baseInverse, new Pose(localToWorld.GetPosition(), localToWorld.rotation));
+            Pose poseInWorld = PoseUtils.Multiply(world, poseInBase);
+            return poseInWorld;
+        }
+
+        public static float WorldToLocalMagnitude(float magnitude, Matrix4x4 worldToLocal)
+        {
+            return worldToLocal.MultiplyVector(magnitude * Vector3.forward).magnitude;
+        }
+
+        public static float LocalToWorldMagnitude(float magnitude, Matrix4x4 localToWorld)
+        {
+            return localToWorld.MultiplyVector(magnitude * Vector3.forward).magnitude;
+        }
+
+        public static Vector3 ConstrainAlongDirection(
+            Vector3 position, Vector3 origin, Vector3 direction,
+            FloatConstraint min, FloatConstraint max)
+        {
+            if (!min.Constrain  && !max.Constrain) return position;
+
+            float distanceAlongDirection = Vector3.Dot(position - origin, direction);
+
+            float distanceConstrained = distanceAlongDirection;
+            if(min.Constrain) {
+                distanceConstrained = Mathf.Max(distanceConstrained, min.Value);
+            }
+            if(max.Constrain) {
+                distanceConstrained = Mathf.Min(distanceConstrained, max.Value);
+            }
+
+            float distanceDelta = distanceConstrained - distanceAlongDirection;
+            return position + direction * distanceDelta;
         }
     }
 }

@@ -23,6 +23,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Throw
 {
+    [Obsolete("Use " + nameof(Grabbable) + " instead")]
     public class RANSACVelocityCalculator : MonoBehaviour,
         IThrowVelocityCalculator, ITimeConsumer
     {
@@ -36,32 +37,9 @@ namespace Oculus.Interaction.Throw
             _timeProvider = timeProvider;
         }
 
-        private struct TimedPose
-        {
-            public float time;
-            public Pose pose;
-
-            public TimedPose(float time, Pose pose)
-            {
-                this.time = time;
-                this.pose = pose;
-            }
-        }
-
-        private RingBuffer<TimedPose> _poses;
-
-        private int _consecutiveValidFrames;
         private float _previousPositionId;
-        private float _lastTime;
 
-        private const int SAMPLES_COUNT = 8;
-        private const int SAMPLES_DEAD_ZONE = 2;
-        private const int MIN_HIGHCONFIDENCE_SAMPLES = 2;
-
-        private delegate Vector3 RANSACSampler(Pose offset, int idx1, int idx2);
-        private delegate float RANSACScorer(Vector3 sample, Vector3[,] samplesTable);
-
-        private Vector3[,] _samplesTable = new Vector3[SAMPLES_COUNT, SAMPLES_COUNT];
+        private RANSACOffsettedVelocity _ransac = new RANSACOffsettedVelocity(8, 2, 2);
 
         protected virtual void Awake()
         {
@@ -72,8 +50,7 @@ namespace Oculus.Interaction.Throw
         {
             this.AssertField(PoseInputDevice, nameof(PoseInputDevice));
 
-            int capacity = SAMPLES_COUNT + SAMPLES_DEAD_ZONE;
-            _poses = new RingBuffer<TimedPose>(capacity, new TimedPose(_timeProvider(), Pose.identity));
+            _ransac.Initialize(Pose.identity, _timeProvider());
         }
 
         private void Update()
@@ -88,202 +65,29 @@ namespace Oculus.Interaction.Throw
             return GetThrowInformation(objectThrown.GetPose());
         }
 
-
         private void ProcessInput()
         {
             float time = _timeProvider();
-            if (_poses.Peek().time == time)
-            {
-                return;
-            }
 
-            if (!PoseInputDevice.IsInputValid
-                || !PoseInputDevice.IsHighConfidence
-                || !PoseInputDevice.GetRootPose(out Pose rootPose)
-                || rootPose.position.sqrMagnitude == _previousPositionId)
-            {
-                _consecutiveValidFrames = 0;
+            PoseInputDevice.GetRootPose(out Pose rootPose);
 
-            }
-            else
-            {
-                if (_consecutiveValidFrames == 0)
-                {
-                    _poses.Add(RepeatLast(_lastTime));
-                }
-                _consecutiveValidFrames++;
-                _previousPositionId = rootPose.position.sqrMagnitude;
-                _poses.Add(new TimedPose(time, rootPose));
-            }
+            bool isHighConfidence = PoseInputDevice.IsInputValid
+                && PoseInputDevice.IsHighConfidence
+                && rootPose.position.sqrMagnitude != _previousPositionId;
 
-            _lastTime = time;
+            _ransac.Process(rootPose, _timeProvider(), isHighConfidence);
+            _previousPositionId = rootPose.position.sqrMagnitude;
         }
 
         private ReleaseVelocityInformation GetThrowInformation(Pose grabPoint)
         {
+            Vector3 position = grabPoint.position;
             PoseInputDevice.GetRootPose(out Pose rootPose);
             Pose offset = PoseUtils.Delta(rootPose, grabPoint);
 
-            Vector3 position = grabPoint.position;
-            Vector3 velocity;
-            Vector3 torque;
-
-            if (_consecutiveValidFrames >= MIN_HIGHCONFIDENCE_SAMPLES)
-            {
-                velocity = RANSAC(offset, CalculateVelocityFromSamples, ScoreDistance);
-                torque = RANSAC(offset, CalculateTorqueFromSamples, ScoreTorque);
-            }
-            else
-            {
-                GetLastPoseVelocity(offset, out velocity, out torque);
-            }
+            _ransac.GetOffsettedVelocities(offset, out Vector3 velocity, out Vector3 torque);
 
             return new ReleaseVelocityInformation(velocity, torque, position, true);
-        }
-
-        private TimedPose RepeatLast(float time)
-        {
-            TimedPose lastPose = _poses.Peek();
-            lastPose.time = time;
-
-            return lastPose;
-        }
-
-        private void GetLastPoseVelocity(Pose offset, out Vector3 velocity, out Vector3 torque)
-        {
-            TimedPose younger = _poses.Peek(0);
-            TimedPose older = _poses.Peek(-1);
-
-            float timeShift = younger.time - older.time;
-            velocity = (PoseUtils.Multiply(younger.pose, offset).position - PoseUtils.Multiply(older.pose, offset).position) / timeShift;
-
-            torque = GetAngularVelocity(older, younger);
-        }
-
-        private Vector3 RANSAC(Pose offset, RANSACSampler sampler, RANSACScorer scorer)
-        {
-            for (int i = 0; i < SAMPLES_COUNT; ++i)
-            {
-                for (int j = i + 1; j < SAMPLES_COUNT; ++j)
-                {
-                    _samplesTable[i, j] = sampler(offset, i + SAMPLES_DEAD_ZONE, j + SAMPLES_DEAD_ZONE);
-                }
-            }
-
-            Vector3 bestSample = Vector3.zero;
-            float bestScore = float.PositiveInfinity;
-            for (int i = 0; i < SAMPLES_COUNT; ++i)
-            {
-                int y = Mathf.FloorToInt(UnityEngine.Random.value * (SAMPLES_COUNT - 1));
-                int x = y + Mathf.FloorToInt(UnityEngine.Random.value * (SAMPLES_COUNT - y - 1)) + 1;
-
-                Vector3 sample = _samplesTable[y, x];
-                float score = scorer(sample, _samplesTable);
-
-                if (score < bestScore)
-                {
-                    bestSample = sample;
-                    bestScore = score;
-                }
-            }
-
-            return bestSample;
-        }
-
-        private Vector3 CalculateVelocityFromSamples(Pose offset, int idx1, int idx2)
-        {
-            GetSortedTimePoses(idx1, idx2, out TimedPose older, out TimedPose younger);
-            float timeShift = younger.time - older.time;
-            Vector3 positionShift = PoseUtils.Multiply(younger.pose, offset).position - PoseUtils.Multiply(older.pose, offset).position;
-            return positionShift / timeShift;
-        }
-
-        private Vector3 CalculateTorqueFromSamples(Pose offset, int idx1, int idx2)
-        {
-            GetSortedTimePoses(idx1, idx2, out TimedPose older, out TimedPose younger);
-            Vector3 torque = GetAngularVelocity(older, younger);
-            return torque;
-        }
-
-        private void GetSortedTimePoses(int idx1, int idx2,
-            out TimedPose older, out TimedPose younger)
-        {
-            int youngerIdx = idx1;
-            int olderIdx = idx2;
-            if (idx2 > idx1)
-            {
-                youngerIdx = idx2;
-                olderIdx = idx1;
-            }
-
-            older = _poses[olderIdx];
-            younger = _poses[youngerIdx];
-        }
-
-        private static float ScoreDistance(Vector3 sample, Vector3[,] samplesTable)
-        {
-            float score = 0f;
-            for (int y = 0; y < SAMPLES_COUNT; ++y)
-            {
-                for (int x = y + 1; x < SAMPLES_COUNT; ++x)
-                {
-                    score += (sample - samplesTable[y, x]).sqrMagnitude;
-                }
-            }
-            return score;
-        }
-
-        private static float ScoreTorque(Vector3 sample, Vector3[,] samplesTable)
-        {
-            float score = 0f;
-            for (int y = 0; y < SAMPLES_COUNT; ++y)
-            {
-                for (int x = y + 1; x < SAMPLES_COUNT; ++x)
-                {
-                    score += Mathf.Abs(Quaternion.Dot(
-                        Quaternion.Euler(sample),
-                        Quaternion.Euler(samplesTable[y, x])));
-                }
-            }
-            return score;
-        }
-
-        private static Vector3 GetAngularVelocity(TimedPose older, TimedPose younger)
-        {
-            float timeShift = younger.time - older.time;
-            Quaternion deltaRotation = younger.pose.rotation * Quaternion.Inverse(older.pose.rotation);
-            deltaRotation.ToAngleAxis(out float angularSpeed, out Vector3 torqueAxis);
-            angularSpeed = (angularSpeed * Mathf.Deg2Rad) / timeShift;
-
-            return torqueAxis * angularSpeed;
-        }
-
-        private class RingBuffer<T>
-        {
-            private T[] _buffer;
-            private int _head;
-            private int _count;
-
-            public RingBuffer(int capacity, T defaultValue)
-            {
-                _buffer = new T[capacity];
-                _count = capacity;
-                _head = 0;
-
-                for (int i = 0; i < capacity; i++)
-                {
-                    _buffer[i] = defaultValue;
-                }
-            }
-
-            public void Add(T item)
-            {
-                _buffer[_head] = item;
-                _head = (_head + 1) % _count;
-            }
-
-            public T this[int index] => _buffer[index % _count];
-            public T Peek(int offset = 0) => _buffer[(_head + offset + _count) % _count];
         }
 
         #region Inject
@@ -301,5 +105,26 @@ namespace Oculus.Interaction.Throw
 
         #endregion
 
+        private class RANSACOffsettedVelocity : RANSACVelocity
+        {
+            private Pose _offset = Pose.identity;
+
+            public RANSACOffsettedVelocity(int samplesCount = 8, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
+                : base(samplesCount, samplesDeadZone, minHighConfidenceSamples)
+            {
+            }
+
+            public void GetOffsettedVelocities(Pose offset, out Vector3 velocity, out Vector3 torque)
+            {
+                _offset = offset;
+                this.GetVelocities(out velocity, out torque);
+                _offset = Pose.identity;
+            }
+
+            protected override Vector3 PositionOffset(Pose youngerPose, Pose olderPose)
+            {
+                return PoseUtils.Multiply(youngerPose, _offset).position - PoseUtils.Multiply(olderPose, _offset).position;
+            }
+        }
     }
 }

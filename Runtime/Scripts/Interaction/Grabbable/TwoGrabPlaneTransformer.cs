@@ -23,6 +23,8 @@ using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+using static Oculus.Interaction.TransformerUtils;
+
 namespace Oculus.Interaction
 {
     /// <summary>
@@ -33,23 +35,16 @@ namespace Oculus.Interaction
         [SerializeField, Optional]
         private Transform _planeTransform = null;
 
-        private Vector3 _capturePosition;
-
-        private Vector3 _initialLocalScale;
-        private float _initialDistance;
-        private float _initialScale = 1.0f;
-        private float _activeScale = 1.0f;
-
-        private Pose _previousGrabA;
-        private Pose _previousGrabB;
+        [SerializeField, Optional]
+        private Vector3 _localPlaneNormal = new Vector3(0, 1, 0);
 
         [Serializable]
         public class TwoGrabPlaneConstraints
         {
-            public FloatConstraint MinScale;
             public FloatConstraint MaxScale;
-            public FloatConstraint MinY;
+            public FloatConstraint MinScale;
             public FloatConstraint MaxY;
+            public FloatConstraint MinY;
         }
 
         [SerializeField]
@@ -57,14 +52,13 @@ namespace Oculus.Interaction
 
         public TwoGrabPlaneConstraints Constraints
         {
-            get
-            {
-                return _constraints;
-            }
-            set
-            {
-                _constraints = value;
-            }
+            get => _constraints;
+            set => _constraints = value;
+        }
+
+        public struct TwoGrabPlaneState {
+            public Pose Center;
+            public float PlanarDistance;
         }
 
         private IGrabbable _grabbable;
@@ -74,110 +68,76 @@ namespace Oculus.Interaction
             _grabbable = grabbable;
         }
 
+        private Pose _localToTarget;
+        private float _localMagnitudeToTarget;
+
+        private Vector3 WorldPlaneNormal()
+        {
+            Transform t = _planeTransform != null ? _planeTransform : _grabbable.Transform;
+            return t.TransformDirection(_localPlaneNormal).normalized;
+        }
+
         public void BeginTransform()
         {
+            var target = _grabbable.Transform;
             var grabA = _grabbable.GrabPoints[0];
             var grabB = _grabbable.GrabPoints[1];
-            var targetTransform = _grabbable.Transform;
+            var planeNormal = WorldPlaneNormal();
 
-            // Use the centroid of our grabs as the capture plane point
-            _capturePosition = targetTransform.position;
-
-            Transform planeTransform = _planeTransform != null ? _planeTransform : targetTransform;
-            Vector3 rotationAxis = planeTransform.up;
-
-            // Project our positional offsets onto a plane with normal equal to the rotation axis
-            Vector3 initialOffset = grabB.position - grabA.position;
-            Vector3 initialVector = Vector3.ProjectOnPlane(initialOffset, rotationAxis);
-            _initialDistance = initialVector.magnitude;
-
-            _initialScale = _activeScale = targetTransform.localScale.x;
-            _previousGrabA = grabA;
-            _previousGrabB = grabB;
+            var twoGrabPlaneState = TwoGrabPlane(grabA.position, grabB.position, planeNormal);
+            _localToTarget = WorldToLocalPose(twoGrabPlaneState.Center, target.worldToLocalMatrix);
+            _localMagnitudeToTarget = WorldToLocalMagnitude(twoGrabPlaneState.PlanarDistance, target.worldToLocalMatrix);
         }
 
         public void UpdateTransform()
         {
+            var target = _grabbable.Transform;
             var grabA = _grabbable.GrabPoints[0];
             var grabB = _grabbable.GrabPoints[1];
-            var targetTransform = _grabbable.Transform;
+            var planeNormal = WorldPlaneNormal();
 
-            // Use the centroid of our grabs as the transformation center
-            Vector3 initialCenter = Vector3.Lerp(_previousGrabA.position, _previousGrabB.position, 0.5f);
-            Vector3 targetCenter = Vector3.Lerp(grabA.position, grabB.position, 0.5f);
+            var twoGrabPlaneState = TwoGrabPlane(grabA.position, grabB.position, planeNormal);
 
-            Transform planeTransform = _planeTransform != null ? _planeTransform : targetTransform;
-            Vector3 rotationAxis = planeTransform.up;
+            float prevDistInWorld = LocalToWorldMagnitude(_localMagnitudeToTarget, target.localToWorldMatrix);
+            float scaleDelta = prevDistInWorld != 0 ? twoGrabPlaneState.PlanarDistance / prevDistInWorld : 1f;
 
-            // Project our positional offsets onto a plane with normal equal to the rotation axis
-            Vector3 initialOffset = _previousGrabB.position - _previousGrabA.position;
-            Vector3 initialVector = Vector3.ProjectOnPlane(initialOffset, rotationAxis);
-
-            Vector3 targetOffset = grabB.position - grabA.position;
-            Vector3 targetVector = Vector3.ProjectOnPlane(targetOffset, rotationAxis);
-
-            Quaternion rotationDelta = new Quaternion();
-            rotationDelta.SetFromToRotation(initialVector, targetVector);
-
-            Quaternion initialRotation = targetTransform.rotation;
-            Quaternion targetRotation = rotationDelta * targetTransform.rotation;
-
-            // Scale logic
-            float activeDistance = targetVector.magnitude;
-            if(Mathf.Abs(activeDistance) < 0.0001f) activeDistance = 0.0001f;
-
-            float scalePercentage = activeDistance / _initialDistance;
-
-            float previousScale = _activeScale;
-            _activeScale = _initialScale * scalePercentage;
-
-            // Scale constraints
+            float targetScale = scaleDelta * target.localScale.x;
             if(_constraints.MinScale.Constrain)
             {
-                _activeScale = Mathf.Max(_constraints.MinScale.Value, _activeScale);
+                targetScale = Mathf.Max(_constraints.MinScale.Value, targetScale);
             }
             if(_constraints.MaxScale.Constrain)
             {
-                _activeScale = Mathf.Min(_constraints.MaxScale.Value, _activeScale);
+                targetScale = Mathf.Min(_constraints.MaxScale.Value, targetScale);
             }
+            target.localScale = (targetScale / target.localScale.x) * target.localScale;
 
-            // Apply the positional delta initialCenter -> targetCenter and the
-            // rotational delta to the target transform
-            Vector3 positionDelta = _capturePosition - initialCenter;
-            Vector3 deltaProjectedOnPlaneNormal = Vector3.Dot((positionDelta - initialCenter), rotationAxis) * rotationAxis;
-            positionDelta -= deltaProjectedOnPlaneNormal;
+            Pose result = AlignLocalToWorldPose(target.localToWorldMatrix, _localToTarget, twoGrabPlaneState.Center);
+            target.position = result.position;
+            target.rotation = result.rotation;
 
-            Vector3 planarDelta = Quaternion.Inverse(initialRotation) * positionDelta;
-            Vector3 normalDelta = Quaternion.Inverse(initialRotation) * deltaProjectedOnPlaneNormal;
-            Vector3 totalDelta = planarDelta + normalDelta;
-
-            Vector3 centerDelta = targetCenter - _capturePosition;
-            Vector3 scaleCenterDelta = centerDelta * _activeScale / previousScale;
-            Vector3 targetDelta = scaleCenterDelta - centerDelta;
-
-            Quaternion rotationInTargetSpace = Quaternion.Inverse(initialRotation) * targetTransform.rotation;
-
-            _capturePosition = targetRotation * totalDelta + targetCenter - targetDelta;
-            targetTransform.rotation = targetRotation * rotationInTargetSpace;
-            targetTransform.localScale = _activeScale * Vector3.one;
-
-            Vector3 targetPosition = _capturePosition;
-            // Y axis constraints
-            if(_constraints.MinY.Constrain)
-            {
-                targetPosition.y = Mathf.Max(_constraints.MinY.Value, targetPosition.y);
-            }
-            if(_constraints.MaxY.Constrain)
-            {
-                targetPosition.y = Mathf.Min(_constraints.MaxY.Value, targetPosition.y);
-            }
-            targetTransform.position = targetPosition;
-
-            _previousGrabA = grabA;
-            _previousGrabB = grabB;
+            target.position = ConstrainAlongDirection(
+                target.position, target.parent != null ? target.parent.position : Vector3.zero,
+                planeNormal, _constraints.MinY, _constraints.MaxY);
         }
 
         public void EndTransform() { }
+
+        public static TwoGrabPlaneState TwoGrabPlane(Vector3 p0, Vector3 p1, Vector3 planeNormal)
+        {
+            Vector3 centroid = p0 * 0.5f + p1 * 0.5f;
+
+            Vector3 p0planar = Vector3.ProjectOnPlane(p0, planeNormal);
+            Vector3 p1planar = Vector3.ProjectOnPlane(p1, planeNormal);
+
+            Vector3 planarDelta = p1planar - p0planar;
+            Quaternion poseDir = Quaternion.LookRotation(planarDelta, planeNormal);
+
+            return new TwoGrabPlaneState() {
+                Center = new Pose(centroid, poseDir),
+                PlanarDistance = planarDelta.magnitude
+            };
+        }
 
         #region Inject
 

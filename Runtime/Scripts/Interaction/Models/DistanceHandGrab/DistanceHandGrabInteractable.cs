@@ -42,7 +42,8 @@ namespace Oculus.Interaction.HandGrab
         private Rigidbody _rigidbody;
         public Rigidbody Rigidbody => _rigidbody;
 
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
         private PhysicsGrabbable _physicsGrabbable = null;
 
         [SerializeField]
@@ -149,7 +150,6 @@ namespace Oculus.Interaction.HandGrab
             else
             {
                 InjectRigidbody(this.GetComponentInParent<Rigidbody>());
-                InjectOptionalPhysicsGrabbable(this.GetComponentInParent<PhysicsGrabbable>());
                 InjectOptionalPointableElement(this.GetComponentInParent<Grabbable>());
             }
         }
@@ -186,6 +186,7 @@ namespace Oculus.Interaction.HandGrab
             return movement;
         }
 
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -238,6 +239,7 @@ namespace Oculus.Interaction.HandGrab
             InjectPalmGrabRules(palmGrabRules);
         }
 
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsObject)
         {
             _physicsGrabbable = physicsObject;

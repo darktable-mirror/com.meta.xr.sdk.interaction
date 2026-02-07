@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.HandGrab;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -58,7 +59,8 @@ namespace Oculus.Interaction
         /// <cref="PhysicsGrabbable" /> used when you grab the interactable.
         /// </summary>
         [Tooltip("PhysicsGrabbable used when you grab the interactable.")]
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
         private PhysicsGrabbable _physicsGrabbable = null;
 
         /// <summary>
@@ -93,7 +95,6 @@ namespace Oculus.Interaction
         protected virtual void Reset()
         {
             _rigidbody = this.GetComponentInParent<Rigidbody>();
-            _physicsGrabbable = this.GetComponentInParent<PhysicsGrabbable>();
         }
 
         #endregion
@@ -136,6 +137,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -174,6 +176,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Adds a <cref="PhysicsGrabbable" /> to a dynamically instantiated GameObject.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {
             _physicsGrabbable = physicsGrabbable;

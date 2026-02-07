@@ -28,6 +28,7 @@ namespace Oculus.Interaction.Locomotion
         , ILocomotionEventHandler
     {
         [SerializeField, Interface(typeof(ILocomotionEventBroadcaster))]
+        [Optional(OptionalAttribute.Flag.DontHide)]
         private List<UnityEngine.Object> _broadcasters;
         private IEnumerable<ILocomotionEventBroadcaster> Broadcasters { get; set; }
 
@@ -58,7 +59,7 @@ namespace Oculus.Interaction.Locomotion
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertCollectionField(Broadcasters, nameof(Broadcasters));
+            this.AssertCollectionItems(Broadcasters, nameof(Broadcasters));
             this.AssertField(Handler, nameof(Handler));
             this.EndStart(ref _started);
         }
@@ -91,15 +92,22 @@ namespace Oculus.Interaction.Locomotion
         }
 
         #region Inject
+        [Obsolete("Broadcasters is Optional, use with " + nameof(InjectOptionalBroadcasters))]
         public void InjectAllLocomotionBroadcastersHandlerConnection(
             IEnumerable<ILocomotionEventBroadcaster> broadcasters,
             ILocomotionEventHandler handler)
         {
-            InjectBroadcasters(broadcasters);
+            InjectOptionalBroadcasters(broadcasters);
             InjectHandler(handler);
         }
 
-        public void InjectBroadcasters(IEnumerable<ILocomotionEventBroadcaster> broadcasters)
+        public void InjectAllLocomotionBroadcastersHandlerConnection(
+           ILocomotionEventHandler handler)
+        {
+            InjectHandler(handler);
+        }
+
+        public void InjectOptionalBroadcasters(IEnumerable<ILocomotionEventBroadcaster> broadcasters)
         {
             Broadcasters = broadcasters;
         }

@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.Throw;
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -55,8 +56,10 @@ namespace Oculus.Interaction
         /// Determines how the object will move when thrown.
         /// </summary>
         [Tooltip("Determines how the object will move when thrown.")]
-        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional]
+        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         private UnityEngine.Object _velocityCalculator;
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public IThrowVelocityCalculator VelocityCalculator { get; set; }
 
         [SerializeField]
@@ -236,6 +239,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Adds a <cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
         {
             _velocityCalculator = velocityCalculator as UnityEngine.Object;

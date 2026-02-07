@@ -30,6 +30,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2677020288476069728}
   - {fileID: 8899353908417424423}
@@ -107,16 +108,6 @@ PrefabInstance:
       propertyPath: _hmd
       value: 
       objectReference: {fileID: 1947582568178942319}
-    - target: {fileID: 3617819684500193920, guid: 9dbe1cda60e679648bfee3898ce17d93,
-        type: 3}
-      propertyPath: _inputAxis
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4477030762966297144, guid: 9dbe1cda60e679648bfee3898ce17d93,
-        type: 3}
-      propertyPath: _inputAxis
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 4477030763668379292, guid: 9dbe1cda60e679648bfee3898ce17d93,
         type: 3}
       propertyPath: _controller
@@ -182,11 +173,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6715247250285179438, guid: 9dbe1cda60e679648bfee3898ce17d93,
-        type: 3}
-      propertyPath: _inputAxis
-      value: 
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9dbe1cda60e679648bfee3898ce17d93, type: 3}
 --- !u!4 &2677020288476069728 stripped
@@ -214,15 +200,15 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 416337489652724877}
     m_Modifications:
+    - target: {fileID: 753053710452699066, guid: 122968827794c2b499a4451e4a8fa2ca,
+        type: 3}
+      propertyPath: _controller
+      value: 
+      objectReference: {fileID: 1947582568178942320}
     - target: {fileID: 5127053257159790555, guid: 122968827794c2b499a4451e4a8fa2ca,
         type: 3}
       propertyPath: m_Name
       value: ControllerTurnerInteractor
-      objectReference: {fileID: 0}
-    - target: {fileID: 5127053257159790556, guid: 122968827794c2b499a4451e4a8fa2ca,
-        type: 3}
-      propertyPath: _axis2D
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5127053257159790557, guid: 122968827794c2b499a4451e4a8fa2ca,
         type: 3}
@@ -281,24 +267,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 122968827794c2b499a4451e4a8fa2ca, type: 3}
---- !u!4 &8899353908417424423 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5127053257159790557, guid: 122968827794c2b499a4451e4a8fa2ca,
-    type: 3}
-  m_PrefabInstance: {fileID: 4370225565973652474}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8899353908417424422 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5127053257159790556, guid: 122968827794c2b499a4451e4a8fa2ca,
-    type: 3}
-  m_PrefabInstance: {fileID: 4370225565973652474}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 331d7f91e4f2d20498cb8079638deeda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7735954714139492579 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6340374673267335961, guid: 122968827794c2b499a4451e4a8fa2ca,
@@ -311,3 +279,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be5585168c67af345b1074140733215b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8899353908417424422 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5127053257159790556, guid: 122968827794c2b499a4451e4a8fa2ca,
+    type: 3}
+  m_PrefabInstance: {fileID: 4370225565973652474}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 331d7f91e4f2d20498cb8079638deeda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &8899353908417424423 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5127053257159790557, guid: 122968827794c2b499a4451e4a8fa2ca,
+    type: 3}
+  m_PrefabInstance: {fileID: 4370225565973652474}
+  m_PrefabAsset: {fileID: 0}

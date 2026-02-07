@@ -313,8 +313,7 @@ GameObject:
   - component: {fileID: 5355118968828838858}
   - component: {fileID: 5015353415102431759}
   - component: {fileID: 398860254726376808}
-  - component: {fileID: 639658009892390668}
-  - component: {fileID: 6124464784919773218}
+  - component: {fileID: 2411113922996621422}
   m_Layer: 0
   m_Name: Template_HandDistanceGrabInteractor
   m_TagString: Untagged
@@ -396,7 +395,7 @@ MonoBehaviour:
   _grabOrigin: {fileID: 2656626120439788854}
   _gripPoint: {fileID: 3228422665344315248}
   _pinchPoint: {fileID: 5015353414540275247}
-  _velocityCalculator: {fileID: 639658009892390668}
+  _velocityCalculator: {fileID: 0}
   _distantCandidateComputer:
     _detectionFrustums:
       _selectionFrustum: {fileID: 6755109647159489643}
@@ -421,7 +420,7 @@ MonoBehaviour:
   _gameObjects: []
   _monoBehaviours:
   - {fileID: 5015353415102431759}
---- !u!114 &639658009892390668
+--- !u!114 &2411113922996621422
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -430,25 +429,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2432351091440483634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac5f4553b7f0a60488f242f1f4cde468, type: 3}
+  m_Script: {fileID: 11500000, guid: 583661762464e2746beccb4868689e59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _poseInputDevice: {fileID: 6124464784919773218}
---- !u!114 &6124464784919773218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2432351091440483634}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fb913c9e194da6449a32f1bf3cc991b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  _interactor: {fileID: 5015353415102431759}
   _hand: {fileID: 8912718802902348641}
-  _bufferLengthSeconds: 0.1
-  _sampleFrequency: 90
 --- !u!1 &3228422665344315249
 GameObject:
   m_ObjectHideFlags: 0

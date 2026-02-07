@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -71,7 +72,8 @@ namespace Oculus.Interaction
         /// The <cref="PhysicsGrabbable" /> used when you grab the interactable.
         /// </summary>
         [Tooltip("The PhysicsGrabbable used when you grab the interactable.")]
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
         private PhysicsGrabbable _physicsGrabbable = null;
 
         private static CollisionInteractionRegistry<GrabInteractor, GrabInteractable> _grabRegistry = null;
@@ -157,6 +159,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Applies velocities to the interactable's <cref="PhysicsGrabbable" /> if it has one.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
         {
             if (_physicsGrabbable == null)
@@ -203,6 +206,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Adds a physics grabbable to a dynamically instantiated GameObject.
         /// </summary>
+        [Obsolete("Use " + nameof(Grabbable) + " instead")]
         public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
         {
             _physicsGrabbable = physicsGrabbable;

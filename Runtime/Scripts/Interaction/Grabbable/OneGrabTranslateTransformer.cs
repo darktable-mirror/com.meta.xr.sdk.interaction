@@ -21,6 +21,8 @@
 using System;
 using UnityEngine;
 
+using static Oculus.Interaction.TransformerUtils;
+
 namespace Oculus.Interaction
 {
     /// <summary>
@@ -67,8 +69,8 @@ namespace Oculus.Interaction
         }
 
         private OneGrabTranslateConstraints _parentConstraints = null;
+
         private Vector3 _initialPosition;
-        private Vector3 _grabOffsetInLocalSpace;
 
         private IGrabbable _grabbable;
 
@@ -129,26 +131,35 @@ namespace Oculus.Interaction
             }
         }
 
+        private Pose _localToTarget;
+
         public void BeginTransform()
         {
-            var grabPoint = _grabbable.GrabPoints[0];
-            Transform targetTransform = _grabbable.Transform;
-            _grabOffsetInLocalSpace = targetTransform.InverseTransformVector(
-                    grabPoint.position - targetTransform.position);
+            var grabPose = _grabbable.GrabPoints[0];
+            Transform target = _grabbable.Transform;
+            _localToTarget = WorldToLocalPose(grabPose, target.worldToLocalMatrix);
         }
 
         public void UpdateTransform()
         {
-            var grabPoint = _grabbable.GrabPoints[0];
-            var targetTransform = _grabbable.Transform;
-            var constrainedPosition = grabPoint.position -
-                                      targetTransform.TransformVector(_grabOffsetInLocalSpace);
+            Transform target = _grabbable.Transform;
+            var grabPose = _grabbable.GrabPoints[0];
 
-            // the translation constraints occur in parent space
-            if (targetTransform.parent != null)
-            {
-                constrainedPosition = targetTransform.parent.InverseTransformPoint(constrainedPosition);
-            }
+            var initialGrabRotation = target.rotation * _localToTarget.rotation;
+            var targetPose = new Pose(grabPose.position, initialGrabRotation);
+
+            Pose result = AlignLocalToWorldPose(target.localToWorldMatrix, _localToTarget, targetPose);
+            target.position = result.position;
+            target.rotation = result.rotation;
+
+            ConstrainTransform();
+        }
+
+        private void ConstrainTransform()
+        {
+            Transform target = _grabbable.Transform;
+
+            var constrainedPosition = target.localPosition;
 
             if (_parentConstraints.MinX.Constrain)
             {
@@ -175,13 +186,7 @@ namespace Oculus.Interaction
                 constrainedPosition.z = Mathf.Min(constrainedPosition.z, _parentConstraints.MaxZ.Value);
             }
 
-            // Convert the constrained position back to world space
-            if (targetTransform.parent != null)
-            {
-                constrainedPosition = targetTransform.parent.TransformPoint(constrainedPosition);
-            }
-
-            targetTransform.position = constrainedPosition;
+            target.localPosition = constrainedPosition;
         }
 
         public void EndTransform() { }

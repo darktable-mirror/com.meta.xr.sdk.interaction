@@ -27,6 +27,7 @@ namespace Oculus.Interaction
     /// <summary>
     /// Makes the GameObject it's attached to kinematic during a grab. As a result, the GameObject can be transformed 1-1 without any undesirable effects.
     /// </summary>
+    [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
     public class PhysicsGrabbable : MonoBehaviour
     {
         /// <summary>

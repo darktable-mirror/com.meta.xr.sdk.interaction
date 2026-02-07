@@ -79,6 +79,7 @@ namespace Oculus.Interaction
         private TransformerUtils.ScaleConstraints _relativeScaleConstraints;
 
         private Quaternion _lastRotation = Quaternion.identity;
+        private Vector3 _lastScale = Vector3.one;
 
         private GrabPointDelta[] _deltas;
 
@@ -141,7 +142,8 @@ namespace Oculus.Interaction
 
             for (int i = 0; i < count; i++)
             {
-                _deltas[i] = new GrabPointDelta(GetCentroidOffset(_grabbable.GrabPoints[i], centroid), _grabbable.GrabPoints[i].rotation);
+                Vector3 centroidOffset = GetCentroidOffset(_grabbable.GrabPoints[i], centroid);
+                _deltas[i] = new GrabPointDelta(centroidOffset, _grabbable.GrabPoints[i].rotation);
             }
 
             Transform targetTransform = _grabbable.Transform;
@@ -149,6 +151,7 @@ namespace Oculus.Interaction
                 targetTransform.InverseTransformVector(centroid - targetTransform.position),
                 targetTransform.rotation);
             _lastRotation = Quaternion.identity;
+            _lastScale = targetTransform.localScale;
         }
 
         public void UpdateTransform()
@@ -157,17 +160,16 @@ namespace Oculus.Interaction
             Transform targetTransform = _grabbable.Transform;
 
             Vector3 localPosition = UpdateTransformerPointData(_grabbable.GrabPoints);
-            _lastRotation = UpdateRotation(count) * _lastRotation;
-            float scaleDelta = UpdateScale(count);
 
+            _lastScale = UpdateScale(count) * _lastScale;
+            targetTransform.localScale = TransformerUtils.GetConstrainedTransformScale(_lastScale, _relativeScaleConstraints);
+
+            _lastRotation = UpdateRotation(count) * _lastRotation;
             Quaternion rotation = _lastRotation * _grabDeltaInLocalSpace.rotation;
-            targetTransform.rotation = TransformerUtils.GetConstrainedTransformRotation(rotation, _rotationConstraints).normalized;
+            targetTransform.rotation = TransformerUtils.GetConstrainedTransformRotation(rotation, _rotationConstraints, targetTransform.parent);
 
             Vector3 position = localPosition - targetTransform.TransformVector(_grabDeltaInLocalSpace.position);
             targetTransform.position = TransformerUtils.GetConstrainedTransformPosition(position, _relativePositionConstraints, targetTransform.parent);
-
-            Vector3 scale = targetTransform.localScale * scaleDelta;
-            targetTransform.localScale = TransformerUtils.GetConstrainedTransformScale(scale, _relativeScaleConstraints);
         }
 
         public void EndTransform()
@@ -257,5 +259,25 @@ namespace Oculus.Interaction
             }
             return scaleDelta;
         }
+
+
+        #region Inject
+
+        public void InjectOptionalPositionConstraints(TransformerUtils.PositionConstraints constraints)
+        {
+            _positionConstraints = constraints;
+        }
+
+        public void InjectOptionalRotationConstraints(TransformerUtils.RotationConstraints constraints)
+        {
+            _rotationConstraints = constraints;
+        }
+
+        public void InjectOptionalScaleConstraints(TransformerUtils.ScaleConstraints constraints)
+        {
+            _scaleConstraints = constraints;
+        }
+
+        #endregion
     }
 }

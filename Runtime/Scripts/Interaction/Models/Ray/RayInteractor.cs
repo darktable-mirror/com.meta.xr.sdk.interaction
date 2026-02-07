@@ -227,7 +227,7 @@ namespace Oculus.Interaction
                 Quaternion rotation = Quaternion.LookRotation(CollisionInfo.Value.Normal);
                 return new Pose(position, rotation);
             }
-            return new Pose(Vector3.zero, Quaternion.identity);
+            return Pose.identity;
         }
 
         #region Inject

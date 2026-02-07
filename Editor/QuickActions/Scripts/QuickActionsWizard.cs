@@ -92,6 +92,36 @@ namespace Oculus.Interaction.Editor.QuickActions
             }
         }
 
+        public class BooleanDropdownAttribute : PropertyAttribute
+        {
+            public string True { get; set; } = "True";
+            public string False { get; set; } = "False";
+        }
+
+        [CustomPropertyDrawer(typeof(BooleanDropdownAttribute))]
+        public class BooleanDropdownDrawer : PropertyDrawer
+        {
+            private BooleanDropdownAttribute BooleanDropdownAttribute =>
+                attribute as BooleanDropdownAttribute;
+
+            private string[] _options;
+
+            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+            {
+                if (_options == null)
+                {
+                    _options = new string[2]
+                    {
+                        BooleanDropdownAttribute.False,
+                        BooleanDropdownAttribute.True,
+                    };
+                }
+
+                property.boolValue = EditorGUI.Popup(position,
+                    property.boolValue ? 1 : 0, _options) == 1;
+            }
+        }
+
         protected class MessageData
         {
             /// <summary>
@@ -839,7 +869,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 {
                     continue;
                 }
-                
+
                 dependency.FindAction?.Invoke(this);
                 if (!dependency.HasValue(this))
                 {

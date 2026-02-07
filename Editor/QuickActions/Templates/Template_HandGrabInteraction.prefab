@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 250190464475097619}
   - component: {fileID: 1488360722130621245}
   - component: {fileID: 8717932262431269729}
-  - component: {fileID: 300542515158316017}
   m_Layer: 0
   m_Name: Template_HandGrabInteraction
   m_TagString: Untagged
@@ -54,6 +53,9 @@ MonoBehaviour:
   _twoGrabTransformer: {fileID: 0}
   _targetTransform: {fileID: 0}
   _maxGrabPoints: -1
+  _rigidbody: {fileID: 0}
+  _kinematicWhileSelected: 1
+  _throwWhenUnselected: 1
 --- !u!114 &1488360722130621245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72,7 +74,7 @@ MonoBehaviour:
   _data: {fileID: 0}
   _pointableElement: {fileID: 250190464475097619}
   _rigidbody: {fileID: 0}
-  _physicsGrabbable: {fileID: 300542515158316017}
+  _physicsGrabbable: {fileID: 0}
   _resetGrabOnGrabsUpdated: 1
   _scoringModifier:
     _positionRotationWeight: 0.5
@@ -117,19 +119,4 @@ MonoBehaviour:
   _useClosestPointAsGrabSource: 0
   _releaseDistance: 0
   _resetGrabOnGrabsUpdated: 1
-  _physicsGrabbable: {fileID: 300542515158316017}
---- !u!114 &300542515158316017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3461684424311264183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1bedaac29a943f844a7074b53c8bdf9f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointable: {fileID: 250190464475097619}
-  _rigidbody: {fileID: 0}
-  _scaleMassWithSize: 1
+  _physicsGrabbable: {fileID: 0}

@@ -25,6 +25,8 @@ using System.ComponentModel;
 using Oculus.Interaction.Grab;
 using Oculus.Interaction.HandGrab;
 using Oculus.Interaction.DistanceReticles;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Oculus.Interaction.Editor.QuickActions
 {
@@ -72,12 +74,6 @@ namespace Oculus.Interaction.Editor.QuickActions
         private Rigidbody _rigidbody;
 
         [SerializeField]
-        [InspectorName("Grab Detection Volume")]
-        [Tooltip("This collider determines the grab volume for this object.")]
-        [WizardDependency(FindMethod = nameof(FindCollider), FixMethod = nameof(FixCollider))]
-        private Collider _collider;
-
-        [SerializeField]
         [InspectorName("Time Out Snap Zone")]
         [Tooltip("If provided, the object will snap back to this location once released.")]
         [WizardDependency(Category = Category.Optional, FixMethod = nameof(FixSnapZone))]
@@ -104,6 +100,13 @@ namespace Oculus.Interaction.Editor.QuickActions
         [DefaultValue(GrabTypeFlags.All)]
         private GrabTypeFlags _grabTypeFlags;
 
+        [SerializeField]
+        [WizardSetting]
+        [BooleanDropdown(False = "Do Not Generate Collider", True = "Generate Collider")]
+        [Tooltip("If a collider is not present under the provided RigidBody, " +
+            "a collider will be auto-generated.")]
+        private bool _autoGenerateCollider = true;
+
         #endregion Fields
 
         private void FindRigidbody()
@@ -118,15 +121,28 @@ namespace Oculus.Interaction.Editor.QuickActions
             _rigidbody.isKinematic = true;
         }
 
-        private void FindCollider()
+        private bool HasCollider()
         {
-            _collider = Target.GetComponentInChildren<Collider>();
+            return _rigidbody != null && _rigidbody.gameObject.
+                GetComponentInChildren<Collider>() != null;
         }
 
-        private void FixCollider()
+        private void GenerateCollider(GameObject root)
         {
-            _collider = AddComponent<SphereCollider>(Target);
-            _collider.isTrigger = true;
+            Collider collider;
+            if (Utils.TryEncapsulateRenderers(root,
+                out Bounds localBounds))
+            {
+                var boxCollider = AddComponent<BoxCollider>(root);
+                boxCollider.center = localBounds.center;
+                boxCollider.size = localBounds.size;
+                collider = boxCollider;
+            }
+            else
+            {
+                collider = AddComponent<SphereCollider>(root);
+            }
+            collider.isTrigger = true;
         }
 
         private void FixSnapZone()
@@ -145,11 +161,11 @@ namespace Oculus.Interaction.Editor.QuickActions
         {
             _hologramMesh = Target.GetComponentInChildren<MeshFilter>();
         }
-        
+
         #region Inject
 
         internal void InjectMode(Mode mode) => _mode = mode;
-        
+
         #endregion
 
         protected override void Create()
@@ -179,6 +195,7 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             Grabbable grabbable = obj.GetComponent<Grabbable>();
             grabbable.InjectOptionalTargetTransform(Target.transform);
+            grabbable.InjectOptionalRigidbody(_rigidbody);
 
             DistanceHandGrabInteractable distanceHandInteractable =
                 obj.GetComponentInChildren<DistanceHandGrabInteractable>();
@@ -204,9 +221,6 @@ namespace Oculus.Interaction.Editor.QuickActions
                 DestroyImmediate(snapInteractor);
             }
 
-            obj.GetComponent<PhysicsGrabbable>()?
-                .InjectRigidbody(_rigidbody);
-
             ReticleDataMesh reticleDataMesh =
                 obj.GetComponentInChildren<ReticleDataMesh>();
 
@@ -219,8 +233,27 @@ namespace Oculus.Interaction.Editor.QuickActions
                 DestroyImmediate(reticleDataMesh);
             }
 
+            if (!HasCollider() && _autoGenerateCollider)
+            {
+                GenerateCollider(_rigidbody.gameObject);
+            }
+
             InteractorUtils.AddInteractorsToRig(
                 InteractorTypes.DistanceGrab, _deviceTypes);
+        }
+
+        protected override IEnumerable<MessageData> GetMessages()
+        {
+            IEnumerable<MessageData> messages = Enumerable.Empty<MessageData>();
+            if (_rigidbody != null && !HasCollider() && !_autoGenerateCollider)
+            {
+                messages = messages.Append(new MessageData(MessageType.Warning,
+                    "No collider(s) detected in the target rigidbody hierarchy. Distance Grab " +
+                    "interaction uses physics collisions to find interactables in the scene, " +
+                    "and will not work without a collider(s) present.",
+                    new ButtonData("Enable Auto\nGeneration", () => _autoGenerateCollider = true)));
+            }
+            return messages;
         }
     }
 }
