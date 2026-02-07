@@ -1,7 +1,7 @@
 {
   "name": "com.meta.xr.sdk.interaction",
   "displayName": "Meta XR Interaction SDK Essentials",
-  "version": "76.0.0",
+  "version": "76.0.1",
   "description": "Provides the core implementations of all the provided interaction models along with necessary shaders, materials, and prefabs.",
   "samples": [
     {
