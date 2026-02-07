@@ -26,7 +26,7 @@ namespace Oculus.Interaction
     /// <summary>
     /// Provides a standardized interface for tracking and measuring finger-based interactions in the Interaction SDK.
     /// This interface enables different implementation methods for detecting palm grab, pinching, finger curl, and other hand poses.
-    /// See <see cref="Oculus.Interaction.GrabAPI.FingerPalmGrabAPI"/> and <see cref="Oculus.Interaction.GrabAPI.FingerPinchGrabAPI"/> for example implementations.
+    /// See <see cref="Oculus.Interaction.GrabAPI.PalmGrabAPI"/> and <see cref="Oculus.Interaction.GrabAPI.PinchGrabAPI"/> for example implementations.
     /// </summary>
     public interface IFingerAPI
     {

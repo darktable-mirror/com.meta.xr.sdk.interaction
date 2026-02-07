@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+#if !(UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || (UNITY_ANDROID && !UNITY_EDITOR))
+#define ISDK_NATIVE_UNSUPPORTED_PLATFORM
+#endif
+
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -29,9 +33,13 @@ namespace Oculus.Interaction
     [SuppressUnmanagedCodeSecurity]
     internal static class NativeMethods
     {
+        public const int IsdkSuccess = 0;
+
+#if !ISDK_NATIVE_UNSUPPORTED_PLATFORM
         [DllImport("InteractionSdk")]
         public static extern int isdk_NativeComponent_Activate(ulong id);
-
-        public const int IsdkSuccess = 0;
+#else
+        public static int isdk_NativeComponent_Activate(ulong id) => IsdkSuccess;
+#endif
     }
 }

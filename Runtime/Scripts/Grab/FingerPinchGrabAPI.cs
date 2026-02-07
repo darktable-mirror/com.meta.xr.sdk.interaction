@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+#if !(UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || (UNITY_ANDROID && !UNITY_EDITOR))
+#define ISDK_NATIVE_UNSUPPORTED_PLATFORM
+#endif
+
 using Oculus.Interaction.Input;
 using System;
 using System.Collections.Generic;
@@ -27,6 +31,7 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.GrabAPI
 {
+#if !ISDK_NATIVE_UNSUPPORTED_PLATFORM
     [StructLayout(LayoutKind.Sequential)]
     public class HandPinchData
     {
@@ -76,6 +81,7 @@ namespace Oculus.Interaction.GrabAPI
     /// below the managed-native boundary. This type merely provides an API surface through which to invoke the
     /// native functionality.
     /// </remarks>
+    [System.Obsolete("Use PinchGrabAPI instead.")]
     public class FingerPinchGrabAPI : IFingerAPI
     {
         enum ReturnValue { Success = 0, Failure = -1 };
@@ -286,4 +292,37 @@ namespace Oculus.Interaction.GrabAPI
         }
 
     }
+#else
+    [System.Obsolete("This class is unsupported on the current platform. " +
+        "Use " + nameof(PinchGrabAPI) + " instead.", true)]
+    public class FingerPinchGrabAPI : IFingerAPI
+    {
+        public float GetFingerGrabScore(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public bool GetFingerIsGrabbing(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public bool GetFingerIsGrabbingChanged(HandFinger finger, bool targetPinchState) =>
+            throw new NotImplementedException();
+
+        public Vector3 GetWristOffsetLocal() =>
+            throw new NotImplementedException();
+
+        public void Update(IHand hand) =>
+            throw new NotImplementedException();
+
+        public float GetFingerPinchPercent(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public float GetFingerPinchDistance(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public void SetPinchGrabParam(PinchGrabParam paramId, float paramVal) =>
+            throw new NotImplementedException();
+
+        public float GetPinchGrabParam(PinchGrabParam paramId) =>
+            throw new NotImplementedException();
+    }
+#endif
 }

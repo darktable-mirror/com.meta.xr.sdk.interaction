@@ -43,6 +43,16 @@ namespace Oculus.Interaction
             }
         }
 
+        private class ValueDecorator : ValueToClassDecorator<int, IController>
+        {
+            private ValueDecorator() { }
+
+            public static ValueDecorator GetFromContext(Context context)
+            {
+                return context.GetOrCreateSingleton<ValueDecorator>(() => new());
+            }
+        }
+
         /// <summary>
         /// Retrieves the <see cref="IController"/>, if there is one, with which an <see cref="IInteractorView"/>
         /// has been associated using Context decoration.
@@ -57,6 +67,24 @@ namespace Oculus.Interaction
         {
             var context = Context.Global.GetInstance();
             return Decorator.GetFromContext(context).TryGetDecoration(interactor, out controller);
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="IController"/> associated with a specific interactor identifier
+        /// through value-based context decoration
+        /// </summary>
+        /// <param name="InteractorId">The unique identifier of the interactor to query</param>
+        /// <param name="controller">When this method returns, contains the associated <see cref="IController"/> 
+        /// if found; otherwise, null</param>
+        /// <returns>
+        /// True if a controller association exists for the specified ID, false otherwise
+        /// </returns>
+        public static bool TryGetControllerForInteractorId(int InteractorId,
+            out IController controller)
+        {
+            var context = Context.Global.GetInstance();
+            return ValueDecorator.GetFromContext(context)
+                .TryGetDecoration(InteractorId, out controller);
         }
 
         [SerializeField, Interface(typeof(IInteractorView))]
@@ -93,6 +121,33 @@ namespace Oculus.Interaction
                 foreach (var interactor in interactors)
                 {
                     decorator.AddDecoration(interactor, controller);
+                }
+            }
+        }
+
+        private void Start()
+        {
+            var context = Context.Global.GetInstance();
+            var valueDecorator = ValueDecorator.GetFromContext(context);
+            var controller = _controller as IController;
+
+            foreach (var component in _interactors)
+            {
+                if (component is IInteractorView interactor)
+                {
+                    valueDecorator.AddDecoration(interactor.Identifier, controller);
+                }
+            }
+
+            foreach (var hierarchy in _interactorHierarchies)
+            {
+                var interactors = hierarchy.GetComponentsInChildren<IInteractorView>();
+                foreach (var interactor in interactors)
+                {
+                    if (interactor != null)
+                    {
+                        valueDecorator.AddDecoration(interactor.Identifier, controller);
+                    }
                 }
             }
         }

@@ -194,9 +194,9 @@ Shader "Unlit/RoundedBoxWithGradientUI"
                     outerColor = lerp(_BorderColorA, _BorderColorB, lineParam);
                 }
 
-                half4 color = half4(0.0, 0.0, 0.0, 0.0);
+                half4 color = input.color;
 
-                color = lerp(innerColor, outerColor, clamp(borderDist, 0.0, 1.0));
+                color *= lerp(innerColor, outerColor, clamp(borderDist, 0.0, 1.0));
                 color.a *= clamp(dist, 0.0, 1.0);
 
                 #ifdef UNITY_UI_CLIP_RECT

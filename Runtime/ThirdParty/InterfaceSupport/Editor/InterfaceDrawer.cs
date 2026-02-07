@@ -28,12 +28,12 @@ namespace Oculus.Interaction.InterfaceSupport
     [CustomPropertyDrawer(typeof(InterfaceAttribute))]
     public class InterfaceDrawer : PropertyDrawer
     {
-        private int _filteredObjectPickerID;
+        private int _reservedCustomPickerID;
         private static readonly Type[] _singleMonoBehaviourType = new Type[1] { typeof(MonoBehaviour) };
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            _filteredObjectPickerID = GUIUtility.GetControlID(FocusType.Passive);
+            _reservedCustomPickerID = GUIUtility.GetControlID(FocusType.Passive);
 
             if (property.propertyType != SerializedPropertyType.ObjectReference)
             {
@@ -66,10 +66,18 @@ namespace Oculus.Interaction.InterfaceSupport
             UnityEngine.Object candidateObject =
                 EditorGUI.ObjectField(position, label, oldObject, typeof(UnityEngine.Object), true);
 
-            int objectPickerID = GUIUtility.GetControlID(FocusType.Passive) - 1;
-            ReplaceObjectPickerForControl(attTypes, objectPickerID);
-            if (Event.current.commandName == "ObjectSelectorUpdated" &&
-                EditorGUIUtility.GetObjectPickerControlID() == _filteredObjectPickerID)
+            //if the ObjectPicker for this ObjectField is opened, it will have the current ID for a Pasive Control.
+            int expectedDefaultPickerID = GUIUtility.GetControlID(FocusType.Passive) - 1;
+            if (EditorGUIUtility.GetObjectPickerControlID() == expectedDefaultPickerID
+                && Event.current.type == EventType.Repaint)
+            {
+                ReplaceObjectPickerForControl(candidateObject, attTypes, _reservedCustomPickerID);
+                HandleUtility.Repaint();
+                GUIUtility.ExitGUI();
+            }
+            if (EditorGUIUtility.GetObjectPickerControlID() == _reservedCustomPickerID
+                && Event.current.type == EventType.ExecuteCommand
+                && Event.current.commandName == "ObjectSelectorUpdated")
             {
                 candidateObject = EditorGUIUtility.GetObjectPickerObject();
             }
@@ -201,19 +209,13 @@ namespace Oculus.Interaction.InterfaceSupport
             return t ?? _singleMonoBehaviourType;
         }
 
-        void ReplaceObjectPickerForControl(Type[] attTypes, int replacePickerID)
+        void ReplaceObjectPickerForControl(UnityEngine.Object obj, Type[] attTypes, int controlID)
         {
-            var currentObjectPickerID = EditorGUIUtility.GetObjectPickerControlID();
-            if (currentObjectPickerID != replacePickerID)
-            {
-                return;
-            }
-
-            var derivedTypes = TypeCache.GetTypesDerivedFrom(attTypes[0]);
+            TypeCache.TypeCollection derivedTypes = TypeCache.GetTypesDerivedFrom(attTypes[0]);
             HashSet<Type> validTypes = new HashSet<Type>(derivedTypes);
             for (int i = 1; i < attTypes.Length; i++)
             {
-                var derivedTypesIntersect = TypeCache.GetTypesDerivedFrom(attTypes[i]);
+                TypeCache.TypeCollection derivedTypesIntersect = TypeCache.GetTypesDerivedFrom(attTypes[i]);
                 validTypes.IntersectWith(derivedTypesIntersect);
             }
 
@@ -228,7 +230,7 @@ namespace Oculus.Interaction.InterfaceSupport
                 filterBuilder.Append("t:" + type.FullName + " ");
             }
             string filter = filterBuilder.ToString();
-            EditorGUIUtility.ShowObjectPicker<Component>(null, true, filter, _filteredObjectPickerID);
+            EditorGUIUtility.ShowObjectPicker<Component>(obj, true, filter, controlID);
         }
 
         private static bool IsAssignableTo(Type fromType, Type toType)

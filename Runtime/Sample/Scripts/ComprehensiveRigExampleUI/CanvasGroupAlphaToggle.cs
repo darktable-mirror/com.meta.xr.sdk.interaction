@@ -39,5 +39,6 @@ public class CanvasGroupAlphaToggle : MonoBehaviour
     void Update()
     {
         canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, visible ? 1.0f : 0.0f, animationSpeed * Time.deltaTime);
+        canvasGroup.interactable = visible;
     }
 }

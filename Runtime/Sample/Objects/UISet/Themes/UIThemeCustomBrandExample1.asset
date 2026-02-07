@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UIThemeCustomBrandExample1
   m_EditorClassIdentifier: 
   _themeVersion: 2
-  backplateColor: {r: 0.2784314, g: 0.17254902, b: 0.3529412, a: 1}
+  backplateColor: {r: 1, g: 1, b: 1, a: 1}
   backplateGradientMaterial: {fileID: 2100000, guid: 6530d9980ee10234e89fb35dbedf2bd4,
     type: 2}
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}

@@ -19,6 +19,7 @@
  */
 
 using Oculus.Interaction.HandGrab;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Oculus.Interaction.Samples
@@ -26,7 +27,7 @@ namespace Oculus.Interaction.Samples
     public class HideHandVisualOnGrab : MonoBehaviour
     {
         [SerializeField]
-        private HandGrabInteractor _handGrabInteractor;
+        private List<HandGrabInteractor> _handGrabInteractors = new();
 
         [SerializeField, Interface(typeof(IHandVisual))]
         private UnityEngine.Object _handVisual;
@@ -45,37 +46,39 @@ namespace Oculus.Interaction.Samples
 
         protected virtual void Update()
         {
-            GameObject shouldHideHandComponent = null;
+            bool shouldHideHand = false;
 
-            if (_handGrabInteractor.State == InteractorState.Select)
+            foreach (var interactor in _handGrabInteractors)
             {
-                shouldHideHandComponent = _handGrabInteractor.SelectedInteractable?.gameObject;
-            }
+                if (!interactor)
+                    continue;
 
-            if (shouldHideHandComponent)
-            {
-                if (shouldHideHandComponent.TryGetComponent(out ShouldHideHandOnGrab component))
+                if (interactor.State == InteractorState.Select)
                 {
-                    HandVisual.ForceOffVisibility = true;
+                    var selectedObject = interactor.SelectedInteractable?.gameObject;
+
+                    if (selectedObject && selectedObject.TryGetComponent(out ShouldHideHandOnGrab component))
+                    {
+                        shouldHideHand = true;
+                        break;
+                    }
                 }
             }
-            else
-            {
-                HandVisual.ForceOffVisibility = false;
-            }
+
+            HandVisual.ForceOffVisibility = shouldHideHand;
         }
 
         #region Inject
 
-        public void InjectAll(HandGrabInteractor handGrabInteractor,
+        public void InjectAll(List<HandGrabInteractor> handGrabInteractor,
              IHandVisual handVisual)
         {
-            InjectHandGrabInteractor(handGrabInteractor);
+            InjectHandGrabInteractors(handGrabInteractor);
             InjectHandVisual(handVisual);
         }
-        private void InjectHandGrabInteractor(HandGrabInteractor handGrabInteractor)
+        private void InjectHandGrabInteractors(List<HandGrabInteractor> handGrabInteractor)
         {
-            _handGrabInteractor = handGrabInteractor;
+            _handGrabInteractors = handGrabInteractor;
         }
 
         private void InjectHandVisual(IHandVisual handVisual)

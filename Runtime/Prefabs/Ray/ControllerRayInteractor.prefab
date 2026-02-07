@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: 4526630446865022760}
   - component: {fileID: 786790917031090433}
   - component: {fileID: 6931310322613913978}
+  - component: {fileID: 1652305709080249422}
   m_Layer: 0
   m_Name: ControllerRayInteractor
   m_TagString: Untagged
@@ -206,6 +207,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _controller: {fileID: 7983261105550752962}
   _axis: 1
+--- !u!114 &1652305709080249422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2519953544252300544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7d153c984a90a6488110013f4cfd9c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactors:
+  - {fileID: 8105528931859149806}
+  _interactorHierarchies: []
+  _controller: {fileID: 7983261105550752962}
 --- !u!1 &3469692078073827891
 GameObject:
   m_ObjectHideFlags: 0

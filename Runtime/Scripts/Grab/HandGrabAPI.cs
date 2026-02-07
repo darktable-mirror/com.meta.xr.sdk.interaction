@@ -397,11 +397,11 @@ namespace Oculus.Interaction.GrabAPI
         /// </summary>
         /// <param name="finger">The <see cref="HandFinger"/> to check the pinch percentage for.</param>
         /// <returns>A float representing the percentage of the pinch completion.</returns>
+        [System.Obsolete]
         public float GetFingerPinchPercent(HandFinger finger)
         {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI)
+            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
             {
-                FingerPinchGrabAPI pinchGrab = _fingerPinchGrabAPI as FingerPinchGrabAPI;
                 return pinchGrab.GetFingerPinchPercent(finger);
             }
             Debug.LogWarning("GetFingerPinchPercent is not applicable");
@@ -413,11 +413,11 @@ namespace Oculus.Interaction.GrabAPI
         /// </summary>
         /// <param name="finger">The <see cref="HandFinger"/> to measure the distance from the thumb.</param>
         /// <returns>A float representing the distance between the thumb and the specified finger during a pinch.</returns>
+        [System.Obsolete]
         public float GetFingerPinchDistance(HandFinger finger)
         {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI)
+            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
             {
-                FingerPinchGrabAPI pinchGrab = _fingerPinchGrabAPI as FingerPinchGrabAPI;
                 return pinchGrab.GetFingerPinchDistance(finger);
             }
             Debug.LogWarning("GetFingerPinchDistance is not applicable");
@@ -468,19 +468,19 @@ namespace Oculus.Interaction.GrabAPI
             return usesOptionals ? optionalMax : anyRequired ? requiredMin : 0f;
         }
 
+        [System.Obsolete]
         public void SetPinchGrabParam(PinchGrabParam paramId, float paramVal)
         {
-            FingerPinchGrabAPI pinchGrab = _fingerPinchGrabAPI as FingerPinchGrabAPI;
-            if (pinchGrab != null)
+            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
             {
                 pinchGrab.SetPinchGrabParam(paramId, paramVal);
             }
         }
 
+        [System.Obsolete]
         public float GetPinchGrabParam(PinchGrabParam paramId)
         {
-            FingerPinchGrabAPI pinchGrab = _fingerPinchGrabAPI as FingerPinchGrabAPI;
-            if (pinchGrab != null)
+            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
             {
                 return pinchGrab.GetPinchGrabParam(paramId);
             }

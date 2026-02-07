@@ -258,6 +258,7 @@ namespace Oculus.Interaction.PoseDetection
                 {
                     // Failed to activate before max time limit reached. Start from the beginning.
                     ResetState();
+                    currentStep = _stepsToActivate[CurrentActivationStep];
                 }
 
                 bool currentStepIsActive = currentStep.ActiveState.Active;

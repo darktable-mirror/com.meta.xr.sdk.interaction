@@ -49,16 +49,23 @@ namespace Oculus.Interaction
         public readonly bool Dragging;
 
         /// <summary>
+        /// Gets the unique identifier for the pointer that triggered the event
+        /// </summary>
+        public readonly int? PointerId;
+
+        /// <summary>
         /// Create a new <see cref="PointableCanvasEventArgs"/>
         /// </summary>
         /// <param name="canvas">The canvas that's being interacted with.</param>
         /// <param name="hovered">The GameObject that's being hovered, if any.</param>
         /// <param name="dragging">Whether the user is dragging at the time of this event.</param>
-        public PointableCanvasEventArgs(Canvas canvas, GameObject hovered, bool dragging)
+        /// <param name="pointerId">Unique identifier for the pointer that triggered the event</param>
+        public PointableCanvasEventArgs(Canvas canvas, GameObject hovered, bool dragging, int? pointerId = null)
         {
             Canvas = canvas;
             Hovered = hovered;
             Dragging = dragging;
+            PointerId = pointerId;
         }
     }
 
@@ -624,11 +631,11 @@ namespace Oculus.Interaction
 
             if (newHoveredSelectable != null && newHoveredSelectable != prevHoveredSelectable)
             {
-                WhenSelectableHovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging));
+                WhenSelectableHovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging, pointer.Identifier));
             }
             else if (prevHoveredSelectable != null && newHoveredSelectable == null)
             {
-                WhenSelectableUnhovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging));
+                WhenSelectableUnhovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging, pointer.Identifier));
             }
         }
 
@@ -638,7 +645,7 @@ namespace Oculus.Interaction
 
             if (pressed)
             {
-                WhenSelected?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging));
+                WhenSelected?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredSelectable, dragging, pointer.Identifier));
             }
             else if (released && !pointer.MarkedForDeletion)
             {
@@ -646,7 +653,7 @@ namespace Oculus.Interaction
                 bool hasSelectedHoveredObject = pointer.HoveredSelectable != null &&
                                                 pointer.HoveredSelectable == pointer.PointerEventData.selectedObject;
                 GameObject selectedObject = hasSelectedHoveredObject ? pointer.HoveredSelectable : null;
-                WhenUnselected?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, selectedObject, dragging));
+                WhenUnselected?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, selectedObject, dragging, pointer.Identifier));
             }
         }
 

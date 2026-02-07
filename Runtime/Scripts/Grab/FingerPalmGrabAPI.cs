@@ -18,8 +18,13 @@
  * limitations under the License.
  */
 
+#if !(UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || (UNITY_ANDROID && !UNITY_EDITOR))
+#define ISDK_NATIVE_UNSUPPORTED_PLATFORM
+#endif
+
 using Oculus.Interaction.Input;
 using Oculus.Interaction.PoseDetection;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -27,6 +32,7 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.GrabAPI
 {
+#if !ISDK_NATIVE_UNSUPPORTED_PLATFORM
     /// <summary>
     /// This <see cref="IFingerAPI"/> uses the curl value of the fingers to detect if they are grabbing.
     /// </summary>
@@ -35,6 +41,7 @@ namespace Oculus.Interaction.GrabAPI
     /// below the managed-native boundary. This type merely provides an API surface through which to invoke the
     /// native functionality.
     /// </remarks>
+    [System.Obsolete("Use PalmGrabAPI instead.")]
     public class FingerPalmGrabAPI : IFingerAPI
     {
         // Temporary structure used to pass data to and from native components
@@ -251,4 +258,25 @@ namespace Oculus.Interaction.GrabAPI
             return paramVal;
         }
     }
+#else
+    [System.Obsolete("This class is unsupported on the current platform. " +
+        "Use " + nameof(PalmGrabAPI) + " instead.", true)]
+    public class FingerPalmGrabAPI : IFingerAPI
+    {
+        public float GetFingerGrabScore(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public bool GetFingerIsGrabbing(HandFinger finger) =>
+            throw new NotImplementedException();
+
+        public bool GetFingerIsGrabbingChanged(HandFinger finger, bool targetPinchState) =>
+            throw new NotImplementedException();
+
+        public Vector3 GetWristOffsetLocal() =>
+            throw new NotImplementedException();
+
+        public void Update(IHand hand) =>
+            throw new NotImplementedException();
+    }
+#endif
 }

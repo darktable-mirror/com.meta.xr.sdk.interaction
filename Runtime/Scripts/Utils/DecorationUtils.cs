@@ -131,7 +131,7 @@ namespace Oculus.Interaction
     public abstract class ValueToClassDecorator<InstanceT, DecorationT> : DecoratorBase<InstanceT, DecorationT> where InstanceT : struct where DecorationT : class
     {
         private readonly Dictionary<InstanceT, WeakReference<DecorationT>> _instanceToDecoration = new();
-        private readonly ConditionalWeakTable<DecorationT, FinalAction> _cleanupActions = new();
+        private readonly ConditionalWeakTable<DecorationT, Dictionary<InstanceT, FinalAction>> _cleanupActions = new();
 
         protected ValueToClassDecorator() { }
 
@@ -151,9 +151,16 @@ namespace Oculus.Interaction
 
             _instanceToDecoration.Add(instance, new WeakReference<DecorationT>(decoration));
 
-            _cleanupActions.Add(decoration, new FinalAction(() =>
+            if (!_cleanupActions.TryGetValue(decoration, out var finalActions))
             {
-                _instanceToDecoration.Remove(instance, out var _);
+                _cleanupActions.Add(decoration, finalActions = new());
+            }
+            finalActions.Add(instance, new FinalAction(() =>
+            {
+                if (_instanceToDecoration.ContainsKey(instance))
+                {
+                    _instanceToDecoration.Remove(instance, out var _);
+                }
             }));
 
             CompleteAsynchronousRequests(instance, decoration);
@@ -170,14 +177,22 @@ namespace Oculus.Interaction
         /// </remarks>
         public void RemoveDecoration(InstanceT instance)
         {
-            if (_instanceToDecoration.TryGetValue(instance, out var reference))
+            if (_instanceToDecoration.TryGetValue(instance, out var weakRef) &&
+                weakRef.TryGetTarget(out var decoration))
             {
-                if (reference.TryGetTarget(out var value))
+                if (_cleanupActions.TryGetValue(decoration, out var finalActions) &&
+                    finalActions.TryGetValue(instance, out var finalAction))
                 {
-                    var cleanupSuccess = _cleanupActions.TryGetValue(value, out var finalAction);
-                    Debug.Assert(cleanupSuccess, "Failed to remove cleanup action");
                     finalAction.Cancel();
-                    _cleanupActions.Remove(value);
+                    finalActions.Remove(instance);
+                    if (finalActions.Count == 0)
+                    {
+                        _cleanupActions.Remove(decoration);
+                    }
+                }
+                else
+                {
+                    Debug.LogAssertion("Failed to remove cleanup action");
                 }
 
                 _instanceToDecoration.Remove(instance);

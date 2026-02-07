@@ -74,7 +74,7 @@ namespace Oculus.Interaction.Samples
         }
 
         private Vector3 _initialLocalScale;
-        private Vector3 _initialLocalPosition;
+        private Vector3 _initialLocalScaleFactor;
 
         private IGrabbable _grabbable;
 
@@ -85,21 +85,26 @@ namespace Oculus.Interaction.Samples
 
         public void BeginTransform()
         {
-            var grabPoint = _grabbable.GrabPoints[0];
-            var targetTransform = _grabbable.Transform;
-            _initialLocalPosition = targetTransform.InverseTransformPointUnscaled(grabPoint.position);
+            Pose grabPoint = _grabbable.GrabPoints[0];
+            Transform targetTransform = _grabbable.Transform;
+            Vector3 localPos = targetTransform.InverseTransformPointUnscaled(grabPoint.position);
+
             _initialLocalScale = targetTransform.localScale;
+            _initialLocalScaleFactor = new Vector3(
+                Mathf.Approximately(localPos.x, 0f) ? 1f : 1f / localPos.x,
+                Mathf.Approximately(localPos.y, 0f) ? 1f : 1f / localPos.y,
+                Mathf.Approximately(localPos.z, 0f) ? 1f : 1f / localPos.z);
         }
 
         public void UpdateTransform()
         {
-            var grabPoint = _grabbable.GrabPoints[0];
-            var targetTransform = _grabbable.Transform;
-            var localPosition = targetTransform.InverseTransformPointUnscaled(grabPoint.position);
+            Pose grabPoint = _grabbable.GrabPoints[0];
+            Transform targetTransform = _grabbable.Transform;
+            Vector3 localPosition = targetTransform.InverseTransformPointUnscaled(grabPoint.position);
 
-            float newLocalScaleX = _initialLocalScale.x * localPosition.x / _initialLocalPosition.x;
-            float newLocalScaleY = _initialLocalScale.y * localPosition.y / _initialLocalPosition.y;
-            float newLocalScaleZ = _initialLocalScale.z * localPosition.z / _initialLocalPosition.z;
+            float newLocalScaleX = _initialLocalScale.x * localPosition.x * _initialLocalScaleFactor.x;
+            float newLocalScaleY = _initialLocalScale.y * localPosition.y * _initialLocalScaleFactor.y;
+            float newLocalScaleZ = _initialLocalScale.z * localPosition.z * _initialLocalScaleFactor.z;
 
             if (_constraints.MinX.Constrain)
             {

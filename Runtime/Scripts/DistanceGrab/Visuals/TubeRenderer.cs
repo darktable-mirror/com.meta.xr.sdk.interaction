@@ -341,7 +341,7 @@ namespace Oculus.Interaction
             _mesh.SetIndexBufferParams(_tris.Length, IndexFormat.UInt32);
             _mesh.SetIndexBufferData(_tris, 0, 0, _tris.Length);
             _mesh.subMeshCount = 1;
-            _mesh.SetSubMesh(0, submeshDesc);
+            _mesh.SetSubMesh(0, submeshDesc, MeshUpdateFlags.DontRecalculateBounds);
 
             _filter.mesh = _mesh;
         }

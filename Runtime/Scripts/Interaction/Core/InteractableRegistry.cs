@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -154,6 +155,14 @@ namespace Oculus.Interaction
             }
         }
 
+        internal static event Action<IInteractableView> WhenRegistered = delegate { };
+        internal static event Action<IInteractableView> WhenUnregistered = delegate { };
+
+        internal static IReadOnlyList<TInteractable> ListStatic()
+        {
+            return _interactables;
+        }
+
         private static List<TInteractable> _interactables;
 
         public InteractableRegistry()
@@ -164,11 +173,13 @@ namespace Oculus.Interaction
         public virtual void Register(TInteractable interactable)
         {
             _interactables.Add(interactable);
+            WhenRegistered.Invoke(interactable);
         }
 
         public virtual void Unregister(TInteractable interactable)
         {
             _interactables.Remove(interactable);
+            WhenUnregistered.Invoke(interactable);
         }
 
         /// <summary>

@@ -230,7 +230,7 @@ namespace Oculus.Interaction
 
         protected override void InteractableSelected(RayInteractable interactable)
         {
-            if (interactable != null)
+            if (interactable != null && CollisionInfo.HasValue)
             {
                 _movedHit = CollisionInfo.Value;
                 Pose hitPose = new Pose(_movedHit.Point, Quaternion.LookRotation(_movedHit.Normal));
@@ -254,6 +254,12 @@ namespace Oculus.Interaction
             _movement = null;
         }
 
+        protected override void DoHoverUpdate()
+        {
+            TryUpdateCollisionInfoHit(Interactable);
+            base.DoHoverUpdate();
+        }
+
         protected override void DoSelectUpdate()
         {
             RayInteractable interactable = _selectedInteractable;
@@ -270,17 +276,24 @@ namespace Oculus.Interaction
                 return;
             }
 
+            TryUpdateCollisionInfoHit(interactable);
+        }
+
+        private bool TryUpdateCollisionInfoHit(RayInteractable interactable)
+        {
             CollisionInfo = null;
             if (interactable != null &&
                 interactable.Raycast(Ray, out SurfaceHit hit, MaxRayLength, true))
             {
-                End = hit.Point;
                 CollisionInfo = hit;
+                End = hit.Point;
+                return true;
             }
             else
             {
                 End = Origin + MaxRayLength * Forward;
             }
+            return false;
         }
 
         protected override Pose ComputePointerPose()
