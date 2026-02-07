@@ -1,7 +1,7 @@
 {
   "name": "com.meta.xr.sdk.interaction",
   "displayName": "Meta XR Interaction SDK",
-  "version": "55.0.0-preview",
+  "version": "56.0.0-preview",
   "description": "Provides the core implementations of all the provided interaction models along with necessary shaders, materials, and prefabs.",
   "samples": [],
   "unity": "2020.3",
@@ -13,9 +13,12 @@
   "changelogUrl": "https://developer.oculus.com/downloads/package/unity-integration/",
   "licensesUrl": "https://developer.oculus.com/licenses/oculussdk",
   "keywords": [
+    "Meta",
     "Oculus",
-    "Interaction",
-    "SDK"
+    "Quest",
+    "XR",
+    "SDK",
+    "Interaction"
   ],
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6",
