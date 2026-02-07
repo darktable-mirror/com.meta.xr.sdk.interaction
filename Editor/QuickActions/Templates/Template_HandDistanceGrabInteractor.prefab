@@ -316,7 +316,7 @@ GameObject:
   - component: {fileID: 639658009892390668}
   - component: {fileID: 6124464784919773218}
   m_Layer: 0
-  m_Name: Template_DistanceHandGrabInteractor
+  m_Name: Template_HandDistanceGrabInteractor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1010,9 +1010,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _handGrabInteractor: {fileID: 5015353415102431759}
+  _handVisual: {fileID: 0}
   _handRenderer: {fileID: 0}
   _materialEditor: {fileID: 0}
-  _handVisual: {fileID: 0}
   _glowColorGrabing: {r: 1, g: 1, b: 1, a: 0}
   _glowColorHover: {r: 0.7254902, g: 0.7254902, b: 0.7254902, a: 0}
   _colorChangeSpeed: 0.5
