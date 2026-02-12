@@ -245,8 +245,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8303047739502686745}
-  - component: {fileID: 3205813227778091799}
-  - component: {fileID: 6963383016764046274}
+  - component: {fileID: 968150227726518486}
   - component: {fileID: 810595431168994524}
   m_Layer: 0
   m_Name: Crouch
@@ -270,7 +269,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5061161624137888108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3205813227778091799
+--- !u!114 &968150227726518486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -279,28 +278,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8040951545033360931}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 990692c9edb7a214d9b122856cf44929, type: 3}
+  m_Script: {fileID: 11500000, guid: ad374a43a946e7d4496818c6b194809f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _controller: {fileID: 6216359221941149391}
-  _axis: 1
---- !u!114 &6963383016764046274
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8040951545033360931}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 592ac3f1a010f3d48970c5beb7e4f68f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _inputAxis: {fileID: 3205813227778091799}
-  _checkAxis: 2
-  _comparison: 1
-  _absoluteValues: 0
-  _thresold: {x: 0, y: -0.8}
+  _controllerButtonUsage: 128
 --- !u!114 &810595431168994524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,7 +295,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2705674196dfc4da9c25fbacda72d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _activeState: {fileID: 6963383016764046274}
+  _activeState: {fileID: 968150227726518486}
   _whenActivated:
     m_PersistentCalls:
       m_Calls:

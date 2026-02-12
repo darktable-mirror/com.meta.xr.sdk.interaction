@@ -19,7 +19,6 @@
  */
 
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
@@ -39,6 +38,12 @@ namespace Oculus.Interaction
 
         [SerializeField]
         private Color _outlineColor = Color.black;
+
+        [SerializeField, Range(0f, 0.5f)]
+        private float _hoverSize = 0.48f;
+
+        [SerializeField, Range(0f, 0.5f)]
+        private float _selectSize = 0.4f;
 
         [SerializeField]
         private float _offsetAlongNormal = 0.005f;
@@ -102,6 +107,30 @@ namespace Oculus.Interaction
             }
         }
 
+        public float HoverSize
+        {
+            get
+            {
+                return _hoverSize;
+            }
+            set
+            {
+                _hoverSize = value;
+            }
+        }
+
+        public float SelectSize
+        {
+            get
+            {
+                return _selectSize;
+            }
+            set
+            {
+                _selectSize = value;
+            }
+        }
+
         public float OffsetAlongNormal
         {
             get
@@ -116,11 +145,9 @@ namespace Oculus.Interaction
 
         #endregion
 
-        private int _shaderRadialGradientScale = Shader.PropertyToID("_RadialGradientScale");
-        private int _shaderRadialGradientIntensity = Shader.PropertyToID("_RadialGradientIntensity");
-        private int _shaderRadialGradientBackgroundOpacity = Shader.PropertyToID("_RadialGradientBackgroundOpacity");
         private int _shaderInnerColor = Shader.PropertyToID("_Color");
         private int _shaderOutlineColor = Shader.PropertyToID("_OutlineColor");
+        private int _shaderRadius = Shader.PropertyToID("_Radius");
 
         protected bool _started = false;
 
@@ -182,12 +209,10 @@ namespace Oculus.Interaction
                 this.transform.localScale = _startScale * distance;
             }
 
-            var selection = _rayInteractor.State == InteractorState.Select;
+            bool isSelecting = _rayInteractor.State == InteractorState.Select;
 
-            _renderer.material.SetFloat(_shaderRadialGradientScale, selection ? 0.12f : 0.2f);
-            _renderer.material.SetFloat(_shaderRadialGradientIntensity, 1f);
-            _renderer.material.SetFloat(_shaderRadialGradientBackgroundOpacity, 1f);
-            _renderer.material.SetColor(_shaderInnerColor, selection ? _selectColor : _hoverColor);
+            _renderer.material.SetFloat(_shaderRadius, isSelecting ? _selectSize : _hoverSize);
+            _renderer.material.SetColor(_shaderInnerColor, isSelecting ? _selectColor : _hoverColor);
             _renderer.material.SetColor(_shaderOutlineColor, _outlineColor);
         }
 

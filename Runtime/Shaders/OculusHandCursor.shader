@@ -10,19 +10,19 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
-Shader "Interaction/OculusHandCursor"
+Shader "Hidden/Interaction/Deprecated/OculusHandCursor"
 {
     Properties
     {
         _OutlineWidth("OutlineWidth", Range( 0 , 0.4)) = 0.03
-        _CenterSize("Center Size", Range( 0 , 0.5)) = 0.15
-        _Color("Inner Color", Color) = (0,0,0,0)
-        _OutlineColor("OutlineColor", Color) = (0,0.4410214,1,0)
+        _Color("Inner Color", Color) = (0,0,0,1)
+        _OutlineColor("OutlineColor", Color) = (0,0.4410214,1,1)
         _Alpha("Alpha", Range( 0 , 1)) = 0
         _RadialGradientIntensity("RadialGradientIntensity", Range( 0 , 1)) = 0
         _RadialGradientScale("RadialGradientScale", Range( 0 , 1)) = 1
         _RadialGradientBackgroundOpacity("RadialGradientBackgroundOpacity", Range( 0 , 1)) = 0.1
         _RadialGradientOpacity("RadialGradientOpacity", Range( 0 , 1)) = 0.8550259
+        [Toggle] _CLIP ("Use clip", Integer) = 1
         [HideInInspector] _texcoord( "", 2D ) = "white" {}
         [HideInInspector] __dirty( "", Int ) = 1
     }
@@ -40,9 +40,10 @@ Shader "Interaction/OculusHandCursor"
         {
             CGPROGRAM
             #pragma vertex vert
-#pragma fragment frag
+            #pragma fragment frag
+            #pragma shader_feature _CLIP_ON
 
-#include "UnityCG.cginc"
+            #include "UnityCG.cginc"
 
             uniform float _RadialGradientScale;
             uniform float _RadialGradientOpacity;
@@ -51,7 +52,6 @@ Shader "Interaction/OculusHandCursor"
             uniform float _OutlineWidth;
             uniform float4 _Color;
             uniform float4 _OutlineColor;
-            uniform float _CenterSize;
             uniform float _Alpha;
 
             struct appdata
@@ -63,7 +63,7 @@ Shader "Interaction/OculusHandCursor"
 
             struct v2f
             {
-                float2 uv_texcoord : TEXCOORD0;
+                float4 uv_texcoord : TEXCOORD0;
                 float4 vertex : SV_POSITION;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -75,65 +75,51 @@ Shader "Interaction/OculusHandCursor"
                 UNITY_INITIALIZE_OUTPUT(v2f, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv_texcoord = v.uv_texcoord;
+                o.uv_texcoord.xy = v.uv_texcoord;
+                o.uv_texcoord.z = 0.16 + _RadialGradientScale * 0.29;
+                o.uv_texcoord.w = 5.0 + _RadialGradientIntensity * -3.5;
                 return o;
             }
 
+            static const float INLINE_OUTLINE_FALLOFF = 70.0;
+            static const float OUTER_OUTLINE_FALLOFF = 20.0;
+            static const float TRANSITION_THRESHOLD = 0.1;
+            static const float2 CENTER =  float2(0.5, 0.5);
+
             fixed4 frag(v2f i) : SV_Target
             {
-                float RadialGradientScaleRaw149 = _RadialGradientScale;
-                float RadialGradientScale94 = (0.16 + (_RadialGradientScale - 0.0) * (0.45 - 0.16) / (1.0 - 0.0));
-                float temp_output_1_0_g49 = ( 1.0 - ( ( distance( i.uv_texcoord , float2( 0.5,0.5 ) ) * 1.0 ) / RadialGradientScale94 ) );
-                float RadialGradientIntensity96 = (5.0 + (_RadialGradientIntensity - 0.0) * (1.5 - 5.0) / (1.0 - 0.0));
-                float ifLocalVar12_g49 = 0;
-                if( temp_output_1_0_g49 <= 0.0 )
-                    ifLocalVar12_g49 = 1.0;
-                else
-                    ifLocalVar12_g49 = ( 1.0 / pow( 2.718282 , ( temp_output_1_0_g49 * RadialGradientIntensity96 ) ) );
-                float temp_output_1_0_g47 = ( 1.0 - ( ( distance( i.uv_texcoord , float2( 0.5,0.5 ) ) * 1.0 ) / RadialGradientScale94 ) );
-                float RadialDensity131 = 70.0;
-                float ifLocalVar12_g47 = 0;
-                if( temp_output_1_0_g47 <= 0.0 )
-                    ifLocalVar12_g47 = 1.0;
-                else
-                    ifLocalVar12_g47 = ( 1.0 / pow( 2.718282 , ( temp_output_1_0_g47 * RadialDensity131 ) ) );
-                float temp_output_75_0 = ( 1.0 - ifLocalVar12_g47 );
-                float RadialGradient102 = saturate( ( ( _RadialGradientOpacity * ( ( 1.0 - ( 1.0 - ifLocalVar12_g49 ) ) - ( 1.0 - temp_output_75_0 ) ) ) + ( temp_output_75_0 * _RadialGradientBackgroundOpacity ) ) );
-                float temp_output_1_0_g77 = ( 1.0 - ( ( distance( i.uv_texcoord , float2( 0.5,0.5 ) ) * 1.0 ) / ( RadialGradientScale94 + _OutlineWidth ) ) );
-                float ifLocalVar12_g77 = 0;
-                if( temp_output_1_0_g77 <= 0.0 )
-                    ifLocalVar12_g77 = 1.0;
-                else
-                    ifLocalVar12_g77 = ( 1.0 / pow( 2.718282 , ( temp_output_1_0_g77 * 20.0 ) ) );
-                float4 RadialGradientWithOutline147 = ( RadialGradient102 + ( ( ( 1.0 - ifLocalVar12_g77 ) - temp_output_75_0 ) * _OutlineColor ) );
-                float temp_output_1_0_g81 = ( 1.0 - ( ( distance( i.uv_texcoord , float2( 0.5,0.5 ) ) * 1.0 ) / _CenterSize ) );
-                float RadialDensityOutline189 = 20.0;
-                float ifLocalVar12_g81 = 0;
-                if( temp_output_1_0_g81 <= 0.0 )
-                    ifLocalVar12_g81 = 1.0;
-                else
-                    ifLocalVar12_g81 = ( 1.0 / pow( 2.718282 , ( temp_output_1_0_g81 * RadialDensityOutline189 ) ) );
-                float temp_output_1_0_g79 = ( 1.0 - ( ( distance( i.uv_texcoord , float2( 0.5,0.5 ) ) * 1.0 ) / ( _CenterSize + 0.06 ) ) );
-                float ifLocalVar12_g79 = 0;
-                if( temp_output_1_0_g79 <= 0.0 )
-                    ifLocalVar12_g79 = 1.0;
-                else
-                    ifLocalVar12_g79 = ( 1.0 / pow( 2.718282 , ( temp_output_1_0_g79 * RadialDensityOutline189 ) ) );
-                float4 OutlineColor183 = _OutlineColor;
-                float4 CenterDot143 = ( ( 1.0 - ifLocalVar12_g81 ) + ( ( 1.0 - ifLocalVar12_g79 ) * OutlineColor183 ) );
-                float4 ifLocalVar29 = 0;
-                if( RadialGradientScaleRaw149 <= 0.1 )
-                    ifLocalVar29 = CenterDot143;
-                else
-                    ifLocalVar29 = RadialGradientWithOutline147;
-                float4 Emission151 = ifLocalVar29 * _Color;
+               float2 distToCenter = distance(i.uv_texcoord, CENTER);
+               float gradientMaxRadius = i.uv_texcoord.z;
+               float gradientFallOff = i.uv_texcoord.w;
 
-                float Opacity152 = ((ifLocalVar29).a * _Alpha);
-                if (Opacity152 < 0.01)
-                    discard;
-                return float4 (Emission151.rgb, Opacity152);
-            }
-            ENDCG
+               half radialGradientNormalized = 1.0 - (distToCenter * rcp(gradientMaxRadius));
+               half mainRadialFalloff = saturate(rcp(exp(radialGradientNormalized * gradientFallOff)));
+               half inlineOutlineFalloff = saturate(rcp(exp(radialGradientNormalized * INLINE_OUTLINE_FALLOFF)));
+               half outlineShadowStrength = 1.0 - inlineOutlineFalloff;
+
+               half radialGradientComposite = saturate(
+                   _RadialGradientOpacity * (mainRadialFalloff - inlineOutlineFalloff)
+                   + outlineShadowStrength * _RadialGradientBackgroundOpacity
+               );
+
+               half outlineRingNormalized = 1.0 - (distToCenter * rcp(gradientMaxRadius + _OutlineWidth));
+               half outlineRingFalloff = 1.0 - saturate(rcp(exp(outlineRingNormalized * OUTER_OUTLINE_FALLOFF)));
+               half4 outlineColorContribution = radialGradientComposite
+                   + (outlineRingFalloff - outlineShadowStrength) * _OutlineColor;
+
+               half transitionBlend = saturate((_RadialGradientScale - TRANSITION_THRESHOLD) * 1000);
+               half4 pointerColor = lerp(_OutlineColor, outlineColorContribution, transitionBlend);
+
+               half3 color = pointerColor.rgb * _Color.rgb;
+               half alpha = pointerColor.a * _Alpha;
+
+               #if _CLIP_ON
+                   clip(alpha - 0.01);
+               #endif
+           
+               return half4(color.rgb, alpha);
+           }
+           ENDCG
         }
     }
     Fallback "Diffuse"

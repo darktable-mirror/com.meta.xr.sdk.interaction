@@ -31,7 +31,7 @@ namespace Oculus.Interaction.Locomotion
     /// (EnableShape and DisableShape).
     /// It outputs it result into two <see cref="IActiveState"/>s (for Teleport and Turn)
     /// </summary>
-    public class LocomotionGate : MonoBehaviour
+    public class LocomotionGate : MonoBehaviour, IActiveState
     {
         /// <summary>
         /// Hand that will be performing the Turn and Teleport
@@ -83,6 +83,11 @@ namespace Oculus.Interaction.Locomotion
         /// </summary>
         [SerializeField]
         private VirtualActiveState _teleportState;
+
+        /// <summary>
+        /// The Gate is considered active if it is in any of the gated sections
+        /// </summary>
+        public bool Active => _currentGateIndex >= 0;
 
         protected bool _started;
         private bool _previousShapeEnabled;

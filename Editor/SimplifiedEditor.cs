@@ -31,13 +31,27 @@ namespace Oculus.Interaction.Editor
     {
         protected EditorBase _editorDrawer;
         private const string OptionalSection = "Optionals";
+        private const string ExperimentalSection = "Experimental";
+        private string _experimentalMessage = null;
 
         protected virtual void OnEnable()
         {
             if (!target)
+            {
                 return;
+            }
 
             _editorDrawer = new EditorBase(serializedObject);
+
+            var experimentalAttribute = target.GetType().GetCustomAttribute<ExperimentalAttribute>();
+            if (experimentalAttribute != null)
+            {
+                _experimentalMessage = string.Format(ExperimentalAttribute.CLASS_HEADER, target.GetType().Name);
+                if (!string.IsNullOrWhiteSpace(experimentalAttribute.ClassMessage))
+                {
+                    _experimentalMessage += $"\n\n{experimentalAttribute.ClassMessage}";
+                }
+            }
 
             Dictionary<string, string[]> sections = FindCustomSections(serializedObject);
             foreach (var sectionData in sections)
@@ -45,7 +59,12 @@ namespace Oculus.Interaction.Editor
                 RegisterSection(sectionData.Key, sectionData.Value);
             }
 
-            RegisterSection(OptionalSection, FindOptionals(serializedObject));
+            var experimentalProperties = FindExperimentals(serializedObject);
+            var optionalProperties = FindOptionals(serializedObject).Except(experimentalProperties).ToArray();
+
+            var optionalSection = RegisterSection(OptionalSection, optionalProperties);
+            var experimentalSection = RegisterSection(ExperimentalSection, experimentalProperties);
+            experimentalSection.HeaderDrawer = () => EditorGUILayout.HelpBox(ExperimentalAttribute.MEMBER_HEADER, MessageType.Warning);
         }
 
         protected virtual void OnDisable()
@@ -54,14 +73,32 @@ namespace Oculus.Interaction.Editor
 
         public override void OnInspectorGUI()
         {
+            if (!string.IsNullOrWhiteSpace(_experimentalMessage))
+            {
+                EditorGUILayout.HelpBox(_experimentalMessage, MessageType.Warning);
+                EditorGUILayout.Space();
+            }
             _editorDrawer.DrawFullInspector();
         }
 
-        private void RegisterSection(string sectionName, string[] sectionProperties)
+        private EditorBase.Section RegisterSection(string sectionName, string[] sectionProperties)
         {
             string foldoutKey = $"{GetType().FullName}.{sectionName}.Foldout";
-            _editorDrawer.CreateSection(sectionName, true, foldoutKey);
+            var section = _editorDrawer.CreateSection(sectionName, true, foldoutKey);
             _editorDrawer.AddToSection(sectionName, sectionProperties);
+            return section;
+        }
+
+        private static string[] FindExperimentals(SerializedObject serializedObject)
+        {
+            List<AttributedProperty<ExperimentalAttribute>> props = new List<AttributedProperty<ExperimentalAttribute>>();
+            UnityEngine.Object obj = serializedObject.targetObject;
+            if (obj != null)
+            {
+                FindAttributedSerializedFields(obj.GetType(), props);
+            }
+
+            return props.Select(p => p.propertyName).ToArray();
         }
 
         private static string[] FindOptionals(SerializedObject serializedObject)

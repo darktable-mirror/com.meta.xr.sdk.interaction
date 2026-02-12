@@ -53,7 +53,8 @@ namespace Oculus.Interaction
         /// The center of the grab.
         /// </summary>
         [Tooltip("The center of the grab.")]
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete]
         private Transform _grabCenter;
 
         /// <summary>
@@ -109,14 +110,9 @@ namespace Oculus.Interaction
                     $"Associated Colliders in the {AssertUtils.Nicify(nameof(Rigidbody))} must be marked as Triggers.");
             }
 
-            if (_grabCenter == null)
-            {
-                _grabCenter = transform;
-            }
-
             if (_grabTarget == null)
             {
-                _grabTarget = _grabCenter;
+                _grabTarget = Rigidbody.transform;
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -133,8 +129,13 @@ namespace Oculus.Interaction
 
         protected override void DoPreprocess()
         {
-            transform.position = _grabCenter.position;
-            transform.rotation = _grabCenter.rotation;
+#pragma warning disable CS0612 // Type or member is obsolete
+            if (_grabCenter != null)
+            {
+                transform.position = _grabCenter.position;
+                transform.rotation = _grabCenter.rotation;
+            }
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         protected override GrabInteractable ComputeCandidate()
@@ -345,6 +346,7 @@ namespace Oculus.Interaction
         /// Optionally adds a grab center to a dynamically instantiated GameObject,
         /// allowing for precise control over the center of grabbing operations by providing an external grab center transform.
         /// </summary>
+        [Obsolete]
         public void InjectOptionalGrabCenter(Transform grabCenter)
         {
             _grabCenter = grabCenter;

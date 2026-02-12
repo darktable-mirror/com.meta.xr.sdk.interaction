@@ -144,6 +144,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "ISDK_TeleportInteraction",
                 "70cf16e50c457a54cad0b0a504b7d646");
 
+
         #endregion Interactables
 
         #region Interactors
@@ -237,6 +238,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "ControllerTeleportInteractorGroup",
                 "dd6fa3a95e908604fa8656608ea793a1",
                 InputModality.Controller);
+
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _handInteractorTemplates = new()
         {

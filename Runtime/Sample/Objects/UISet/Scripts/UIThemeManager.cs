@@ -141,22 +141,24 @@ namespace Oculus.Interaction
                 {
                     // Colors are applied though animation clips.
                 }
-                else
+                else if (selectedTheme.ThemeVersion < 2)
                 {
                     image.color = selectedTheme.backplateColor;
                 }
-
-                if (selectedTheme.ThemeVersion == 2)
+                else if (selectedTheme.ThemeVersion == 2)
                 {
+                    if (image.CompareTag("QDSUIBackplate"))
+                    {
+                        image.color = selectedTheme.backplateColor;
+                    }
                     // v2 visual design, optional: Apply the gradient material to the backplate
-                    if (image.CompareTag("QDSUIBackplateGradient"))
+                    else if (image.CompareTag("QDSUIBackplateGradient"))
                     {
                         image.color = selectedTheme.backplateColor;
                         image.material = selectedTheme.backplateGradientMaterial;
                     }
-
                     // v2 visual design, handle inverted colors on images
-                    if (image.CompareTag("QDSUITextInvertedColor"))
+                    else if (image.CompareTag("QDSUITextInvertedColor"))
                     {
                         image.color = selectedTheme.textPrimaryInvertedColor;
                     }

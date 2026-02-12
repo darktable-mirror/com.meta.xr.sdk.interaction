@@ -37,12 +37,26 @@ namespace Oculus.Interaction
         /// <summary>
         /// Raised when a rigidbody collision is detected with the associated <see cref="IInteractable"/>.
         /// </summary>
+        [Obsolete("Use " + nameof(WhenRigidbodyEntered) + " instead")]
         public Action<IInteractable, Rigidbody> WhenTriggerEntered = delegate { };
 
         /// <summary>
         /// Raised when a rigidbody collision with the associated <see cref="IInteractable"/> ends.
         /// </summary>
+        [Obsolete("Use " + nameof(WhenRigidbodyExited) + " instead")]
         public Action<IInteractable, Rigidbody> WhenTriggerExited = delegate { };
+
+        /// <summary>
+        /// Raised when a rigidbody collision is detected.
+        ///  Initialized to null to know if it's been set.
+        /// </summary>
+        public Action<Rigidbody> WhenRigidbodyEntered = null;
+
+        /// <summary>
+        /// Raised when a rigidbody collision ends.
+        ///  Initialized to null to know if it's been set.
+        /// </summary>
+        public Action<Rigidbody> WhenRigidbodyExited = null;
 
         private IInteractable _interactable;
         private Dictionary<Rigidbody, bool> _rigidbodyTriggers;
@@ -80,7 +94,10 @@ namespace Oculus.Interaction
 
             if (!_rigidbodyTriggers.ContainsKey(rigidbody))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 WhenTriggerEntered(_interactable, rigidbody);
+#pragma warning restore CS0618 // Type or member is obsolete
+                WhenRigidbodyEntered?.Invoke(rigidbody);
                 _rigidbodyTriggers.Add(rigidbody, true);
             }
             else
@@ -120,7 +137,10 @@ namespace Oculus.Interaction
                 if (_rigidbodyTriggers[rigidbody] == false)
                 {
                     _rigidbodyTriggers.Remove(rigidbody);
+#pragma warning disable CS0618 // Type or member is obsolete
                     WhenTriggerExited(_interactable, rigidbody);
+#pragma warning restore CS0618 // Type or member is obsolete
+                    WhenRigidbodyExited?.Invoke(rigidbody);
                 }
                 else
                 {
@@ -136,7 +156,10 @@ namespace Oculus.Interaction
                 // Clean up any remaining active triggers
                 foreach (Rigidbody rigidbody in _rigidbodyTriggers.Keys)
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     WhenTriggerExited(_interactable, rigidbody);
+#pragma warning restore CS0618 // Type or member is obsolete
+                    WhenRigidbodyExited?.Invoke(rigidbody);
                 }
                 _broadcasters.Remove(this);
                 _rigidbodies.Clear();
@@ -150,8 +173,12 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 WhenTriggerEntered = null;
                 WhenTriggerExited = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+                WhenRigidbodyEntered = null;
+                WhenRigidbodyExited = null;
             }
         }
 
@@ -177,6 +204,7 @@ namespace Oculus.Interaction
         /// This method exists to support Interaction SDK's dependency injection pattern and is not
         /// needed for typical Unity Editor-based usage.
         /// </summary>
+        [Obsolete]
         public void InjectAllInteractableTriggerBroadcaster(IInteractable interactable)
         {
             InjectInteractable(interactable);
@@ -188,6 +216,7 @@ namespace Oculus.Interaction
         /// This method exists to support Interaction SDK's dependency injection pattern and is not
         /// needed for typical Unity Editor-based usage.
         /// </summary>
+        [Obsolete]
         public void InjectInteractable(IInteractable interactable)
         {
             _interactable = interactable;

@@ -35,28 +35,32 @@ namespace Oculus.Interaction
                              where TInteractable : Interactable<TInteractor, TInteractable>, IRigidbodyRef
     {
         private Dictionary<Rigidbody, HashSet<TInteractable>> _rigidbodyCollisionMap;
-        private Dictionary<TInteractable, InteractableTriggerBroadcaster> _broadcasters;
+        private Dictionary<Rigidbody, InteractableTriggerBroadcaster> _broadcasters;
+        private Dictionary<TInteractable, (Action<Rigidbody>, Action<Rigidbody>)> _handlers;
 
         public CollisionInteractionRegistry() : base()
         {
-            _rigidbodyCollisionMap = new Dictionary<Rigidbody, HashSet<TInteractable>>();
-            _broadcasters = new Dictionary<TInteractable, InteractableTriggerBroadcaster>();
+            _rigidbodyCollisionMap = new();
+            _broadcasters = new();
+            _handlers = new();
         }
 
         public override void Register(TInteractable interactable)
         {
             base.Register(interactable);
-
-            GameObject triggerGameObject = interactable.Rigidbody.gameObject;
             InteractableTriggerBroadcaster broadcaster;
-            if (!_broadcasters.TryGetValue(interactable, out broadcaster))
+            if (!_broadcasters.TryGetValue(interactable.Rigidbody, out broadcaster))
             {
+                GameObject triggerGameObject = interactable.Rigidbody.gameObject;
                 broadcaster = triggerGameObject.AddComponent<InteractableTriggerBroadcaster>();
-                broadcaster.InjectAllInteractableTriggerBroadcaster(interactable);
-                _broadcasters.Add(interactable, broadcaster);
-                broadcaster.WhenTriggerEntered += HandleTriggerEntered;
-                broadcaster.WhenTriggerExited += HandleTriggerExited;
+                _broadcasters.Add(interactable.Rigidbody, broadcaster);
             }
+
+            Action<Rigidbody> handleEntered = (rb) => HandleTriggerEntered(interactable, rb);
+            Action<Rigidbody> handleExited = (rb) => HandleTriggerExited(interactable, rb);
+            _handlers.Add(interactable, (handleEntered, handleExited));
+            broadcaster.WhenRigidbodyEntered += handleEntered;
+            broadcaster.WhenRigidbodyExited += handleExited;
         }
 
         public override void Unregister(TInteractable interactable)
@@ -64,37 +68,39 @@ namespace Oculus.Interaction
             base.Unregister(interactable);
 
             InteractableTriggerBroadcaster broadcaster;
-            if (_broadcasters.TryGetValue(interactable, out broadcaster))
+            if (_broadcasters.TryGetValue(interactable.Rigidbody, out broadcaster))
             {
-                _broadcasters.Remove(interactable);
+                var handlers = _handlers[interactable];
+                broadcaster.WhenRigidbodyEntered -= handlers.Item1;
+                broadcaster.WhenRigidbodyExited -= handlers.Item2;
+                _handlers.Remove(interactable);
 
-                if (broadcaster != null)
+                if (broadcaster != null
+                    && broadcaster.WhenRigidbodyEntered == null
+                    && broadcaster.WhenRigidbodyExited == null)
                 {
+                    _broadcasters.Remove(interactable.Rigidbody);
                     broadcaster.enabled = false;
-                    broadcaster.WhenTriggerEntered -= HandleTriggerEntered;
-                    broadcaster.WhenTriggerExited -= HandleTriggerExited;
                     Object.Destroy(broadcaster);
                 }
             }
         }
 
-        private void HandleTriggerEntered(IInteractable interactable, Rigidbody rigidbody)
+        private void HandleTriggerEntered(TInteractable interactable, Rigidbody rigidbody)
         {
-            TInteractable typedInteractable = interactable as TInteractable;
             if (!_rigidbodyCollisionMap.ContainsKey(rigidbody))
             {
                 _rigidbodyCollisionMap.Add(rigidbody, new HashSet<TInteractable>());
             }
 
             HashSet<TInteractable> interactables = _rigidbodyCollisionMap[rigidbody];
-            interactables.Add(typedInteractable);
+            interactables.Add(interactable);
         }
 
-        private void HandleTriggerExited(IInteractable interactable, Rigidbody rigidbody)
+        private void HandleTriggerExited(TInteractable interactable, Rigidbody rigidbody)
         {
-            TInteractable typedInteractable = interactable as TInteractable;
             HashSet<TInteractable> interactables = _rigidbodyCollisionMap[rigidbody];
-            interactables.Remove(typedInteractable);
+            interactables.Remove(interactable);
 
             if (interactables.Count == 0)
             {

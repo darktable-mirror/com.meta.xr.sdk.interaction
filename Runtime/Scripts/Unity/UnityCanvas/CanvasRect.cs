@@ -30,6 +30,11 @@ namespace Oculus.Interaction.UnityCanvas
             return localPosition;
         }
 
+        protected override Vector3 MeshTransform(Vector3 localToCanvas)
+        {
+            return localToCanvas;
+        }
+
         protected override void GenerateMesh(out List<Vector3> verts,
                                              out List<int> tris,
                                              out List<Vector2> uvs)

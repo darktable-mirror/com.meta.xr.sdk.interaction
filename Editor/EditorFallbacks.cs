@@ -24,6 +24,12 @@ using Oculus.Interaction.Editor;
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(ArcTubeVisual), false, isFallback = true), CanEditMultipleObjects]
+    public class ArcTubeVisualEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(TubeRenderer), false, isFallback = true), CanEditMultipleObjects]
     public class TubeRendererEditorFallback : SimplifiedEditor { }
 }
@@ -62,6 +68,12 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(Axis1DSwitch), false, isFallback = true), CanEditMultipleObjects]
     public class Axis1DSwitchEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(TransformTrackingToWorldTransformer), false, isFallback = true), CanEditMultipleObjects]
+    public class TransformTrackingToWorldTransformerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -132,6 +144,18 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(ControllerAxis2D), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerAxis2DEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(DPadUnityEventWrapper), false, isFallback = true), CanEditMultipleObjects]
+    public class DPadUnityEventWrapperEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(FirstHoverInteractorGroup), false, isFallback = true), CanEditMultipleObjects]
     public class FirstHoverInteractorGroupEditorFallback : SimplifiedEditor { }
 }
@@ -146,6 +170,12 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(HandActiveState), false, isFallback = true), CanEditMultipleObjects]
     public class HandActiveStateEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(HoverInteractorsGate), false, isFallback = true), CanEditMultipleObjects]
+    public class HoverInteractorsGateEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -170,6 +200,12 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(InteractorActiveState), false, isFallback = true), CanEditMultipleObjects]
     public class InteractorActiveStateEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(InteractorControllerDecorator), false, isFallback = true), CanEditMultipleObjects]
+    public class InteractorControllerDecoratorEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -216,10 +252,14 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    [CustomEditor(typeof(OneGrabFreeTransformer), false, isFallback = true), CanEditMultipleObjects]
-#pragma warning restore CS0618 // Type or member is obsolete
-    public class OneGrabFreeTransformerEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(GrabFreePhysicsTransformer), false, isFallback = true), CanEditMultipleObjects]
+    public class GrabFreePhysicsTransformerEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(GrabFreeTransformer), false, isFallback = true), CanEditMultipleObjects]
+    public class GrabFreeTransformerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -236,16 +276,14 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(OneGrabTranslateTransformer), false, isFallback = true), CanEditMultipleObjects]
-    public class OneGrabTranslateTransformerEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(OneGrabSphereTransformer), false, isFallback = true), CanEditMultipleObjects]
+    public class OneGrabSphereTransformerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    [CustomEditor(typeof(TwoGrabFreeTransformer), false, isFallback = true), CanEditMultipleObjects]
-#pragma warning restore CS0618 // Type or member is obsolete
-    public class TwoGrabFreeTransformerEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(OneGrabTranslateTransformer), false, isFallback = true), CanEditMultipleObjects]
+    public class OneGrabTranslateTransformerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -298,6 +336,12 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(TunnelingEffect), false, isFallback = true), CanEditMultipleObjects]
+    public class TunnelingEffectEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(PokeInteractable), false, isFallback = true), CanEditMultipleObjects]
     public class PokeInteractableEditorFallback : SimplifiedEditor { }
 }
@@ -334,18 +378,6 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(ControllerRayVisual), false, isFallback = true), CanEditMultipleObjects]
-    public class ControllerRayVisualEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Editor.Generated
-{
-    [CustomEditor(typeof(HandRayInteractorCursorVisual), false, isFallback = true), CanEditMultipleObjects]
-    public class HandRayInteractorCursorVisualEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Editor.Generated
-{
     [CustomEditor(typeof(RayInteractorCursorVisual), false, isFallback = true), CanEditMultipleObjects]
     public class RayInteractorCursorVisualEditorFallback : SimplifiedEditor { }
 }
@@ -360,6 +392,12 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(RayInteractorPinchVisual), false, isFallback = true), CanEditMultipleObjects]
     public class RayInteractorPinchVisualEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(RayInteractorRayVisual), false, isFallback = true), CanEditMultipleObjects]
+    public class RayInteractorRayVisualEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -430,6 +468,12 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(UseFingerControllerAPI), false, isFallback = true), CanEditMultipleObjects]
+    public class UseFingerControllerAPIEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(UseFingerCurlAPI), false, isFallback = true), CanEditMultipleObjects]
     public class UseFingerCurlAPIEditorFallback : SimplifiedEditor { }
 }
@@ -479,7 +523,7 @@ namespace Oculus.Interaction.Editor.Generated
 namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(HandDebugGizmos), false, isFallback = true), CanEditMultipleObjects]
-    public class HandDebugVisualEditorFallback : SimplifiedEditor { }
+    public class HandDebugGizmosEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -532,8 +576,56 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(AutoMoveTowardsTargetProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class AutoMoveTowardsTargetProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(FollowTargetProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class FollowTargetProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(JoystickPoseMovementProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class JoystickPoseMovementProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(MoveAtSourceProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class MoveAtSourceProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(MoveFromTargetProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class MoveFromTargetProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(MoveTowardsTargetProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class MoveTowardsTargetProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(ObjectPullProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class ObjectPullProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(DebugGizmos), false, isFallback = true), CanEditMultipleObjects]
     public class DebugGizmosEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(TransformsPolyline), false, isFallback = true), CanEditMultipleObjects]
+    public class TransformsPolylineEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -616,14 +708,14 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(HandTransformScaler), false, isFallback = true), CanEditMultipleObjects]
-    public class HandTransformScalerEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(HandRootOffset), false, isFallback = true), CanEditMultipleObjects]
+    public class HandRootOffsetEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
 {
-    [CustomEditor(typeof(HandRootOffset), false, isFallback = true), CanEditMultipleObjects]
-    public class HandWristOffsetEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(HandTransformScaler), false, isFallback = true), CanEditMultipleObjects]
+    public class HandTransformScalerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -658,6 +750,12 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(HandTrackingConfidenceProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class HandTrackingConfidenceProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(ActiveStateUnityEventWrapper), false, isFallback = true), CanEditMultipleObjects]
     public class ActiveStateUnityEventWrapperEditorFallback : SimplifiedEditor { }
 }
@@ -672,14 +770,6 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(InteractorUnityEventWrapper), false, isFallback = true), CanEditMultipleObjects]
     public class InteractorUnityEventWrapperEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Editor.Generated
-{
-#pragma warning disable CS0618 // Type or member is obsolete
-    [CustomEditor(typeof(PhysicsGrabbable), false, isFallback = true), CanEditMultipleObjects]
-#pragma warning restore CS0618 // Type or member is obsolete
-    public class PhysicsGrabbableEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -714,6 +804,18 @@ namespace Oculus.Interaction.Editor.Generated
 
 namespace Oculus.Interaction.Editor.Generated
 {
+    [CustomEditor(typeof(RectTransformBoundsClipperDriver), false, isFallback = true), CanEditMultipleObjects]
+    public class RectTransformBoundsClipperDriverEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(RigidbodyKinematicLocker), false, isFallback = true), CanEditMultipleObjects]
+    public class RigidbodyKinematicLockerEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
     [CustomEditor(typeof(SelectorUnityEventWrapper), false, isFallback = true), CanEditMultipleObjects]
     public class SelectorUnityEventWrapperEditorFallback : SimplifiedEditor { }
 }
@@ -722,6 +824,18 @@ namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(ToggleDeselect), false, isFallback = true), CanEditMultipleObjects]
     public class ToggleDeselectEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(Context), false, isFallback = true), CanEditMultipleObjects]
+    public class ContextEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(DeprecatedPrefab), false, isFallback = true), CanEditMultipleObjects]
+    public class DeprecatedPrefabEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Editor.Generated
@@ -798,10 +912,8 @@ namespace Oculus.Interaction.Throw.Editor.Generated
 
 namespace Oculus.Interaction.Throw.Editor.Generated
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    [CustomEditor(typeof(StandardVelocityCalculator), false, isFallback = true), CanEditMultipleObjects]
-#pragma warning restore CS0618 // Type or member is obsolete
-    public class StandardVelocityCalculatorEditorFallback : SimplifiedEditor { }
+    [CustomEditor(typeof(ThrowTuner), false, isFallback = true), CanEditMultipleObjects]
+    public class ThrowTunerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.DebugTree.Editor.Generated
@@ -872,6 +984,12 @@ namespace Oculus.Interaction.Surfaces.Editor.Generated
 
 namespace Oculus.Interaction.Surfaces.Editor.Generated
 {
+    [CustomEditor(typeof(PhysicsLayerSurface), false, isFallback = true), CanEditMultipleObjects]
+    public class PhysicsLayerSurfaceEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Surfaces.Editor.Generated
+{
     [CustomEditor(typeof(PlaneSurface), false, isFallback = true), CanEditMultipleObjects]
     public class PlaneSurfaceEditorFallback : SimplifiedEditor { }
 }
@@ -884,8 +1002,44 @@ namespace Oculus.Interaction.Locomotion.Editor.Generated
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
 {
+    [CustomEditor(typeof(CharacterController), false, isFallback = true), CanEditMultipleObjects]
+    public class CharacterControllerEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(FirstPersonLocomotor), false, isFallback = true), CanEditMultipleObjects]
+    public class FirstPersonLocomotorEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(FlyingLocomotor), false, isFallback = true), CanEditMultipleObjects]
+    public class FlyingLocomotorEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(LocomotionActionsBroadcaster), false, isFallback = true), CanEditMultipleObjects]
+    public class LocomotionActionsBroadcasterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(LocomotionActiveState), false, isFallback = true), CanEditMultipleObjects]
+    public class LocomotionActiveStateEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
     [CustomEditor(typeof(LocomotionEventsConnection), false, isFallback = true), CanEditMultipleObjects]
     public class LocomotionEventsConnectionEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(LocomotionEventSelector), false, isFallback = true), CanEditMultipleObjects]
+    public class LocomotionEventSelectorEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
@@ -902,8 +1056,26 @@ namespace Oculus.Interaction.Locomotion.Editor.Generated
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
 {
+    [CustomEditor(typeof(SlideLocomotionBroadcaster), false, isFallback = true), CanEditMultipleObjects]
+    public class SlideLocomotionBroadcasterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(StepLocomotionBroadcaster), false, isFallback = true), CanEditMultipleObjects]
+    public class StepLocomotionBroadcasterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
     [CustomEditor(typeof(TeleportArcGravity), false, isFallback = true), CanEditMultipleObjects]
     public class TeleportArcGravityEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(TeleportCandidateComputer), false, isFallback = true), CanEditMultipleObjects]
+    public class TeleportCandidateComputerEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
@@ -932,6 +1104,24 @@ namespace Oculus.Interaction.Locomotion.Editor.Generated
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
 {
+    [CustomEditor(typeof(LocomotionTunneling), false, isFallback = true), CanEditMultipleObjects]
+    public class LocomotionTunnelingEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(WallPenetrationTunneling), false, isFallback = true), CanEditMultipleObjects]
+    public class WallPenetrationTunnelingEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(AnimatedSnapTurnVisuals), false, isFallback = true), CanEditMultipleObjects]
+    public class AnimatedSnapTurnVisualsEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
     [CustomEditor(typeof(LocomotionAxisTurnerInteractor), false, isFallback = true), CanEditMultipleObjects]
     public class LocomotionAxisTurnerInteractorEditorFallback : SimplifiedEditor { }
 }
@@ -956,8 +1146,20 @@ namespace Oculus.Interaction.Locomotion.Editor.Generated
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
 {
+    [CustomEditor(typeof(TurnArrowVisuals), false, isFallback = true), CanEditMultipleObjects]
+    public class TurnArrowVisualsEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
     [CustomEditor(typeof(TurnerEventBroadcaster), false, isFallback = true), CanEditMultipleObjects]
     public class TurnerEventBroadcasterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(TurnLocomotionBroadcaster), false, isFallback = true), CanEditMultipleObjects]
+    public class TurnLocomotionBroadcasterEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Locomotion.Editor.Generated
@@ -966,100 +1168,16 @@ namespace Oculus.Interaction.Locomotion.Editor.Generated
     public class LocomotionGateUnityEventWrapperEditorFallback : SimplifiedEditor { }
 }
 
+namespace Oculus.Interaction.Locomotion.Editor.Generated
+{
+    [CustomEditor(typeof(WristAngleActiveState), false, isFallback = true), CanEditMultipleObjects]
+    public class WristAngleActiveStateEditorFallback : SimplifiedEditor { }
+}
+
 namespace Oculus.Interaction.Utils.Editor.Generated
 {
     [CustomEditor(typeof(FilteredTransform), false, isFallback = true), CanEditMultipleObjects]
     public class FilteredTransformEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(Controller), false, isFallback = true), CanEditMultipleObjects]
-    public class ControllerEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(ControllerButtonUsageActiveState), false, isFallback = true), CanEditMultipleObjects]
-    public class ControllerButtonUsageActiveStateEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(ControllerRef), false, isFallback = true), CanEditMultipleObjects]
-    public class ControllerRefEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(FixedScaleHand), false, isFallback = true), CanEditMultipleObjects]
-    public class FixedScaleHandEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(JointRotationHistoryHand), false, isFallback = true), CanEditMultipleObjects]
-    public class JointRotationHistoryHandEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(LastKnownGoodHand), false, isFallback = true), CanEditMultipleObjects]
-    public class LastKnownGoodHandEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(SyntheticHand), false, isFallback = true), CanEditMultipleObjects]
-    public class SyntheticHandEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(FromHandPrefabDataSource), false, isFallback = true), CanEditMultipleObjects]
-    public class FromHandPrefabDataSourceEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(Hand), false, isFallback = true), CanEditMultipleObjects]
-    public class HandEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(HandPhysicsCapsules), false, isFallback = true), CanEditMultipleObjects]
-    public class HandPhysicsCapsulesEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(HandRef), false, isFallback = true), CanEditMultipleObjects]
-    public class HandRefEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(JointsRadiusFeature), false, isFallback = true), CanEditMultipleObjects]
-    public class JointsRadiusFeatureEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(Hmd), false, isFallback = true), CanEditMultipleObjects]
-    public class HmdEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Editor.Generated
-{
-    [CustomEditor(typeof(HmdRef), false, isFallback = true), CanEditMultipleObjects]
-    public class HmdRefEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.Input.Filter.Editor.Generated
-{
-    [CustomEditor(typeof(HandFilter), false, isFallback = true), CanEditMultipleObjects]
-    public class HandFilterEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.HandGrab.Editor.Generated
@@ -1110,42 +1228,6 @@ namespace Oculus.Interaction.HandGrab.Editor.Generated
     public class HandGrabUseInteractorEditorFallback : SimplifiedEditor { }
 }
 
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(AutoMoveTowardsTargetProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class AutoMoveTowardsTargetProviderEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(FollowTargetProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class FollowTargetProviderEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(MoveAtSourceProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class MoveAtSourceProviderEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(MoveFromTargetProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class MoveFromTargetProviderEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(MoveTowardsTargetProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class MoveTowardsTargetProviderEditorFallback : SimplifiedEditor { }
-}
-
-namespace Oculus.Interaction.HandGrab.Editor.Generated
-{
-    [CustomEditor(typeof(ObjectPullProvider), false, isFallback = true), CanEditMultipleObjects]
-    public class ObjectPullProviderEditorFallback : SimplifiedEditor { }
-}
-
 namespace Oculus.Interaction.HandGrab.Visuals.Editor.Generated
 {
     [CustomEditor(typeof(HandGhost), false, isFallback = true), CanEditMultipleObjects]
@@ -1156,6 +1238,24 @@ namespace Oculus.Interaction.HandGrab.Visuals.Editor.Generated
 {
     [CustomEditor(typeof(HandPuppet), false, isFallback = true), CanEditMultipleObjects]
     public class HandPuppetEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Feedback.Editor.Generated
+{
+    [CustomEditor(typeof(FeedbackManager), false, isFallback = true), CanEditMultipleObjects]
+    public class FeedbackManagerEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Feedback.Editor.Generated
+{
+    [CustomEditor(typeof(FeedbackSettings), false, isFallback = true), CanEditMultipleObjects]
+    public class FeedbackSettingsEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Feedback.Editor.Generated
+{
+    [CustomEditor(typeof(InteractionBroadcaster), false, isFallback = true), CanEditMultipleObjects]
+    public class InteractionBroadcasterEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.DistanceReticles.Editor.Generated
@@ -1258,6 +1358,144 @@ namespace Oculus.Interaction.Body.Input.Editor.Generated
 {
     [CustomEditor(typeof(Body), false, isFallback = true), CanEditMultipleObjects]
     public class BodyEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(BodyRef), false, isFallback = true), CanEditMultipleObjects]
+    public class BodyRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(Controller), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerButtonUsageActiveState), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerButtonUsageActiveStateEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerHandDataSource), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerHandDataSourceEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerRef), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(ScrollInputProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class ScrollInputProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(SyntheticControllerInHand), false, isFallback = true), CanEditMultipleObjects]
+    public class SyntheticControllerInHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerAnimatedHand), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerAnimatedHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(FixedScaleHand), false, isFallback = true), CanEditMultipleObjects]
+    public class FixedScaleHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(JointRotationHistoryHand), false, isFallback = true), CanEditMultipleObjects]
+    public class JointRotationHistoryHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(LastKnownGoodHand), false, isFallback = true), CanEditMultipleObjects]
+    public class LastKnownGoodHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(SyntheticHand), false, isFallback = true), CanEditMultipleObjects]
+    public class SyntheticHandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(DominantHandRef), false, isFallback = true), CanEditMultipleObjects]
+    public class DominantHandRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(FromHandPrefabDataSource), false, isFallback = true), CanEditMultipleObjects]
+    public class FromHandPrefabDataSourceEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(Hand), false, isFallback = true), CanEditMultipleObjects]
+    public class HandEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(HandPhysicsCapsules), false, isFallback = true), CanEditMultipleObjects]
+    public class HandPhysicsCapsulesEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(HandRef), false, isFallback = true), CanEditMultipleObjects]
+    public class HandRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(HandSourceInjector), false, isFallback = true), CanEditMultipleObjects]
+    public class HandSourceInjectorEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(JointsRadiusFeature), false, isFallback = true), CanEditMultipleObjects]
+    public class JointsRadiusFeatureEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(Hmd), false, isFallback = true), CanEditMultipleObjects]
+    public class HmdEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(HmdRef), false, isFallback = true), CanEditMultipleObjects]
+    public class HmdRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Filter.Editor.Generated
+{
+    [CustomEditor(typeof(HandFilter), false, isFallback = true), CanEditMultipleObjects]
+    public class HandFilterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Visuals.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerVisual), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerVisualEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.PoseDetection.Editor.Generated
@@ -1414,6 +1652,12 @@ namespace Oculus.Interaction.PoseDetection.Debug.Editor.Generated
 {
     [CustomEditor(typeof(TransformRecognizerDebugVisual), false, isFallback = true), CanEditMultipleObjects]
     public class TransformRecognizerDebugVisualEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.GrabAPI.Editor.Generated
+{
+    [CustomEditor(typeof(ControllerPinchInjector), false, isFallback = true), CanEditMultipleObjects]
+    public class ControllerPinchInjectorEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.GrabAPI.Editor.Generated

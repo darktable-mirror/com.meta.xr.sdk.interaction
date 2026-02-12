@@ -138,6 +138,26 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
+        /// Attempts to retrieve the <paramref name="instance"/> associated with the provided <paramref name="identifier"/>
+        /// in the given <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="Context"/> in which to look for an instance association</param>
+        /// <param name="identifier">The <see cref="ID"/> of the UniqueIdentifier for which to find the instance</param>
+        /// <param name="instance">Out parameter, the discovered associated instance, if one exists</param>
+        /// <returns>True if the instance was found, false otherwise</returns>
+        public static bool TryGetInstanceFromIdentifier<TInstance>(Context context, int identifier, out TInstance instance)
+        {
+            if (Decorator.GetFromContext(context).TryGetDecoration(identifier, out var instanceObj) &&
+                instanceObj is TInstance instanceT)
+            {
+                instance = instanceT;
+                return true;
+            }
+            instance = default;
+            return false;
+        }
+
+        /// <summary>
         /// Attempts to retrieve the instance associated with the provided <paramref name="identifier"/> in the provided
         /// <paramref name="context"/>.
         /// </summary>

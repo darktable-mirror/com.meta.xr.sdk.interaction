@@ -49,6 +49,12 @@ namespace Oculus.Interaction.Editor
             public bool isFoldout;
             public List<string> properties = new List<string>();
 
+            /// <summary>
+            /// This is invoked before drawing any properties, and can be used
+            /// to add extra information as a header within this foldout.
+            /// </summary>
+            public Action HeaderDrawer { get; set; } = null;
+
             private string _foldoutKey = null;
 
             private bool _foldout = false;
@@ -375,6 +381,8 @@ namespace Oculus.Interaction.Editor
                 }
                 EditorGUI.indentLevel++;
             }
+
+            section.HeaderDrawer?.Invoke();
 
             foreach (string prop in section.properties)
             {

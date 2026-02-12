@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Oculus.Interaction
 {
@@ -30,6 +30,7 @@ namespace Oculus.Interaction
     /// to add this visual from scratch as this type makes assumptions about certain of its dependencies, such as those added
     /// by <see cref="InjectRenderer(Renderer)"/> and <see cref="InjectMaterialPropertyBlockEditor(MaterialPropertyBlockEditor)"/>.
     /// </summary>
+    [Obsolete("Use " + nameof(RayInteractorRayVisual) + "")]
     public class ControllerRayVisual : MonoBehaviour
     {
         [SerializeField]

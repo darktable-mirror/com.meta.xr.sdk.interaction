@@ -141,6 +141,7 @@ GameObject:
   - component: {fileID: 5841275377495994901}
   - component: {fileID: 5841275377495994900}
   - component: {fileID: 5841275377495994903}
+  - component: {fileID: 1842489645121261004}
   m_Layer: 0
   m_Name: InteractorDebugVisual
   m_TagString: Untagged
@@ -231,6 +232,26 @@ MonoBehaviour:
   _hoverColor: {r: 0, g: 0, b: 1, a: 0.16862746}
   _selectColor: {r: 0, g: 1, b: 0.048936844, a: 0.19607843}
   _disabledColor: {r: 0, g: 0, b: 0, a: 0.019607844}
+--- !u!1818360608 &1842489645121261004
+PositionConstraint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5841275377495994897}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Weight: 1
+  m_TranslationAtRest: {x: 0, y: 0, z: 0}
+  m_TranslationOffset: {x: 0, y: 0, z: 0}
+  m_AffectTranslationX: 1
+  m_AffectTranslationY: 1
+  m_AffectTranslationZ: 1
+  m_Active: 1
+  m_IsLocked: 0
+  m_Sources:
+  - sourceTransform: {fileID: 6931372971830974944}
+    weight: 1
 --- !u!1 &5841275377555521838
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,8 +369,8 @@ MonoBehaviour:
   _data: {fileID: 0}
   _selector: {fileID: 2589682475924332496}
   _rigidbody: {fileID: 3577656904122370513}
-  _grabCenter: {fileID: 6931372971830974944}
-  _grabTarget: {fileID: 0}
+  _grabCenter: {fileID: 0}
+  _grabTarget: {fileID: 6931372971830974944}
   _velocityCalculator: {fileID: 0}
 --- !u!114 &6625153947635969398
 MonoBehaviour:

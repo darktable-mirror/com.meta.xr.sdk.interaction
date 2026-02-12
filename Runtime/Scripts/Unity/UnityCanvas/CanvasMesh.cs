@@ -54,6 +54,7 @@ namespace Oculus.Interaction.UnityCanvas
         protected bool _started = false;
 
         protected abstract Vector3 MeshInverseTransform(Vector3 localPosition);
+        protected abstract Vector3 MeshTransform(Vector3 localToCanvas);
 
         protected abstract void GenerateMesh(out List<Vector3> verts, out List<int> tris, out List<Vector2> uvs);
 
@@ -69,6 +70,15 @@ namespace Oculus.Interaction.UnityCanvas
                                           _canvasRenderTexture.transform.localScale.x;
             Vector3 transformedWorldPosition = _canvasRenderTexture.transform.TransformPoint(canvasLocalPosition);
             return transformedWorldPosition;
+        }
+
+        public Vector3 CanvasToImposterTransformPoint(Vector3 localToCanvas)
+        {
+            Vector3 transformedWorldPosition = _canvasRenderTexture.transform.InverseTransformPoint(localToCanvas);
+            Vector3 meshLocalPosition = MeshTransform(
+                transformedWorldPosition * _canvasRenderTexture.transform.localScale.x);
+            Vector3 worldPosition = _meshFilter.transform.TransformPoint(meshLocalPosition);
+            return worldPosition;
         }
 
         protected virtual void Start()

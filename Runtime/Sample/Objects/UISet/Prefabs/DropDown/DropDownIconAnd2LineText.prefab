@@ -1003,7 +1003,6 @@ GameObject:
   - component: {fileID: 3817317009584121783}
   - component: {fileID: 3592364229569048734}
   - component: {fileID: 5665570571844180571}
-  - component: {fileID: 9164824687311543056}
   - component: {fileID: 8835308119542917713}
   - component: {fileID: 1205154952766731013}
   - component: {fileID: 2222159008892325477}
@@ -1011,6 +1010,7 @@ GameObject:
   - component: {fileID: 5317041761150091570}
   - component: {fileID: 8116586078980882848}
   - component: {fileID: 6583143070502962474}
+  - component: {fileID: 887156346702496350}
   m_Layer: 0
   m_Name: DropDownList
   m_TagString: QDSUITooltip
@@ -1133,19 +1133,6 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &9164824687311543056
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8593094191100351092}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 1
 --- !u!114 &8835308119542917713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1262,6 +1249,20 @@ MonoBehaviour:
   minAlpha: 0.001
   raycaster: {fileID: 8116586078980882848}
   group: {fileID: 5665570571844180571}
+--- !u!114 &887156346702496350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8593094191100351092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &9030210430830744642
 GameObject:
   m_ObjectHideFlags: 0

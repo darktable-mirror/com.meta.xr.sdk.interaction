@@ -108,11 +108,35 @@ namespace Oculus.Interaction.UnityCanvas
             UpdateCurvedPlane();
         }
 
-        protected override Vector3 MeshInverseTransform(Vector3 localPosition)
+        protected override Vector3 MeshTransform(Vector3 localToCanvas)
         {
-            float angle = Mathf.Atan2(localPosition.x, localPosition.z + Radius);
+            float angle;
+            Vector3 result;
+            switch (_orientation)
+            {
+                default:
+                case CylinderOrientation.Vertical:
+                    angle = localToCanvas.x / Radius;
+                    result.x = Mathf.Sin(angle) * Radius;
+                    result.y = localToCanvas.y;
+                    result.z = Mathf.Cos(angle) * Radius - Radius;
+                    break;
+                case CylinderOrientation.Horizontal:
+                    angle = localToCanvas.y / Radius;
+                    result.x = localToCanvas.x;
+                    result.y = Mathf.Sin(angle) * Radius;
+                    result.z = Mathf.Cos(angle) * Radius - Radius;
+                    break;
+            }
+
+            return result;
+        }
+
+        protected override Vector3 MeshInverseTransform(Vector3 localToMesh)
+        {
+            float angle = Mathf.Atan2(localToMesh.x, localToMesh.z + Radius);
             float x = angle * Radius;
-            float y = localPosition.y;
+            float y = localToMesh.y;
             return new Vector3(x, y);
         }
 

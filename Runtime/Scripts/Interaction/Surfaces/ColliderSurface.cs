@@ -84,17 +84,20 @@ namespace Oculus.Interaction.Surfaces
         /// </summary>
         public bool ClosestSurfacePoint(in Vector3 point, out SurfaceHit hit, float maxDistance = 0)
         {
-            Vector3 closest = _collider.ClosestPoint(point);
+            const float epsilon = Vector3.kEpsilon * Vector3.kEpsilon;
 
+            Vector3 closest = _collider.ClosestPoint(point);
             Vector3 delta = closest - point;
-            if (delta.x == 0f && delta.y == 0f && delta.z == 0f)
+            if (Vector3.SqrMagnitude(delta) > epsilon)
+            {
+                return Raycast(new Ray(point, delta), out hit, maxDistance);
+            }
+            else // Too small to normalize
             {
                 Vector3 direction = _collider.bounds.center - point;
                 return Raycast(new Ray(point - direction,
                     direction), out hit, float.MaxValue);
             }
-
-            return Raycast(new Ray(point, delta), out hit, maxDistance);
         }
 
         #region Inject

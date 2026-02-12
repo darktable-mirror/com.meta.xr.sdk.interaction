@@ -70,12 +70,12 @@ namespace Oculus.Interaction.Editor.UnityXR.QuickActions
 
         internal void AssignExistingCameraRig()
         {
-            _cameraRig = Object.FindObjectOfType<XROrigin>();
+            _cameraRig = Object.FindFirstObjectByType<XROrigin>();
         }
 
         public static XROrigin FindExistingCameraRig()
         {
-            return Object.FindObjectOfType<XROrigin>();
+            return Object.FindFirstObjectByType<XROrigin>();
         }
 
         internal void CreateMissingCameraRig()

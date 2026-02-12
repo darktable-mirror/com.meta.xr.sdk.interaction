@@ -134,14 +134,18 @@ namespace Oculus.Interaction.Input
         /// </summary>
         private void SyncDataPoses(HandDataAsset data)
         {
+            HandSkeleton skeleton = data.Config.Handedness == Handedness.Left
+                    ? HandSkeleton.DefaultLeftSkeleton
+                    : HandSkeleton.DefaultRightSkeleton;
             for (int i = 0; i < Constants.NUM_HAND_JOINTS; ++i)
             {
                 int parent = (int)HandJointUtils.JointParentList[i];
                 if (parent >= 0)
                 {
-                    Vector3 localPos = PoseUtils.Delta(
-                        _lastStates.JointPoses[parent],
-                        _lastStates.JointPoses[i]).position;
+                    int jointIndex = FingersMetadata.HandJointIdToIndex((HandJointId)i);
+                    bool useBindPose = (jointIndex >= 0 && _jointsFreedomLevels[jointIndex] == JointFreedom.Locked);
+                    Vector3 localPos = useBindPose ? skeleton.joints[i].pose.position
+                        : PoseUtils.Delta(_lastStates.JointPoses[parent], _lastStates.JointPoses[i]).position;
 #pragma warning disable 0618
                     PoseUtils.Multiply(data.JointPoses[parent],
                         new Pose(localPos, data.Joints[i]),

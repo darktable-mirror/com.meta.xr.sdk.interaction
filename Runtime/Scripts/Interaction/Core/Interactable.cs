@@ -77,6 +77,15 @@ namespace Oculus.Interaction
 
         protected bool _started = false;
 
+        private UniqueIdentifier _identifier;
+
+        /// <summary>
+        /// An identifier uniquely associated with the conceptual Interactable instance.
+        /// Identifiers are associated with individual instances of concrete Interactable types,
+        /// with each instance assigned a unique identifier.
+        /// </summary>
+        public int Identifier => _identifier.ID;
+
         #region Properties
         /// <summary>
         /// Implementation of <see cref="IInteractableView.MaxInteractors"/>; for details, please refer to the related
@@ -510,6 +519,7 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
+            _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
             InteractorFilters = _interactorFilters.ConvertAll(mono => mono as IGameObjectFilter);
         }
 

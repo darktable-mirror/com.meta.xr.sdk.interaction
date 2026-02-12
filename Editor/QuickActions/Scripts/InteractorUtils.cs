@@ -69,7 +69,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
-            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor)
+            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor),
         };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerTypeLookup = new()
@@ -78,7 +78,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Grab] = typeof(GrabInteractor),
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceGrabInteractor),
-            [InteractorTypes.Teleport] = typeof(TeleportInteractor)
+            [InteractorTypes.Teleport] = typeof(TeleportInteractor),
         };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerHandTypeLookup = new()
@@ -88,7 +88,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
-            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor)
+            [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor),
         };
 
         private static readonly Dictionary<InputModality, string> _modalityGroupNames = new()
@@ -486,6 +486,8 @@ namespace Oculus.Interaction.Editor.QuickActions
                 {
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<HandRef>().InjectHand(hand);
+
+
                     newInteractors.Add(newInteractor);
                 }
             }
@@ -509,6 +511,8 @@ namespace Oculus.Interaction.Editor.QuickActions
                 {
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<ControllerRef>().InjectController(controller);
+
+
                     newInteractors.Add(newInteractor);
                 }
             }
@@ -655,6 +659,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                 .FirstOrDefault();
 #pragma warning restore CS0618 // Type or member is obsolete
         }
+
 
         /// <summary>
         /// GetComponent but only matches the base (non-derived) type.

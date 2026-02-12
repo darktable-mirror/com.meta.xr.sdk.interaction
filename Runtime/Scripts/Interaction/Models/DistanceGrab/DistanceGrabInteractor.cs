@@ -43,7 +43,8 @@ namespace Oculus.Interaction
         /// The center of the grab.
         /// </summary>
         [Tooltip("The center of the grab.")]
-        [SerializeField, Optional]
+        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
+        [Obsolete]
         private Transform _grabCenter;
 
         /// <summary>
@@ -105,16 +106,6 @@ namespace Oculus.Interaction
             this.AssertField(Selector, nameof(Selector));
             this.AssertField(_distantCandidateComputer, nameof(_distantCandidateComputer));
 
-            if (_grabCenter == null)
-            {
-                _grabCenter = transform;
-            }
-
-            if (_grabTarget == null)
-            {
-                _grabTarget = _grabCenter;
-            }
-
 #pragma warning disable CS0618 // Type or member is obsolete
             if (_velocityCalculator != null)
             {
@@ -126,8 +117,13 @@ namespace Oculus.Interaction
 
         protected override void DoPreprocess()
         {
-            transform.position = _grabCenter.position;
-            transform.rotation = _grabCenter.rotation;
+#pragma warning disable CS0612 // Type or member is obsolete
+            if (_grabCenter != null)
+            {
+                transform.position = _grabCenter.position;
+                transform.rotation = _grabCenter.rotation;
+            }
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         /// <summary>
@@ -160,7 +156,7 @@ namespace Oculus.Interaction
         /// </remarks>
         protected override void InteractableSelected(DistanceGrabInteractable interactable)
         {
-            _movement = interactable.GenerateMovement(_grabTarget.GetPose());
+            _movement = interactable.GenerateMovement(GetTargetPose());
             base.InteractableSelected(interactable);
             interactable.WhenPointerEventRaised += HandleOtherPointerEventRaised;
         }
@@ -194,7 +190,7 @@ namespace Oculus.Interaction
 
             if (evt.Type == PointerEventType.Select || evt.Type == PointerEventType.Unselect)
             {
-                Pose toPose = _grabTarget.GetPose();
+                Pose toPose = GetTargetPose();
                 if (SelectedInteractable.ResetGrabOnGrabsUpdated)
                 {
                     _movement = SelectedInteractable.GenerateMovement(toPose);
@@ -215,7 +211,7 @@ namespace Oculus.Interaction
             {
                 return _movement.Pose;
             }
-            return _grabTarget.GetPose();
+            return GetTargetPose();
         }
         /// <summary>
         /// Updates the interactable's state while it is selected, ensuring it follows the target position.
@@ -232,8 +228,17 @@ namespace Oculus.Interaction
                 return;
             }
 
-            _movement.UpdateTarget(_grabTarget.GetPose());
+            _movement.UpdateTarget(GetTargetPose());
             _movement.Tick();
+        }
+
+        private Pose GetTargetPose()
+        {
+            if (_grabTarget != null)
+            {
+                return _grabTarget.GetPose();
+            }
+            return Origin;
         }
 
         #region Inject
@@ -270,6 +275,7 @@ namespace Oculus.Interaction
         /// <summary>
         /// Adds a grab center to a dynamically instantiated GameObject.
         /// </summary>
+        [Obsolete]
         public void InjectOptionalGrabCenter(Transform grabCenter)
         {
             _grabCenter = grabCenter;
