@@ -73,6 +73,16 @@ namespace Oculus.Interaction.HandGrab.Editor
         private FingerFeatureStateProvider _fingerFeatureStateProvider;
         private TransformFeatureStateProvider _transformFeatureStateProvider;
 
+#if UNITY_6000_3_OR_NEWER
+        [SerializeField]
+        private EntityId _fingerFeatureStateProviderInstanceId;
+
+        [SerializeField]
+        private EntityId _transformFeatureStateProviderInstanceId;
+
+        [SerializeField]
+        private EntityId _handInstanceId;
+#else
         [SerializeField]
         private int _fingerFeatureStateProviderInstanceId;
 
@@ -81,6 +91,7 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         [SerializeField]
         private int _handInstanceId;
+#endif
 
         [SerializeField]
         private Vector3 _positionOffset;
@@ -153,9 +164,15 @@ namespace Oculus.Interaction.HandGrab.Editor
                 {
                     var prefab = AssetDatabase.LoadAssetAtPath(_prefabPathToAdd, typeof(GameObject));
                     var instantiation = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+#if UNITY_6000_3_OR_NEWER
+                    var hand = EditorUtility.EntityIdToObject(_handInstanceId) as IHand;
+                    var fingerFeatureStateProvider = EditorUtility.EntityIdToObject(_fingerFeatureStateProviderInstanceId) as FingerFeatureStateProvider;
+                    var transformFeatureStateProvider = EditorUtility.EntityIdToObject(_transformFeatureStateProviderInstanceId) as TransformFeatureStateProvider;
+#else
                     var hand = EditorUtility.InstanceIDToObject(_handInstanceId) as IHand;
                     var fingerFeatureStateProvider = EditorUtility.InstanceIDToObject(_fingerFeatureStateProviderInstanceId) as FingerFeatureStateProvider;
                     var transformFeatureStateProvider = EditorUtility.InstanceIDToObject(_transformFeatureStateProviderInstanceId) as TransformFeatureStateProvider;
+#endif
 
                     instantiation.name = prefab.name;
                     instantiation.GetComponent<HandRef>().InjectAllHandRef(hand);
@@ -240,8 +257,13 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private IEnumerator RecordPoseCoroutine()
         {
+#if UNITY_6000_3_OR_NEWER
+            var fingerFeatureStateProvider = EditorUtility.EntityIdToObject(_fingerFeatureStateProviderInstanceId) as FingerFeatureStateProvider;
+            var transformFeatureStateProvider = EditorUtility.EntityIdToObject(_transformFeatureStateProviderInstanceId) as TransformFeatureStateProvider;
+#else
             var fingerFeatureStateProvider = EditorUtility.InstanceIDToObject(_fingerFeatureStateProviderInstanceId) as FingerFeatureStateProvider;
             var transformFeatureStateProvider = EditorUtility.InstanceIDToObject(_transformFeatureStateProviderInstanceId) as TransformFeatureStateProvider;
+#endif
             var hand = fingerFeatureStateProvider.Hand;
             var handednessText = (hand.Handedness == Handedness.Left ? "left" : "right");
 

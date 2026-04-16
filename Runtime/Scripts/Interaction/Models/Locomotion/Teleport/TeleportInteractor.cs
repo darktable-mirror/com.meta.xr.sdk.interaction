@@ -226,17 +226,13 @@ namespace Oculus.Interaction.Locomotion
             this.BeginStart(ref _started, () => base.Start());
 
             this.AssertField(Selector, nameof(Selector));
-
-            if (TeleportArc == null)
-            {
-                var arc = this.gameObject.AddComponent<TeleportArcGravity>();
-                InjectOptionalTeleportArc(arc);
-            }
+            this.AssertField(TeleportArc, nameof(_teleportArc));
 
             if (_computeCandidate == null)
             {
                 GameObject gameObject = new GameObject("Default CandidateComputer");
-                var defaultCandidateComputer = gameObject.AddComponent<TeleportCandidateComputer>();
+                gameObject.transform.SetParent(this.transform);
+                TeleportCandidateComputer defaultCandidateComputer = gameObject.AddComponent<TeleportCandidateComputer>();
                 defaultCandidateComputer.EqualDistanceThreshold = _equalDistanceThreshold;
 #pragma warning disable CS0618 // Type or member is obsolete
                 if (Hmd != null)
@@ -325,14 +321,21 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
+        [Obsolete("Use " + nameof(InjectAllTeleportInteractor) + "with (" + nameof(ISelector) + ", " + nameof(IPolyline) + ") parameters instead")]
+        public void InjectAllTeleportInteractor(ISelector selector)
+        {
+            InjectSelector(selector);
+        }
+
         /// <summary>
         /// Injects all required dependencies for a dynamically instantiated TeleportInteractor; effectively wraps
         /// <see cref="InjectSelector(ISelector)"/>, since all other dependencies are optional. This method exists to support
         /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
-        public void InjectAllTeleportInteractor(ISelector selector)
+        public void InjectAllTeleportInteractor(ISelector selector, IPolyline teleportArc)
         {
             InjectSelector(selector);
+            InjectTeleportArc(teleportArc);
         }
 
         /// <summary>
@@ -343,6 +346,16 @@ namespace Oculus.Interaction.Locomotion
         {
             _selector = selector as UnityEngine.Object;
             Selector = selector;
+        }
+
+        /// <summary>
+        /// Sets an <see cref="IPolyline"/> for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
+        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
+        /// </summary>
+        public void InjectTeleportArc(IPolyline teleportArc)
+        {
+            _teleportArc = teleportArc as UnityEngine.Object;
+            TeleportArc = teleportArc;
         }
 
         /// <summary>
@@ -363,6 +376,7 @@ namespace Oculus.Interaction.Locomotion
         /// Sets the <see cref="IPolyline"/> teleport arc for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
         /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
+        [Obsolete("Use " + nameof(InjectTeleportArc) + " instead")]
         public void InjectOptionalTeleportArc(IPolyline teleportArc)
         {
             _teleportArc = teleportArc as UnityEngine.Object;

@@ -34,17 +34,30 @@ namespace Oculus.Interaction.HandGrab.Editor
       /// </summary>
         [SerializeField]
         private Hand _hand;
+#if UNITY_6000_3_OR_NEWER
+        [SerializeField]
+        private EntityId _handID;
+#else
         [SerializeField]
         private int _handID = 0;
+#endif
         public Hand Hand
         {
             get
             {
+#if UNITY_6000_3_OR_NEWER
+                if (_hand == null && _handID != default)
+                {
+                    _hand = EditorUtility.EntityIdToObject(_handID) as Hand;
+                    _handID = default;
+                }
+#else
                 if (_hand == null && _handID != 0)
                 {
                     _hand = EditorUtility.InstanceIDToObject(_handID) as Hand;
                     _handID = 0;
                 }
+#endif
                 return _hand;
             }
             set
@@ -56,7 +69,11 @@ namespace Oculus.Interaction.HandGrab.Editor
                 }
                 else
                 {
+#if UNITY_6000_3_OR_NEWER
+                    _handID = default;
+#else
                     _handID = 0;
+#endif
                 }
             }
         }

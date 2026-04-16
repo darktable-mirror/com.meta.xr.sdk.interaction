@@ -60,12 +60,21 @@ namespace Oculus.Interaction
         {
             List<Vector3> vertices = new List<Vector3>();
             sharedHandMesh.GetVertices(vertices);
+#if ISDK_OPENXR_HAND
+            minPosition = new Vector2(vertices[0].x, vertices[0].y);
+            maxPosition = new Vector2(vertices[0].x, vertices[0].y);
+#else
             minPosition = new Vector2(vertices[0].x, vertices[0].z);
             maxPosition = new Vector2(vertices[0].x, vertices[0].z);
+#endif
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vertex = vertices[i] * HandednessMultiplier(handedness);
+#if ISDK_OPENXR_HAND
+                var vertex2d = new Vector2(vertex.x, vertex.y);
+#else
                 var vertex2d = new Vector2(vertex.x, vertex.z);
+#endif
                 minPosition = Vector2.Min(minPosition, vertex2d);
                 maxPosition = Vector2.Max(maxPosition, vertex2d);
                 vertices[i] = vertex;
@@ -76,7 +85,11 @@ namespace Oculus.Interaction
             float maxLength = Mathf.Max(regionSize.x, regionSize.y);
             foreach (var vertex in vertices)
             {
+#if ISDK_OPENXR_HAND
+                var vertex2d = new Vector2(vertex.x, vertex.y);
+#else
                 var vertex2d = new Vector2(vertex.x, vertex.z);
+#endif
                 var vertexUV = (vertex2d - minPosition) / maxLength;
                 uvs.Add(vertexUV);
             }

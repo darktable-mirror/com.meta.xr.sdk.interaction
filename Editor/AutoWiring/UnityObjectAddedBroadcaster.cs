@@ -153,6 +153,14 @@ namespace Oculus.Interaction.Editor
         /// <param name="component">The component added to the scene</param>
         private static void HandleComponentWasAdded(Component component)
         {
+            // We don't want this to trigger while dragging an object. There's a very obscure bug wherein
+            // dragging a sprite asset into the scene view will spawn empty gameobjects because of this call.
+            // It seems to have something to do with how unity handles Undo groups when dragging a sprite into the scene.
+            if (DragAndDrop.objectReferences != null && DragAndDrop.objectReferences.Length > 0)
+            {
+                return;
+            }
+
             if (EditorApplication.isPlaying)
             {
                 return;

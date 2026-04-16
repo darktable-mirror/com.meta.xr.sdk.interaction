@@ -193,5 +193,40 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             return result;
         }
+
+        #region Injects
+
+        public void InjectOptionalDeviceTypes(DeviceTypes deviceTypes)
+        {
+            _deviceTypes = deviceTypes;
+        }
+
+        public void InjectOptionalTargetTransform(Transform targetTransform)
+        {
+            _targetTransform = targetTransform;
+        }
+
+        public void InjectOptionalRigidbody(Rigidbody rigidbody)
+        {
+            _rigidbody = rigidbody;
+        }
+
+        public void InjectOptionalGrabbable(IPointableElement grabbable)
+        {
+            _grabbable = grabbable as UnityEngine.Object;
+            Grabbable = grabbable;
+        }
+
+        public void InjectOptionalSurface(ISurface surface)
+        {
+            _surface = surface as UnityEngine.Object;
+        }
+
+        public void InjectOptionalCollider(Collider collider)
+        {
+            _collider = collider;
+        }
+
+        #endregion
     }
 }

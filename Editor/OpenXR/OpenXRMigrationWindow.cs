@@ -197,7 +197,11 @@ namespace Oculus.Interaction.Editor
         {
             if (TryGetInstanceId(info, out int instanceID))
             {
+#if UNITY_6000_3_OR_NEWER
+                Selection.activeEntityId = instanceID;
+#else
                 Selection.activeInstanceID = instanceID;
+#endif
             }
         }
 
@@ -205,7 +209,11 @@ namespace Oculus.Interaction.Editor
         {
             if (TryGetInstanceId(info, out int instanceID))
             {
+#if UNITY_6000_3_OR_NEWER
+                return EditorUtility.EntityIdToObject(instanceID);
+#else
                 return EditorUtility.InstanceIDToObject(instanceID);
+#endif
             }
             return null;
         }

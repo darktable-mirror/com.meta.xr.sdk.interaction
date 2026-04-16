@@ -23,6 +23,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using System.Collections.Generic;
+using Oculus.Interaction.Surfaces;
 
 namespace Oculus.Interaction.Editor.QuickActions
 {
@@ -120,5 +121,19 @@ namespace Oculus.Interaction.Editor.QuickActions
 
             return result;
         }
+
+        #region Injects
+
+        public void InjectOptionalDeviceTypes(DeviceTypes deviceTypes)
+        {
+            _deviceTypes = deviceTypes;
+        }
+
+        public void InjectOptionalCanvas(Canvas canvas)
+        {
+            _canvas = canvas;
+        }
+
+        #endregion
     }
 }
