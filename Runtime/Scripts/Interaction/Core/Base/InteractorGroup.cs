@@ -225,7 +225,10 @@ namespace Oculus.Interaction
         protected virtual void Awake()
         {
             _identifier = UniqueIdentifier.Generate(Context.Global.GetInstance(), this);
-            ActiveState = _activeState as IActiveState;
+            if (ActiveState == null)
+            {
+                ActiveState = _activeState as IActiveState;
+            }
 
             if (_interactors != null)
             {
@@ -235,7 +238,10 @@ namespace Oculus.Interaction
                     .ConvertAll(mono => mono as IInteractor);
             }
 
-            CandidateComparer = _candidateComparer as ICandidateComparer;
+            if (CandidateComparer == null)
+            {
+                CandidateComparer = _candidateComparer as ICandidateComparer;
+            }
         }
 
         protected virtual void Start()

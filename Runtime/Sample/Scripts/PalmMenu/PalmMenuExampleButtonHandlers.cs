@@ -28,6 +28,7 @@ namespace Oculus.Interaction.Samples.PalmMenu
     /// of the object that responds to the menu, but also parts of the menu itself, specifically those
     /// which depend on the state of the controlled object (swappable icons, various text boxes, etc.).
     /// </summary>
+    [System.Obsolete("HandOnHand sample has been removed. This class will be deleted in a future release.", true)]
     public class PalmMenuExampleButtonHandlers : MonoBehaviour
     {
         [SerializeField]

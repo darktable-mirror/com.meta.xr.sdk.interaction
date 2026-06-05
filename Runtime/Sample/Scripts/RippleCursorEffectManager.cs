@@ -49,8 +49,11 @@ namespace Oculus.Interaction.Samples
         private float _tapAnimationLowerShaderValue = -0.25f;
 
         private static readonly int RippleProgressId = Shader.PropertyToID("_RippleProgress");
+        private static readonly int TintColorId = Shader.PropertyToID("_TintColor");
         private readonly Dictionary<PokeInteractor, InteractorState> _activePokeInteractors = new();
         private IObjectPool<Renderer> _cursorRendererPool;
+        private Color _rippleColor = Color.white;
+        private bool _forceRippleColorUpdate;
 
         protected virtual void Awake()
         {
@@ -115,6 +118,9 @@ namespace Oculus.Interaction.Samples
         private void OnPokeHoverBegin(PokeInteractor pokeInteractor)
         {
             if (_activePokeInteractors.ContainsKey(pokeInteractor)) return;
+            IPointableElement pointableElement = pokeInteractor.Interactable.PointableElement;
+            if (pointableElement is not PointableCanvas &&
+                pointableElement is not PointableCanvasMesh) return;
 
             Renderer cursorRenderer = _cursorRendererPool.Get();
             cursorRenderer.gameObject.SetActive(true);
@@ -130,6 +136,8 @@ namespace Oculus.Interaction.Samples
                 TapAnimationCoroutine = null,
                 UpdateAction = updateAction
             };
+
+            UpdateRippleColor(_activePokeInteractors[pokeInteractor]);
         }
 
         private void OnPokeHoverEnd(PokeInteractor pokeInteractor)
@@ -177,6 +185,12 @@ namespace Oculus.Interaction.Samples
                 state.PropertyBlock.SetFloat(RippleProgressId, 1.0f - penetration);
             }
 
+            if (_forceRippleColorUpdate)
+            {
+                state.PropertyBlock.SetColor(TintColorId, _rippleColor);
+                _forceRippleColorUpdate = false;
+            }
+
             state.ActiveCursorRenderer.SetPropertyBlock(state.PropertyBlock);
         }
 
@@ -218,6 +232,18 @@ namespace Oculus.Interaction.Samples
             {
                 StopCoroutine(state.TapAnimationCoroutine);
             }
+        }
+
+        public void SetThemeRippleColor(Color color)
+        {
+            _rippleColor = color;
+            _forceRippleColorUpdate = true;
+        }
+
+        private void UpdateRippleColor(InteractorState state)
+        {
+            state.PropertyBlock.SetColor(TintColorId, _rippleColor);
+            state.ActiveCursorRenderer.SetPropertyBlock(state.PropertyBlock);
         }
 
         private struct InteractorState

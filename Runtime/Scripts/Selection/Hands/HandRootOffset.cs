@@ -161,7 +161,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -176,6 +179,10 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated += HandleHandUpdated;
+                if (Hand.IsConnected)
+                {
+                    HandleHandUpdated();
+                }
             }
         }
 
@@ -199,7 +206,7 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Applies the position offset <see cref="Offset"/> and the rotation offset 
+        /// Applies the position offset <see cref="Offset"/> and the rotation offset
         /// <see cref="Rotation"/> to the provided <see cref="Pose"/>
         /// </summary>
         public void GetOffset(ref Pose pose)
@@ -213,7 +220,7 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Applies the position offset <see cref="Offset"/> and the rotation offset 
+        /// Applies the position offset <see cref="Offset"/> and the rotation offset
         /// <see cref="Rotation"/> to the provided <see cref="Pose"/> for a given
         /// <see cref="Handedness"/> and hand scale factor.
         /// </summary>

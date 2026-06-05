@@ -27,7 +27,7 @@ namespace Oculus.Interaction.Throw
     /// This profile contains settings for velocity modification, rotation behavior, drag, and continuous flight forces.
     /// </summary>
     [CreateAssetMenu(fileName = "NewThrowPhysicsProfile",
-                     menuName = "Meta/Interaction/SDK/Throw Physics Profile")]
+                     menuName = "Meta/Interaction SDK/Throw Physics Profile")]
     public class ThrowPhysicsProfile : ScriptableObject
     {
         [SerializeField]

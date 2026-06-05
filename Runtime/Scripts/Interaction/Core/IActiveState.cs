@@ -36,7 +36,7 @@ namespace Oculus.Interaction
         /// <remarks>
         /// The logic for determining the active state is defined by the implementing class. This method is typically
         /// used in interaction scripts to check whether a certain condition is met before triggering an event or action.
-        /// For example implementations, please refer to <see cref="HandActiveState.Active"/> and <see cref="ActiveStateGroup.Active"/>.
+        /// For example implementations, please refer to <see cref="Input.HandRef.Active"/> and <see cref="ActiveStateGroup.Active"/>.
         /// </remarks>
         /// <returns>Returns true if the component is currently active; otherwise, returns false.</returns>
         bool Active { get; }

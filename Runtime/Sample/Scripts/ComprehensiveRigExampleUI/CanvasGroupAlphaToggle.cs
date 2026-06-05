@@ -21,26 +21,29 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class CanvasGroupAlphaToggle : MonoBehaviour
+namespace Oculus.Interaction.Samples
 {
-    public CanvasGroup canvasGroup;
-    public float animationSpeed;
-    private bool visible;
-
-    public void ToggleVisible()
+    public class CanvasGroupAlphaToggle : MonoBehaviour
     {
-        visible = !visible;
-        canvasGroup.interactable = visible;
-        canvasGroup.blocksRaycasts = visible;
-    }
+        public CanvasGroup canvasGroup;
+        public float animationSpeed;
+        private bool visible;
 
-    void Start()
-    {
-        Assert.IsNotNull(canvasGroup);
-    }
+        public void ToggleVisible()
+        {
+            visible = !visible;
+            canvasGroup.interactable = visible;
+            canvasGroup.blocksRaycasts = visible;
+        }
 
-    void Update()
-    {
-        canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, visible ? 1.0f : 0.0f, animationSpeed * Time.deltaTime);
+        void Start()
+        {
+            Assert.IsNotNull(canvasGroup);
+        }
+
+        void Update()
+        {
+            canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, visible ? 1.0f : 0.0f, animationSpeed * Time.deltaTime);
+        }
     }
 }

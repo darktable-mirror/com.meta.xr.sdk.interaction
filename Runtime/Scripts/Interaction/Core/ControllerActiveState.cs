@@ -18,11 +18,21 @@
  * limitations under the License.
  */
 
+using System;
 using Oculus.Interaction.Input;
 using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// ControllerActiveState is a utility component that provides an <see cref="IActiveState"/> implementation
+    /// based on whether a controller is connected.
+    /// </summary>
+    /// <remarks>
+    /// This class is deprecated. Use <see cref="ControllerRef"/> instead, which implements both
+    /// <see cref="IController"/> and <see cref="IActiveState"/> with the same Active behavior (IsConnected).
+    /// </remarks>
+    [Obsolete("Use ControllerRef instead, which implements IActiveState with the same behavior (Active = IsConnected)")]
     public class ControllerActiveState : MonoBehaviour, IActiveState
     {
         [Tooltip("ActiveState will be true while this controller is connected.")]
@@ -35,7 +45,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Controller = _controller as IController;
+            if (Controller == null)
+            {
+                Controller = _controller as IController;
+            }
         }
 
         protected virtual void Start()

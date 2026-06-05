@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Feedback
 {
-    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Feedback/Debug Log")]
+    [CreateAssetMenu(menuName = "Meta/Interaction SDK/Feedback/Debug Log")]
     public class DebugLogActionSO : FeedbackActionSO
     {
         [SerializeField]

@@ -56,6 +56,10 @@ namespace Oculus.Interaction.Input.Visuals
             if (_started)
             {
                 Controller.WhenUpdated += HandleUpdated;
+                if (Controller.IsConnected)
+                {
+                    HandleUpdated();
+                }
             }
         }
 

@@ -138,8 +138,14 @@ namespace Oculus.Interaction
             _glowFadeValue = 1.0f;
             _state = GlowState.None;
             _grabState = GrabState.None;
-            HandGrabInteractor = _handGrabInteractor as IHandGrabInteractor;
-            Interactor = _handGrabInteractor as IInteractor;
+            if (HandGrabInteractor == null)
+            {
+                HandGrabInteractor = _handGrabInteractor as IHandGrabInteractor;
+            }
+            if (Interactor == null)
+            {
+                Interactor = _handGrabInteractor as IInteractor;
+            }
         }
 
         protected virtual void Start()

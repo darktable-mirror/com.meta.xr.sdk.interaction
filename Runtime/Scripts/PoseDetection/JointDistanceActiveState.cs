@@ -115,8 +115,14 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            HandA = _handA as IHand;
-            HandB = _handB as IHand;
+            if (HandA == null)
+            {
+                HandA = _handA as IHand;
+            }
+            if (HandB == null)
+            {
+                HandB = _handB as IHand;
+            }
         }
 
         protected virtual void Start()

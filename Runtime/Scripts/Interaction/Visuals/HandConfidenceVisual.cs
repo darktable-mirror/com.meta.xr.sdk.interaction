@@ -55,7 +55,10 @@ namespace Oculus.Interaction
 
         private void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -72,6 +75,10 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated += UpdateVisual;
+                if (Hand.IsConnected)
+                {
+                    UpdateVisual();
+                }
             }
         }
 

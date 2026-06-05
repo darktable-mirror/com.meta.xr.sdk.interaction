@@ -50,15 +50,20 @@ namespace Oculus.Interaction.GrabAPI
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
-            Hmd = _hmd as IHmd;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
+            if (Hmd == null)
+            {
+                Hmd = _hmd as IHmd;
+            }
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
             this.AssertField(Hand, nameof(Hand));
-#if ISDK_OPENXR_HAND
             if (_fingerPinchGrabAPI == null)
             {
                 _fingerPinchGrabAPI = new PinchGrabAPI(Hmd);
@@ -67,16 +72,6 @@ namespace Oculus.Interaction.GrabAPI
             {
                 _fingerPalmGrabAPI = new PalmGrabAPI();
             }
-#else
-            if (_fingerPinchGrabAPI == null)
-            {
-                _fingerPinchGrabAPI = new FingerPinchGrabAPI(Hmd);
-            }
-            if (_fingerPalmGrabAPI == null)
-            {
-                _fingerPalmGrabAPI = new FingerPalmGrabAPI();
-            }
-#endif
             this.EndStart(ref _started);
         }
 
@@ -393,38 +388,6 @@ namespace Oculus.Interaction.GrabAPI
         }
 
         /// <summary>
-        /// Retrieves the percentage of completion for a pinch gesture for a specific finger.
-        /// </summary>
-        /// <param name="finger">The <see cref="HandFinger"/> to check the pinch percentage for.</param>
-        /// <returns>A float representing the percentage of the pinch completion.</returns>
-        [System.Obsolete]
-        public float GetFingerPinchPercent(HandFinger finger)
-        {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
-            {
-                return pinchGrab.GetFingerPinchPercent(finger);
-            }
-            Debug.LogWarning("GetFingerPinchPercent is not applicable");
-            return -1;
-        }
-
-        /// <summary>
-        /// Retrieves the distance between the thumb and the specified finger during a pinch gesture.
-        /// </summary>
-        /// <param name="finger">The <see cref="HandFinger"/> to measure the distance from the thumb.</param>
-        /// <returns>A float representing the distance between the thumb and the specified finger during a pinch.</returns>
-        [System.Obsolete]
-        public float GetFingerPinchDistance(HandFinger finger)
-        {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
-            {
-                return pinchGrab.GetFingerPinchDistance(finger);
-            }
-            Debug.LogWarning("GetFingerPinchDistance is not applicable");
-            return -1;
-        }
-
-        /// <summary>
         /// Retrieves the strength of the palm grab for a specific finger.
         /// </summary>
         /// <param name="finger">The <see cref="HandFinger"/> to check the palm grab strength for.</param>
@@ -466,26 +429,6 @@ namespace Oculus.Interaction.GrabAPI
             }
 
             return usesOptionals ? optionalMax : anyRequired ? requiredMin : 0f;
-        }
-
-        [System.Obsolete]
-        public void SetPinchGrabParam(PinchGrabParam paramId, float paramVal)
-        {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
-            {
-                pinchGrab.SetPinchGrabParam(paramId, paramVal);
-            }
-        }
-
-        [System.Obsolete]
-        public float GetPinchGrabParam(PinchGrabParam paramId)
-        {
-            if (_fingerPinchGrabAPI is FingerPinchGrabAPI pinchGrab)
-            {
-                return pinchGrab.GetPinchGrabParam(paramId);
-            }
-
-            return 0;
         }
 
         /// <summary>

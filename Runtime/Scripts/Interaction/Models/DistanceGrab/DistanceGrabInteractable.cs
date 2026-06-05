@@ -75,16 +75,6 @@ namespace Oculus.Interaction
         private bool _resetGrabOnGrabsUpdated = true;
 
         /// <summary>
-        /// Reference to the <see cref="PhysicsGrabbable"/> component used when the interactable object is grabbed.
-        /// This property is marked as obsolete and should no longer be used. Consider using <see cref="Grabbable"/> or
-        /// <see cref="RigidbodyKinematicLocker"/>.
-        /// </summary>
-        [Tooltip("PhysicsGrabbable used when you grab the interactable.")]
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
-        private PhysicsGrabbable _physicsGrabbable = null;
-
-        /// <summary>
         /// The <see cref="IMovementProvider" /> specifies how the interactable will align with the grabber when selected.
         /// If no <see cref="IMovementProvider" /> is set, the <see cref="MoveTowardsTargetProvider" /> is created and used as the provider.
         /// </summary>
@@ -168,21 +158,6 @@ namespace Oculus.Interaction
             return movement;
         }
 
-        /// <summary>
-        /// Applies velocities to the interactable's <see cref="PhysicsGrabbable" /> component, if one is present.
-        /// This method allows the interactable to be thrown or moved with a specified angular and linear velocity after being released.
-        /// This method is marked as obsolete and should no longer be used. Use <see cref="Grabbable"/> instead.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
-        {
-            if (_physicsGrabbable == null)
-            {
-                return;
-            }
-            _physicsGrabbable.ApplyVelocities(linearVelocity, angularVelocity);
-        }
-
         #region Inject
 
         /// <summary>
@@ -211,17 +186,6 @@ namespace Oculus.Interaction
         public void InjectOptionalGrabSource(Transform grabSource)
         {
             _grabSource = grabSource;
-        }
-
-        /// <summary>
-        /// Adds a <see cref="PhysicsGrabbable" /> to a dynamically instantiated GameObject.
-        /// This method is marked as obsolete and should no longer be used. Use <see cref="Grabbable"/> instead.
-        /// </summary>
-        /// <param name="physicsGrabbable">The PhysicsGrabbable component to add.</param>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
-        {
-            _physicsGrabbable = physicsGrabbable;
         }
 
         /// <summary>

@@ -47,11 +47,14 @@ namespace Oculus.Interaction
         private readonly HashSet<string> _tagSet =
             new HashSet<string>();
 
-        protected virtual void Start()
+        protected virtual void Awake()
         {
-            foreach (string tag in _tags)
+            if (_tags != null)
             {
-                _tagSet.Add(tag);
+                foreach (string tag in _tags)
+                {
+                    _tagSet.Add(tag);
+                }
             }
         }
 
@@ -83,6 +86,14 @@ namespace Oculus.Interaction
         public void InjectOptionalTags(List<string> tags)
         {
             _tags = tags;
+            _tagSet.Clear();
+            if (_tags != null)
+            {
+                foreach (string tag in _tags)
+                {
+                    _tagSet.Add(tag);
+                }
+            }
         }
 
         #endregion

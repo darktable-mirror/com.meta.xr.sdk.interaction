@@ -81,6 +81,10 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated += HandleHandUpdated;
+                if (Hand.IsConnected)
+                {
+                    HandleHandUpdated();
+                }
             }
         }
 

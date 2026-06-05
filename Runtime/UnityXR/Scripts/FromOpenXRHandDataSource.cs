@@ -138,9 +138,6 @@ namespace Oculus.Interaction.Input.UnityXR
 #if ISDK_OPENXR_HAND
         protected bool _shouldMockHandTrackingAim = false;
         private PinchGrabAPI _fingerGrabAPI;
-#else
-        private HandJointCache _jointCache;
-        private FingerPinchGrabAPI _fingerGrabAPI;
 #endif
 
         protected virtual void Awake()
@@ -222,14 +219,6 @@ namespace Oculus.Interaction.Input.UnityXR
             var localJointPoses = _dataAsset.JointPoses;
             _fingerGrabAPI ??= new PinchGrabAPI(HmdData);
             _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root, _dataAsset.HandScale);
-#else
-            // Update Joint Cache
-            _jointCache ??= new HandJointCache(_dataAsset.Config.HandSkeleton);
-            _jointCache.Update(_dataAsset, CurrentDataVersion);
-            _jointCache.GetAllPosesFromWrist(out var localJointPoses);
-
-            _fingerGrabAPI ??= new FingerPinchGrabAPI(HmdData);
-            _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root);
 #endif
             PopulateMockHandTrackingAimFinger(HandFinger.Index);
             PopulateMockHandTrackingAimFinger(HandFinger.Middle);
@@ -240,8 +229,13 @@ namespace Oculus.Interaction.Input.UnityXR
         private void PopulateMockHandTrackingAimFinger(HandFinger finger)
         {
             var fingerIndex = (int)finger;
+
+#if ISDK_OPENXR_HAND
             _dataAsset.FingerPinchStrength[fingerIndex] =
                 _fingerGrabAPI.GetFingerGrabScore(finger);
+#else
+            _dataAsset.FingerPinchStrength[fingerIndex] = 0.0f;
+#endif
             _dataAsset.IsFingerPinching[fingerIndex] =
                 _dataAsset.FingerPinchStrength[fingerIndex] > PressThreshold;
         }

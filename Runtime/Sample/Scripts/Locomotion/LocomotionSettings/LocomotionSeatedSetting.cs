@@ -28,6 +28,7 @@ namespace Oculus.Interaction.Locomotion
     /// that it is seated so it can remaing at standing height while using
     /// the experience
     /// </summary>
+    [System.Obsolete("Use " + nameof(StandingSetting) + " instead")]
     public class LocomotionSeatedSetting : MonoBehaviour
     {
         /// <summary>

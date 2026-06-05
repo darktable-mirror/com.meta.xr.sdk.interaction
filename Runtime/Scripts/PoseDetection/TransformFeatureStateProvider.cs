@@ -257,9 +257,18 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
-            Hmd = _hmd as IHmd;
-            TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
+            if (Hmd == null)
+            {
+                Hmd = _hmd as IHmd;
+            }
+            if (TrackingToWorldTransformer == null)
+            {
+                TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            }
             _transformFeatureStateCollection = new TransformFeatureStateCollection();
         }
 

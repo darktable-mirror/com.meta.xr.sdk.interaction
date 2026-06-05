@@ -53,7 +53,10 @@ namespace Oculus.Interaction.Locomotion
 
         protected virtual void Awake()
         {
-            Locomotor = _locomotor as ILocomotionEventHandler;
+            if (Locomotor == null)
+            {
+                Locomotor = _locomotor as ILocomotionEventHandler;
+            }
         }
 
         protected virtual void Start()

@@ -122,10 +122,22 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            Hand = _hand as IHand;
-            OpenHand = _openHand as IHand;
-            HandSphereMap = _handSphereMap as IHandSphereMap;
-            GrabPrerequisite = _grabPrerequisite as IActiveState;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
+            if (OpenHand == null)
+            {
+                OpenHand = _openHand as IHand;
+            }
+            if (HandSphereMap == null)
+            {
+                HandSphereMap = _handSphereMap as IHandSphereMap;
+            }
+            if (GrabPrerequisite == null)
+            {
+                GrabPrerequisite = _grabPrerequisite as IActiveState;
+            }
             _nativeId = 0x546f756368477262;
 
             _fingerStatuses = new FingerStatus[Constants.NUM_FINGERS];

@@ -30,17 +30,7 @@ namespace Oculus.Interaction
     /// </summary>
     public class TunnelingEffect : MonoBehaviour
     {
-        /// <summary>
-        /// Left eye, used to calculate the IPD
-        /// </summary>
         [Header("Mask Setup")]
-        [SerializeField]
-        private Transform _leftEyeAnchor;
-        /// <summary>
-        /// Right eye, used to calculate the IPD
-        /// </summary>
-        [SerializeField]
-        private Transform _rightEyeAnchor;
         /// <summary>
         /// Center eye, the effect will be rendered in its near plane
         /// </summary>
@@ -174,8 +164,6 @@ namespace Oculus.Interaction
         {
             this.BeginStart(ref _started);
 
-            this.AssertField(_leftEyeAnchor, nameof(_leftEyeAnchor));
-            this.AssertField(_rightEyeAnchor, nameof(_rightEyeAnchor));
             this.AssertField(_centerEyeCamera, nameof(_centerEyeCamera));
             this.AssertField(_meshFilter, nameof(_meshFilter));
 
@@ -248,11 +236,19 @@ namespace Oculus.Interaction
 
         private float GetIPD()
         {
-            return Vector3.Distance(_leftEyeAnchor.position, _rightEyeAnchor.position);
+            return _centerEyeCamera.stereoSeparation;
+
         }
 
         #region Inject
 
+        public void InjectAllTunnelingEffect(Camera centerEyeCamera, MeshFilter meshFilter)
+        {
+            InjectCenterEyeCamera(centerEyeCamera);
+            InjectMeshFilter(meshFilter);
+        }
+
+        [Obsolete("Use " + nameof(InjectAllTunnelingEffect) + " without leftEyeAnchor and rightEyeAnchor instead")]
         public void InjectAllTunnelingEffect(Transform leftEyeAnchor, Transform rightEyeAnchor,
             Camera centerEyeCamera, MeshFilter meshFilter)
         {
@@ -262,14 +258,14 @@ namespace Oculus.Interaction
             InjectMeshFilter(meshFilter);
         }
 
+        [Obsolete("leftEyeAnchor has been deprecated")]
         public void InjectLeftEyeAnchor(Transform leftEyeAnchor)
         {
-            _leftEyeAnchor = leftEyeAnchor;
         }
 
+        [Obsolete("rightEyeAnchor has been deprecated")]
         public void InjectRightEyeAnchor(Transform rightEyeAnchor)
         {
-            _rightEyeAnchor = rightEyeAnchor;
         }
 
         public void InjectCenterEyeCamera(Camera centerEyeCamera)

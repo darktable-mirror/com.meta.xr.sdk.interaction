@@ -175,7 +175,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            InteractableView = _interactableView as IInteractableView;
+            if (InteractableView == null)
+            {
+                InteractableView = _interactableView as IInteractableView;
+            }
         }
 
         protected virtual void Start()

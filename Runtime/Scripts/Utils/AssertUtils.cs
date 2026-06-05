@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -71,6 +72,7 @@ namespace Oculus.Interaction
         /// <param name="howToFix">Optional parameter suggesting how to fix the problem.
         /// If none is provided it will suggest assigning an Aspect of the required type to the expected location.</param>
         [Conditional("UNITY_ASSERTIONS")]
+        [Obsolete("Use " + nameof(AssertField) + " instead.")]
         public static void AssertAspect<TValue>(this Component component,
             TValue aspect, string aspectLocation,
             string whyItFailed = null, string whereFailed = null, string howToFix = null)

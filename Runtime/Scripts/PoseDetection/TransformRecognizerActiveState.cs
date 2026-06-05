@@ -81,20 +81,6 @@ namespace Oculus.Interaction.PoseDetection
     public class TransformRecognizerActiveState : MonoBehaviour, IActiveState
     {
         /// <summary>
-        /// The hand to read for transform state data.
-        /// </summary>
-        [SerializeField, Interface(typeof(IHand))]
-        [Optional(OptionalAttribute.Flag.Obsolete)]
-        private UnityEngine.Object _hand;
-
-        /// <summary>
-        /// The <see cref="IHand"/> to be observed. While this hand adopts a pose which meets the requirements,
-        /// <see cref="Active"/> will be true.
-        /// </summary>
-        [Obsolete]
-        public IHand Hand { get; private set; }
-
-        /// <summary>
         /// An <cref="ITransformFeatureStateProvider" />, which provides the current state of the tracked hand's transforms.
         /// </summary>
         [SerializeField, Interface(typeof(ITransformFeatureStateProvider))]
@@ -136,9 +122,6 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            Hand = _hand as IHand;
-#pragma warning restore CS0612 // Type or member is obsolete
             TransformFeatureStateProvider =
                 _transformFeatureStateProvider as ITransformFeatureStateProvider;
         }
@@ -234,28 +217,7 @@ namespace Oculus.Interaction.PoseDetection
 
         /// <summary>
         /// Sets all required dependencies for a dynamically instantiated TransformRecognizerActiveState. This is a convenience
-        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
-        /// <see cref="InjectTransformFeatureStateProvider(ITransformFeatureStateProvider)"/>,
-        /// <see cref="InjectTransformFeatureList(TransformFeatureConfigList)"/>m and <see cref="InjectTransformConfig(TransformConfig)"/>.
-        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
-        /// usage.
-        /// </summary>
-        [Obsolete("Use InjectAllTransformRecognizerActiveState(ITransformFeatureStateProvider, TransformFeatureConfigList, TransformConfig) instead")]
-        public void InjectAllTransformRecognizerActiveState(IHand hand,
-            ITransformFeatureStateProvider transformFeatureStateProvider,
-            TransformFeatureConfigList transformFeatureList,
-            TransformConfig transformConfig)
-        {
-            InjectHand(hand);
-            InjectTransformFeatureStateProvider(transformFeatureStateProvider);
-            InjectTransformFeatureList(transformFeatureList);
-            InjectTransformConfig(transformConfig);
-        }
-
-        /// <summary>
-        /// Sets all required dependencies for a dynamically instantiated TransformRecognizerActiveState. This is a convenience
-        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
-        /// <see cref="InjectTransformFeatureStateProvider(ITransformFeatureStateProvider)"/>,
+        /// method which wraps invocations of <see cref="InjectTransformFeatureStateProvider(ITransformFeatureStateProvider)"/>,
         /// <see cref="InjectTransformFeatureList(TransformFeatureConfigList)"/>m and <see cref="InjectTransformConfig(TransformConfig)"/>.
         /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
         /// usage.
@@ -268,18 +230,6 @@ namespace Oculus.Interaction.PoseDetection
             InjectTransformFeatureStateProvider(transformFeatureStateProvider);
             InjectTransformFeatureList(transformFeatureList);
             InjectTransformConfig(transformConfig);
-        }
-
-        /// <summary>
-        /// Sets an <see cref="IHand"/> as the <see cref="Hand"/> for a dynamically instantiated
-        /// TransformRecognizerActiveState. This method exists to support Interaction SDK's dependency injection pattern and is not needed for
-        /// typical Unity Editor-based usage.
-        /// </summary>
-        [Obsolete]
-        public void InjectHand(IHand hand)
-        {
-            _hand = hand as UnityEngine.Object;
-            Hand = hand;
         }
 
         /// <summary>

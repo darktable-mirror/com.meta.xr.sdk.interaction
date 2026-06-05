@@ -56,14 +56,6 @@ namespace Oculus.Interaction.HandGrab
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
-        /// The <cref="PhysicsGrabbable" /> used when you grab the object.
-        /// </summary>
-        [Tooltip("The PhysicsGrabbable used when you grab the object.")]
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
-        private PhysicsGrabbable _physicsGrabbable = null;
-
-        /// <summary>
         /// Forces a release on all other grabbing interactors when grabbed by a new interactor.
         /// </summary>
         [Tooltip("Forces a release on all other grabbing interactors when grabbed by a new interactor.")]
@@ -282,20 +274,6 @@ namespace Oculus.Interaction.HandGrab
             return movement;
         }
 
-        /// <summary>
-        /// Obsolete: this was used to apply velocities from an <see cref="Throw.IThrowVelocityCalculator"/>, which is deprecated.
-        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
-        {
-            if (_physicsGrabbable == null)
-            {
-                return;
-            }
-            _physicsGrabbable.ApplyVelocities(linearVelocity, angularVelocity);
-        }
-
         #endregion
         /// <summary>
         /// Implementation of <see cref="IHandGrabInteractable.CalculateBestPose(Pose, float, Handedness, ref HandGrabResult)"/>;
@@ -409,17 +387,6 @@ namespace Oculus.Interaction.HandGrab
         public void InjectOptionalScoreModifier(PoseMeasureParameters scoreModifier)
         {
             _scoringModifier = scoreModifier;
-        }
-
-        /// <summary>
-        /// Obsolete: adds a <see cref="PhysicsGrabbable"/> to a dynamically instantiated GameObject. This functionality is now
-        /// provided as part of <see cref="Grabbable"/> and no longer needs to be handled independently. This method exists to support
-        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
-        {
-            _physicsGrabbable = physicsGrabbable;
         }
 
         /// <summary>

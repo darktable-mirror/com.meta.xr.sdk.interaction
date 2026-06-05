@@ -45,9 +45,18 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            ActiveState = _activeState as IActiveState;
-            AxisWhenActive = _axisWhenActive as IAxis1D;
-            AxisWhenInactive = _axisWhenInactive as IAxis1D;
+            if (ActiveState == null)
+            {
+                ActiveState = _activeState as IActiveState;
+            }
+            if (AxisWhenActive == null)
+            {
+                AxisWhenActive = _axisWhenActive as IAxis1D;
+            }
+            if (AxisWhenInactive == null)
+            {
+                AxisWhenInactive = _axisWhenInactive as IAxis1D;
+            }
         }
 
         protected virtual void Start()

@@ -106,9 +106,15 @@ namespace Oculus.Interaction.Input
         protected virtual void Awake()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            HandVisual = _handVisual as IHandVisual;
+            if (HandVisual == null)
+            {
+                HandVisual = _handVisual as IHandVisual;
+            }
 #pragma warning restore CS0618 // Type or member is obsolete
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -131,6 +137,10 @@ namespace Oculus.Interaction.Input
             {
                 _capsulesAreActive = true;
                 Hand.WhenHandUpdated += HandleHandUpdated;
+                if (Hand.IsConnected)
+                {
+                    HandleHandUpdated();
+                }
             }
         }
 

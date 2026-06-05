@@ -60,8 +60,14 @@ namespace Oculus.Interaction
                 _interactorTrackingConfidence = new Dictionary<int, HandTrackingConfidenceProvider>();
             }
 
-            Interactor = _interactor as IInteractor;
-            Hand = _hand as IHand;
+            if (Interactor == null)
+            {
+                Interactor = _interactor as IInteractor;
+            }
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()

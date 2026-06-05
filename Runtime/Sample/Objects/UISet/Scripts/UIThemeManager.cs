@@ -18,10 +18,11 @@
  * limitations under the License.
  */
 
+using Oculus.Interaction.Samples;
+using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction
 {
@@ -35,72 +36,69 @@ namespace Oculus.Interaction
         public UITheme[] Themes => _themes;
 
         [SerializeField]
-        private int _currentThemeIndex = 0;
+        private int _currentThemeIndex = -1;
         public int CurrentThemeIndex => _currentThemeIndex;
 
-        void Start()
+
+        void Awake()
+        {
+        }
+
+        protected virtual void Start()
         {
             ApplyTheme(_currentThemeIndex);
         }
+
 
         public void ApplyCurrentTheme()
         {
             ApplyTheme(_currentThemeIndex);
         }
 
+        /// <summary>
+        /// Re-applies animator controllers to all buttons under this manager.
+        /// Call this after dynamically creating or destroying UI elements at runtime.
+        /// </summary>
+        public void RefreshAnimators()
+        {
+            if (_themes == null || _currentThemeIndex < 0 || _currentThemeIndex >= _themes.Length)
+            {
+                return;
+            }
+
+            ApplyAnimators(_themes[_currentThemeIndex]);
+        }
+
+
+        public void ResetIndex()
+        {
+            _currentThemeIndex = -1;
+        }
+
         public void ApplyTheme(int index)
         {
+            if (_themes == null || _themes.Length == 0)
+            {
+                return;
+            }
+
             if (index < 0 || index >= _themes.Length)
             {
                 Debug.LogError("Theme index out of range.");
                 return;
             }
 
+            if (_themes[index] == null)
+            {
+                return;
+            }
+
             _currentThemeIndex = index;
             UITheme selectedTheme = _themes[index];
 
-            // Assign Animator Controllers from current theme to all Animators in interactable UI components
-            Animator[] animators = GetComponentsInChildren<Animator>();
-            foreach (var animator in animators)
-            {
-                if (animator.CompareTag("QDSUIPrimaryButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acPrimaryButton;
-                }
-                else if (animator.CompareTag("QDSUISecondaryButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acSecondaryButton;
-                }
-                else if (animator.CompareTag("QDSUIBorderlessButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acBorderlessButton;
-                }
-                else if (animator.CompareTag("QDSUIDestructiveButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acDestructiveButton;
-                }
-                else if (animator.CompareTag("QDSUIToggleButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acToggleButton;
-                }
-                else if (animator.CompareTag("QDSUIToggleBorderlessButton"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acToggleBorderlessButton;
-                }
-                else if (animator.CompareTag("QDSUIToggleSwitch"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acToggleSwitch;
-                }
-                else if (animator.CompareTag("QDSUIToggleCheckboxRadio"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acToggleCheckboxRadio;
-                }
-                else if (animator.CompareTag("QDSUITextInputField"))
-                {
-                    animator.runtimeAnimatorController = selectedTheme.acTextInputField;
-                }
-                animator.Update(0);
-            }
+
+            ApplyAnimators(selectedTheme);
+            ApplyCursor(selectedTheme);
 
             // Apply color to all image objects under the canvas. For interactable elements, updates default normal state for editor view.
             Image[] images = GetComponentsInChildren<Image>();
@@ -140,6 +138,10 @@ namespace Oculus.Interaction
                 else if (image.CompareTag("QDSUITextInputField"))
                 {
                     // Colors are applied though animation clips.
+                }
+                else if (image.CompareTag("QDSUILineDrawing"))
+                {
+                    image.color = selectedTheme.textPrimaryColor;
                 }
                 else if (selectedTheme.ThemeVersion < 2)
                 {
@@ -206,6 +208,52 @@ namespace Oculus.Interaction
                     }
                 }
             }
+        }
+
+        private void ApplyAnimators(UITheme theme)
+        {
+            Animator[] animators = GetComponentsInChildren<Animator>(true);
+            foreach (var animator in animators)
+            {
+                RuntimeAnimatorController controller = GetControllerForTag(animator.tag, theme);
+                if (controller != null)
+                {
+                    animator.runtimeAnimatorController = controller;
+                    if (animator.gameObject.activeInHierarchy)
+                    {
+                        animator.Update(0);
+                    }
+                }
+            }
+        }
+
+        private void ApplyCursor(UITheme theme)
+        {
+            RippleCursorEffectManager[] rippleCursorEffectManagers = FindObjectsByType<RippleCursorEffectManager>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            foreach (var rippleCursorEffectManager in rippleCursorEffectManagers)
+            {
+                rippleCursorEffectManager.SetThemeRippleColor(theme.rippleCursorColor);
+            }
+        }
+
+        private RuntimeAnimatorController GetControllerForTag(string tag, UITheme theme)
+        {
+
+            return tag switch
+            {
+                "QDSUIPrimaryButton" => theme.acPrimaryButton,
+                "QDSUISecondaryButton" => theme.acSecondaryButton,
+                "QDSUIBorderlessButton" => theme.acBorderlessButton,
+                "QDSUIDestructiveButton" => theme.acDestructiveButton,
+                "QDSUIToggleButton" => theme.acToggleButton,
+                "QDSUIToggleBorderlessButton" => theme.acToggleBorderlessButton,
+                "QDSUIToggleSwitch" => theme.acToggleSwitch,
+                "QDSUIToggleCheckboxRadio" => theme.acToggleCheckboxRadio,
+                "QDSUIToggleThumbnail" => theme.acToggleThumbnail,
+                "QDSUITextInputField" => theme.acTextInputField,
+                _ => null
+            };
         }
     }
 }

@@ -20,7 +20,7 @@
 
 using UnityEngine;
 
-namespace Oculus.Interaction.Demo
+namespace Oculus.Interaction.Samples
 {
     /// <summary>
     /// Supplies the 'main' directionl light properties to the BasicPBR shader

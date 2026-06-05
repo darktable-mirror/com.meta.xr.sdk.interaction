@@ -30,6 +30,12 @@ Shader "Unlit/VideoPlayerAnimBackground"
 	    [HideInInspector] _StencilOp		("Stencil Operation", Float) = 0
 	    [HideInInspector] _StencilWriteMask	("Stencil Write Mask", Float) = 255
 	    [HideInInspector] _StencilReadMask	("Stencil Read Mask", Float) = 255
+    	
+	    [HideInInspector] _ColumnDirection ("Column Direction", Vector) = (0, 1, 0, 0)
+        [HideInInspector] _RowDirection ("Row Direction", Vector) = (1, 0, 0, 0)
+        [HideInInspector] _AnimationTime ("Animation Time", Float) = 0
+        [HideInInspector][Gamma] _ColorA ("Color A", Vector) = (0.07, 0.18, 0.51, 1)
+        [HideInInspector][Gamma] _ColorB ("Color B", Vector) = (0.08, 0.20, 0.56, 1)
 
 	    _ColorMask ("Color Mask", Float) = 15
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
@@ -91,11 +97,11 @@ Shader "Unlit/VideoPlayerAnimBackground"
             fixed4 _Color;
             fixed4 _TextureSampleAdd;
             //--------------------
-            float2 columnDirection;
-            float2 rowDirection;
-            float animationTime;
-            float3 colorA;
-            float3 colorB;
+            float2 _ColumnDirection;
+            float2 _RowDirection;
+            float _AnimationTime;
+            float3 _ColorA;
+            float3 _ColorB;
 
             fragmentInput vert(vertexInput input)
             {
@@ -119,22 +125,22 @@ Shader "Unlit/VideoPlayerAnimBackground"
             }
 
             fixed4 frag(fragmentInput input) : SV_Target {
-                float xDist = dot(input.worldPosition.xy, rowDirection);
-                float yDist = dot(input.worldPosition.xy, columnDirection);
+                float xDist = dot(input.worldPosition.xy, _RowDirection);
+                float yDist = dot(input.worldPosition.xy, _ColumnDirection);
                 
                 const float size = 80.0;
                 const float offset = size * 0.5f;
                 float columnIndex = (abs(floor(xDist / size)) % 2.0);
 
                 float animDirection = 1.0 - 2.0 * columnIndex;
-                yDist += animationTime * 20.0 * animDirection;
+                yDist += _AnimationTime * 20.0 * animDirection;
 
                 float u = modSection(xDist, size, 0.0);
                 float v = modSection(yDist, size, columnIndex * offset);
                 float2 uv = float2(u, v);
                 float boxDist = sdRoundBox(uv - (0.5).xx, (0.35).xx, (0.1).xxxx);
 
-                float3 color = lerp(colorA, colorB, step(0.01, boxDist));
+                float3 color = lerp(_ColorA, _ColorB, step(0.01, boxDist));
 
                 return float4(color, 1.0);
             }

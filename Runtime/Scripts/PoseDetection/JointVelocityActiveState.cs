@@ -228,10 +228,16 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
-            JointDeltaProvider = _jointDeltaProvider as IJointDeltaProvider;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
+            if (JointDeltaProvider == null)
+            {
+                JointDeltaProvider = _jointDeltaProvider as IJointDeltaProvider;
+            }
 
-            if (_hmd != null)
+            if (Hmd == null)
             {
                 Hmd = _hmd as IHmd;
             }

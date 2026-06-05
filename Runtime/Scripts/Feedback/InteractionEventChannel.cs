@@ -30,7 +30,7 @@ namespace Oculus.Interaction.Feedback
     /// event to react to global interaction state changes (e.g., Hover, Select, UI pointer events)
     /// in a decoupled manner.
     /// </summary>
-    [CreateAssetMenu(fileName = "InteractionEventChannel", menuName = "Oculus/Interaction/SDK/Feedback/Interaction Event Channel")]
+    [CreateAssetMenu(fileName = "InteractionEventChannel", menuName = "Meta/Interaction SDK/Feedback/Interaction Event Channel")]
     public class InteractionEventChannel : ScriptableObject
     {
         /// <summary>

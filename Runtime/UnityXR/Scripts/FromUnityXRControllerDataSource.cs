@@ -226,7 +226,10 @@ namespace Oculus.Interaction.UnityXR
 
         private void Awake()
         {
-            TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            if (TrackingToWorldTransformer == null)
+            {
+                TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            }
             UpdateConfig();
 
             InputActionMap map = (_handedness == Handedness.Left)? _leftHandControllerBindings : _rightHandControllerBindings;

@@ -125,7 +125,9 @@ namespace Oculus.Interaction.Editor
                     new ComponentWiringStrategyConfig("TrackingSpace", new FieldWiringStrategy[]
                         {
                             (monoBehaviour, field, targetType) =>
-                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace")
+                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace"),
+                            (monoBehaviour, field, targetType) =>
+                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, Camera.main, "/..")
                         })
                 }
             );
@@ -200,20 +202,12 @@ namespace Oculus.Interaction.Editor
             AutoWiring.Register(
                 typeof(TunnelingEffect),
                 new[] {
-                    new ComponentWiringStrategyConfig("_leftEyeAnchor", new FieldWiringStrategy[]
-                        {
-                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/LeftEyeAnchor")
-                        }),
-                    new ComponentWiringStrategyConfig("_rightEyeAnchor", new FieldWiringStrategy[]
-                        {
-                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/RightEyeAnchor")
-                        }),
                     new ComponentWiringStrategyConfig("_centerEyeCamera", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor"),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, Camera.main)
                         }),
                 }
             );
@@ -224,12 +218,16 @@ namespace Oculus.Interaction.Editor
                     new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/..")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/.."),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, Camera.main, "/../..")
                         }),
                     new ComponentWiringStrategyConfig("_playerHead", new FieldWiringStrategy[]
                         {
+                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor"),
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, Camera.main)
                         })
                 }
             );
@@ -240,12 +238,16 @@ namespace Oculus.Interaction.Editor
                     new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/..")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/.."),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, Camera.main, "/../../..", "/../..")
                         }),
                     new ComponentWiringStrategyConfig("_playerEyes", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor"),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType,  Camera.main)
                         })
                 }
             );
@@ -256,12 +258,16 @@ namespace Oculus.Interaction.Editor
                     new ComponentWiringStrategyConfig("_playerOrigin", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/..")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/../..", "TrackingSpace/.."),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType,  Camera.main, "/../../..", "/../..")
                         }),
                     new ComponentWiringStrategyConfig("_playerEyes", new FieldWiringStrategy[]
                         {
                             (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
-                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor")
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor"),
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType,  Camera.main)
                         })
                 }
             );

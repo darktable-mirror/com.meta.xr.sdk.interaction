@@ -39,7 +39,10 @@ namespace Oculus.Interaction.UnityXR
         private HmdDataSourceConfig _config;
         protected void Awake()
         {
-            TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            if (TrackingToWorldTransformer == null)
+            {
+                TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            }
         }
 
         protected override void Start()

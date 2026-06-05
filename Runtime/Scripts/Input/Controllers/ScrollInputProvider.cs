@@ -70,8 +70,14 @@ namespace Oculus.Interaction.Input
 
         private void Awake()
         {
-            Axis2D = _axis2D as IAxis2D;
-            InteractorView = _interactor as IInteractorView;
+            if (Axis2D == null)
+            {
+                Axis2D = _axis2D as IAxis2D;
+            }
+            if (InteractorView == null)
+            {
+                InteractorView = _interactor as IInteractorView;
+            }
         }
 
         private void Start()

@@ -135,23 +135,6 @@ namespace Oculus.Interaction.HandGrab
         [SerializeField, Optional]
         private Collider _pinchCollider;
 
-        /// <summary>
-        /// Determines how the object will move when thrown.
-        /// </summary>
-        [Tooltip("Determines how the object will move when thrown.")]
-#pragma warning disable CS0618 // Type or member is obsolete
-        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
-#pragma warning restore CS0618 // Type or member is obsolete
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        private UnityEngine.Object _velocityCalculator;
-
-        /// <summary>
-        /// Obsolete: this was used to get and set the interactor's <see cref="IThrowVelocityCalculator"/>, which is deprecated.
-        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public IThrowVelocityCalculator VelocityCalculator { get; set; }
-
         private bool _handGrabShouldSelect = false;
         private bool _handGrabShouldUnselect = false;
 
@@ -269,9 +252,6 @@ namespace Oculus.Interaction.HandGrab
         {
             base.Awake();
             Hand = _hand as IHand;
-#pragma warning disable CS0618 // Type or member is obsolete
-            VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
-#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4847726162497472;
         }
 
@@ -292,12 +272,6 @@ namespace Oculus.Interaction.HandGrab
 
             this.AssertField(_handGrabApi, nameof(_handGrabApi));
             this.AssertField(Hand, nameof(Hand));
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (_velocityCalculator != null)
-            {
-                this.AssertField(VelocityCalculator, nameof(VelocityCalculator));
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
 
             this.EndStart(ref _started);
         }
@@ -411,14 +385,6 @@ namespace Oculus.Interaction.HandGrab
 
             this.Movement = null;
             _currentGrabType = GrabTypeFlags.None;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (VelocityCalculator != null)
-            {
-                ReleaseVelocityInformation velocity = VelocityCalculator.CalculateThrowVelocity(interactable.transform);
-                interactable.ApplyVelocities(velocity.LinearVelocity, velocity.AngularVelocity);
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected override void HandlePointerEventRaised(PointerEvent evt)
@@ -785,19 +751,6 @@ namespace Oculus.Interaction.HandGrab
         public void InjectOptionalPinchCollider(Collider pinchCollider)
         {
             _pinchCollider = pinchCollider;
-        }
-
-        /// <summary>
-        /// Obsolete: adds a <see cref="IThrowVelocityCalculator"/> to a dynamically instantiated GameObject. This
-        /// method exists to support Interaction SDK's dependency injection pattern and is not needed for typical
-        /// Unity Editor-based usage. Velocity calculation is now a feature of <see cref="Grabbable"/> and is no
-        /// longer required by HandGrabInteractor.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
-        {
-            _velocityCalculator = velocityCalculator as UnityEngine.Object;
-            VelocityCalculator = velocityCalculator;
         }
 
         #endregion

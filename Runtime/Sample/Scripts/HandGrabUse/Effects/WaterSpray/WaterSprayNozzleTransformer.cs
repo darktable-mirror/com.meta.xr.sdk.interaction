@@ -20,7 +20,7 @@
 
 using UnityEngine;
 
-namespace Oculus.Interaction.Demo
+namespace Oculus.Interaction.Samples
 {
     public class WaterSprayNozzleTransformer : MonoBehaviour, ITransformer
     {

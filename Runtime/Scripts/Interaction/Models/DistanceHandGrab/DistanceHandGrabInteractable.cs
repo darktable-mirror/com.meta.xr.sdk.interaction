@@ -46,10 +46,6 @@ namespace Oculus.Interaction.HandGrab
         /// </summary>
         public Rigidbody Rigidbody => _rigidbody;
 
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
-        private PhysicsGrabbable _physicsGrabbable = null;
-
         [SerializeField]
         private bool _resetGrabOnGrabsUpdated = true;
 
@@ -243,20 +239,6 @@ namespace Oculus.Interaction.HandGrab
         }
 
         /// <summary>
-        /// Obsolete: this was used to apply velocities from an <see cref="Throw.IThrowVelocityCalculator"/>, which is deprecated.
-        /// Velocity calculation capabilities are now a feature of <see cref="Grabbable"/> and should be controlled from there.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
-        {
-            if (_physicsGrabbable == null)
-            {
-                return;
-            }
-            _physicsGrabbable.ApplyVelocities(linearVelocity, angularVelocity);
-        }
-
-        /// <summary>
         /// Implementation of <see cref="IHandGrabInteractable.CalculateBestPose(Pose, float, Handedness, ref HandGrabResult)"/>;
         /// for details, please refer to the related documentation provided for that interface.
         /// </summary>
@@ -319,17 +301,6 @@ namespace Oculus.Interaction.HandGrab
             InjectRigidbody(rigidbody);
             InjectPinchGrabRules(pinchGrabRules);
             InjectPalmGrabRules(palmGrabRules);
-        }
-
-        /// <summary>
-        /// Obsolete: adds a <see cref="PhysicsGrabbable"/> to a dynamically instantiated GameObject. This functionality is now
-        /// provided as part of <see cref="Grabbable"/> and no longer needs to be handled independently. This method exists to support
-        /// Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based usage.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsObject)
-        {
-            _physicsGrabbable = physicsObject;
         }
 
         /// <summary>

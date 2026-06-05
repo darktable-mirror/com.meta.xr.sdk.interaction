@@ -136,11 +136,13 @@ namespace Oculus.Interaction.Editor.Generated
     public class CandidatePositionComparerEditorFallback : SimplifiedEditor { }
 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
 namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(ControllerActiveState), false, isFallback = true), CanEditMultipleObjects]
     public class ControllerActiveStateEditorFallback : SimplifiedEditor { }
 }
+#pragma warning restore CS0618 // Type or member is obsolete
 
 namespace Oculus.Interaction.Editor.Generated
 {
@@ -166,11 +168,13 @@ namespace Oculus.Interaction.Editor.Generated
     public class GameObjectActiveStateEditorFallback : SimplifiedEditor { }
 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
 namespace Oculus.Interaction.Editor.Generated
 {
     [CustomEditor(typeof(HandActiveState), false, isFallback = true), CanEditMultipleObjects]
     public class HandActiveStateEditorFallback : SimplifiedEditor { }
 }
+#pragma warning restore CS0618 // Type or member is obsolete
 
 namespace Oculus.Interaction.Editor.Generated
 {

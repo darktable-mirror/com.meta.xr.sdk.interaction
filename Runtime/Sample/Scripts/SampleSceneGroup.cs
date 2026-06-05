@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace Oculus.Interaction.Samples
 {
-    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Scene Group")]
+    [CreateAssetMenu(menuName = "Meta/Interaction SDK/Scene Group")]
     public class SampleSceneGroup : ScriptableObject
 #if UNITY_EDITOR
         , ISerializationCallbackReceiver

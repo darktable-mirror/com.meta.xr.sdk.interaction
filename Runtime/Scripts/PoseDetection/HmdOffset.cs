@@ -49,7 +49,10 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            Hmd = _hmd as IHmd;
+            if (Hmd == null)
+            {
+                Hmd = _hmd as IHmd;
+            }
         }
 
         protected virtual void Start()
@@ -64,6 +67,7 @@ namespace Oculus.Interaction.PoseDetection
             if (_started)
             {
                 Hmd.WhenUpdated += HandleHmdUpdated;
+                HandleHmdUpdated();
             }
         }
 

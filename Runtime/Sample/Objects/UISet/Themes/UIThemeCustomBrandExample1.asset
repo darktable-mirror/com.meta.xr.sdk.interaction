@@ -19,6 +19,7 @@ MonoBehaviour:
   buttonPlateColor: {r: 0, g: 0, b: 0, a: 0.078431375}
   sectionPlateColor: {r: 0.33013394, g: 0.21725798, b: 0.408805, a: 1}
   tooltipColor: {r: 0.261697, g: 0.09718754, b: 0.33962262, a: 1}
+  rippleCursorColor: {r: 0.9202899, g: 0.75, b: 1, a: 1}
   textPrimaryColor: {r: 0.94509804, g: 0.95686275, b: 0.96862745, a: 1}
   textSecondaryColor: {r: 0.6901961, g: 0.7019608, b: 0.72156864, a: 1}
   textPrimaryInvertedColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
@@ -60,5 +61,6 @@ MonoBehaviour:
   acToggleSwitch: {fileID: 9100000, guid: 3c0c6a32ceaa2fd4dad761df74cb038a, type: 2}
   acToggleCheckboxRadio: {fileID: 9100000, guid: d7f09f26f9f2e164fb996e8c997389ca,
     type: 2}
+  acToggleThumbnail: {fileID: 9100000, guid: 5e01d563315aa1f4b95d2dd0f37b8a6e, type: 2}
   acTextInputField: {fileID: 9100000, guid: 1ec80f96838651d4390db9292137bebc, type: 2}
   colorPath: Content/Background

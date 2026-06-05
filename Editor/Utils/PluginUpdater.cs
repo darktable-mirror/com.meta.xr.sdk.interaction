@@ -46,7 +46,7 @@ namespace Oculus.Interaction
             EditorApplication.delayCall += HandleDelayCall;
         }
 
-        [MenuItem("Meta/Interaction/Update Interaction SDK Plugin")]
+        [MenuItem("Meta/Interaction SDK/Update Interaction SDK Plugin")]
         public static void UpdatePlugin()
         {
             PerformUpdate(verbose: true);

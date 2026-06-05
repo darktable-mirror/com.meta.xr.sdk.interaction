@@ -69,29 +69,5 @@ namespace Oculus.Interaction.Body.Input
         public Pose GetLocalJointPose(BodyJointId jointId) => base.GetLocalJointPose((int)jointId);
         public Pose GetJointPoseFromRoot(BodyJointId jointId) => base.GetJointPoseFromRoot((int)jointId);
         public Pose GetWorldJointPose(BodyJointId jointId) => base.GetWorldJointPose((int)jointId);
-
-        [Obsolete]
-        public bool GetAllLocalPoses(out ReadOnlyBodyJointPoses localJointPoses)
-        {
-            UpdateAllLocalPoses();
-            localJointPoses = _localPosesCollection;
-            return _localPosesCollection.Count > 0;
-        }
-
-        [Obsolete]
-        public bool GetAllPosesFromRoot(out ReadOnlyBodyJointPoses posesFromRoot)
-        {
-            UpdateAllPosesFromRoot();
-            posesFromRoot = _posesFromRootCollection;
-            return _posesFromRootCollection.Count > 0;
-        }
-
-        [Obsolete]
-        public bool GetAllWorldPoses(out ReadOnlyBodyJointPoses worldJointPoses)
-        {
-            UpdateAllWorldPoses();
-            worldJointPoses = _worldPosesCollection;
-            return _worldPosesCollection.Count > 0;
-        }
     }
 }

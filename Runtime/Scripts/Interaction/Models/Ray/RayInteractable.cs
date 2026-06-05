@@ -93,9 +93,18 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            Surface = _surface as ISurface;
-            SelectSurface = _selectSurface as ISurface;
-            MovementProvider = _movementProvider as IMovementProvider;
+            if (Surface == null)
+            {
+                Surface = _surface as ISurface;
+            }
+            if (SelectSurface == null)
+            {
+                SelectSurface = _selectSurface as ISurface;
+            }
+            if (MovementProvider == null)
+            {
+                MovementProvider = _movementProvider as IMovementProvider;
+            }
         }
 
         protected override void Start()

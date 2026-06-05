@@ -29,6 +29,7 @@ namespace Oculus.Interaction.Locomotion
     /// linear movement and it will apply the selected AnimationCurve when the
     /// referenced toggle is activated
     /// </summary>
+    [System.Obsolete("Use " + nameof(ComfortVignetteSetting) + " instead")]
     public class LocomotionComfortVignetteSetting : MonoBehaviour
     {
         /// <summary>

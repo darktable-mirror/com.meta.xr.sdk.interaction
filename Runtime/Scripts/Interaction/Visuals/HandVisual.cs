@@ -109,7 +109,7 @@ namespace Oculus.Interaction
 
         /// <summary>
         /// List of transforms corresponding to the hand joint poses from <see cref="Hand"/>.
-        /// Specific joints in this list can be accessed by using the integer value of 
+        /// Specific joints in this list can be accessed by using the integer value of
         /// <see cref="HandJointId"/> as the index.
         /// </summary>
         public IList<Transform> Joints
@@ -232,6 +232,10 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hand.WhenHandUpdated += UpdateSkeleton;
+                if (Hand.IsConnected)
+                {
+                    UpdateSkeleton();
+                }
             }
         }
 

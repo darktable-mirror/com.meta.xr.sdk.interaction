@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: RoundedBoxGradientUILight
-  m_Shader: {fileID: 4800000, guid: 983d900999c507547af1b3742fc83ef9, type: 3}
+  m_Shader: {fileID: 4800000, guid: df46ee0520c82d541a2a09f19ed614ea, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -30,10 +30,15 @@ Material:
     m_Ints: []
     m_Floats:
     - _BorderColorType: 0
+    - _BorderInterpolator: 1
+    - _BorderMode: 1
     - _BorderWidth: 2.5
     - _ColorMask: 15
     - _CullMode: 0
+    - _FillInterpolator: 1
+    - _FillMode: 1
     - _Interpolator: 1
+    - _RenderMode: 1
     - _Stencil: 0
     - _StencilComp: 0
     - _StencilOp: 0
@@ -51,5 +56,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorA: {r: 1, g: 1, b: 1, a: 1}
     - _ColorB: {r: 0.9490196, g: 0.9490196, b: 0.9490196, a: 1}
+    - _FillColorA: {r: 1, g: 1, b: 1, a: 1}
+    - _FillColorB: {r: 0.9490196, g: 0.9490196, b: 0.9490196, a: 1}
+    - _FillLine: {r: 1, g: -0.9, b: 0.5, a: 1.87}
     - _Line: {r: 1, g: -0.9, b: 0.5, a: 1.87}
   m_BuildTextureStacks: []

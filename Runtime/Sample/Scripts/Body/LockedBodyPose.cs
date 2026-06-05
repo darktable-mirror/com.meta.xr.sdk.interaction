@@ -85,7 +85,10 @@ namespace Oculus.Interaction.Body.Samples
         protected virtual void Awake()
         {
             _lockedPoses = new Dictionary<BodyJointId, Pose>();
-            Pose = _pose as IBodyPose;
+            if (Pose == null)
+            {
+                Pose = _pose as IBodyPose;
+            }
         }
 
         protected virtual void Start()

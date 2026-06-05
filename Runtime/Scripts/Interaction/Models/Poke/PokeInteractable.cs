@@ -578,7 +578,10 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            SurfacePatch = _surfacePatch as ISurfacePatch;
+            if (SurfacePatch == null)
+            {
+                SurfacePatch = _surfacePatch as ISurfacePatch;
+            }
         }
 
         protected override void Start()

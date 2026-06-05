@@ -138,7 +138,9 @@ namespace Oculus.Interaction.Samples
             }
 
             _missingSceneWarning.SetActive(anySceneMissing);
+
         }
+
 
         private void LoadScene(SampleSceneGroup.ISceneInfo sceneInfo)
         {

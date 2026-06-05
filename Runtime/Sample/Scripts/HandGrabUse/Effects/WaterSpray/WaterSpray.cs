@@ -19,14 +19,15 @@
  */
 
 using Oculus.Interaction.HandGrab;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Oculus.Interaction.Demo
+namespace Oculus.Interaction.Samples
 {
-    public class WaterSpray : MonoBehaviour, IHandGrabUseDelegate
+    public class WaterSpray : MonoBehaviour, IHandGrabUseDelegate, ITimeConsumer
     {
         public enum NozzleMode
         {
@@ -80,6 +81,12 @@ namespace Oculus.Interaction.Demo
         private UnityEvent WhenSpray;
         [SerializeField]
         private UnityEvent WhenStream;
+
+        private Func<float> _timeProvider = () => Time.time;
+        public void SetTimeProvider(Func<float> timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         private static readonly int WET_MAP_PROPERTY = Shader.PropertyToID("_WetMap");
         private static readonly int STAMP_MULTIPLIER_PROPERTY = Shader.PropertyToID("_StampMultipler");
@@ -163,8 +170,8 @@ namespace Oculus.Interaction.Demo
                 randomPose.rotation =
                     randomPose.rotation *
                     Quaternion.Euler(
-                        Random.Range(-randomness, randomness),
-                        Random.Range(-randomness, randomness),
+                        UnityEngine.Random.Range(-randomness, randomness),
+                        UnityEngine.Random.Range(-randomness, randomness),
                         0f);
 
                 Stamp(randomPose, _maxDistance, spread, strength);
@@ -263,7 +270,7 @@ namespace Oculus.Interaction.Demo
         public void BeginUse()
         {
             _dampedUseStrength = 0f;
-            _lastUseTime = Time.realtimeSinceStartup;
+            _lastUseTime = _timeProvider.Invoke();
         }
 
         public void EndUse()
@@ -273,8 +280,8 @@ namespace Oculus.Interaction.Demo
 
         public float ComputeUseStrength(float strength)
         {
-            float delta = Time.realtimeSinceStartup - _lastUseTime;
-            _lastUseTime = Time.realtimeSinceStartup;
+            float delta = _timeProvider.Invoke() - _lastUseTime;
+            _lastUseTime = _timeProvider.Invoke();
             if (strength > _dampedUseStrength)
             {
                 _dampedUseStrength = Mathf.Lerp(_dampedUseStrength, strength, _triggerSpeed * delta);

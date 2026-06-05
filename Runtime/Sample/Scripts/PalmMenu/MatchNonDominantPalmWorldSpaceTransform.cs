@@ -59,8 +59,14 @@ namespace Oculus.Interaction.Samples.PalmMenu
 
         protected virtual void Awake()
         {
-            LeftHand = _leftHand as IHand;
-            RightHand = _rightHand as IHand;
+            if (LeftHand == null)
+            {
+                LeftHand = _leftHand as IHand;
+            }
+            if (RightHand == null)
+            {
+                RightHand = _rightHand as IHand;
+            }
         }
 
         private void Update()

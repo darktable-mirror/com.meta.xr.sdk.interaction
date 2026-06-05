@@ -18,11 +18,21 @@
  * limitations under the License.
  */
 
+using System;
 using Oculus.Interaction.Input;
 using UnityEngine;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// HandActiveState is a utility component that provides an <see cref="IActiveState"/> implementation
+    /// based on whether a hand is connected.
+    /// </summary>
+    /// <remarks>
+    /// This class is deprecated. Use <see cref="HandRef"/> instead, which implements both
+    /// <see cref="IHand"/> and <see cref="IActiveState"/> with the same Active behavior (IsConnected).
+    /// </remarks>
+    [Obsolete("Use HandRef instead, which implements IActiveState with the same behavior (Active = IsConnected)")]
     public class HandActiveState : MonoBehaviour, IActiveState
     {
         [Tooltip("ActiveState will be true while this hand is connected.")]
@@ -34,7 +44,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()

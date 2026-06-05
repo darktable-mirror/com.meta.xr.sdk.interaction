@@ -71,7 +71,10 @@ namespace Oculus.Interaction.Body.PoseDetection
         {
             _jointPosesLocal = new Dictionary<BodyJointId, Pose>();
             _jointPosesFromRoot = new Dictionary<BodyJointId, Pose>();
-            Body = _body as IBody;
+            if (Body == null)
+            {
+                Body = _body as IBody;
+            }
         }
 
         protected virtual void Start()
@@ -86,6 +89,10 @@ namespace Oculus.Interaction.Body.PoseDetection
             if (_started)
             {
                 Body.WhenBodyUpdated += Body_WhenBodyUpdated;
+                if (Body.IsConnected)
+                {
+                    Body_WhenBodyUpdated();
+                }
             }
         }
 

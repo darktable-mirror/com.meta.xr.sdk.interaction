@@ -24,27 +24,61 @@ using UnityEngine;
 namespace Oculus.Interaction.Editor
 {
     [CustomEditor(typeof(UIThemeManager))]
-    public class UIThemeManagerEditor : UnityEditor.Editor
+    public class UIThemeManagerEditor : SimplifiedEditor
     {
+        private SerializedProperty _themesProperty;
+        private SerializedProperty _currentThemeIndexProperty;
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            _themesProperty = serializedObject.FindProperty("_themes");
+            _currentThemeIndexProperty = serializedObject.FindProperty("_currentThemeIndex");
+        }
+
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            serializedObject.Update();
 
             UIThemeManager themeManager = (UIThemeManager)target;
-
-            string[] options = new string[themeManager.Themes.Length];
-            for (int i = 0; i < options.Length; i++)
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(_themesProperty, true);
+            bool themesChanged = EditorGUI.EndChangeCheck();
+            if (themesChanged)
             {
-                options[i] = themeManager.Themes[i].name;
+                serializedObject.ApplyModifiedProperties();
             }
 
-            int currentSelection = themeManager.CurrentThemeIndex;
+            int themesCount = _themesProperty.arraySize;
+            if (themesCount == 0)
+            {
+                _currentThemeIndexProperty.intValue = 0;
+                return;
+            }
+
+            string[] options = new string[themesCount];
+            for (int i = 0; i < options.Length; i++)
+            {
+                UITheme item = _themesProperty.GetArrayElementAtIndex(i).objectReferenceValue as UITheme;
+
+                options[i] = item != null ? item.name : "(None)";
+            }
+
+            _currentThemeIndexProperty.intValue = Mathf.Clamp(_currentThemeIndexProperty.intValue, 0, themesCount - 1);
+            int currentSelection = _currentThemeIndexProperty.intValue;
             int newSelection = EditorGUILayout.Popup("Select Theme", currentSelection, options);
 
-            if (newSelection != currentSelection)
+            bool shouldApply = newSelection != currentSelection || themesChanged;
+
+            if (shouldApply
+                && (newSelection < themesCount)
+                && (_themesProperty.GetArrayElementAtIndex(newSelection).objectReferenceValue is UITheme))
             {
                 themeManager.ApplyTheme(newSelection);
             }
+
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

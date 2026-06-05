@@ -18,59 +18,59 @@
  * limitations under the License.
  */
 
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(RectTransform), typeof(GridLayoutGroup))]
-public class GridSpacingScaler : MonoBehaviour
+namespace Oculus.Interaction.Samples
 {
-    public enum Axis
+    [RequireComponent(typeof(RectTransform), typeof(GridLayoutGroup))]
+    public class GridSpacingScaler : MonoBehaviour
     {
-        Horizontal = 0,
-        Vertical = 1
-    }
-
-    public Axis scaleAxis;
-    public Vector2 minSpacing;
-
-    private GridLayoutGroup _gridLayoutGroup;
-    private RectTransform _rectTransform;
-
-    void Start()
-    {
-        _rectTransform = transform as RectTransform;
-        if (_rectTransform == null) Debug.LogError("GameObject Transform is not a Rect Transform");
-        _gridLayoutGroup = gameObject.GetComponent<GridLayoutGroup>();
-        if (_gridLayoutGroup == null) Debug.LogError("GameObject does not include a GridLayoutGroup");
-    }
-
-    void LateUpdate()
-    {
-        var contianerSize = Mathf.Floor(_rectTransform.rect.size[(int)scaleAxis]);
-        var spacing = minSpacing[(int)scaleAxis];
-        var elementSize = _gridLayoutGroup.cellSize[(int)scaleAxis];
-        var padding = scaleAxis == Axis.Horizontal ? _gridLayoutGroup.padding.horizontal : _gridLayoutGroup.padding.vertical;
-
-        if (elementSize + spacing <= 0)
+        public enum Axis
         {
-            return;
+            Horizontal = 0,
+            Vertical = 1
         }
 
-        var cellCount = Mathf.Max(1, Mathf.FloorToInt((contianerSize - padding + spacing + 0.001f) / (elementSize + spacing)));
-        var availableSpace = contianerSize - (cellCount * elementSize);
+        public Axis scaleAxis;
+        public Vector2 minSpacing;
 
-        _gridLayoutGroup.constraint = scaleAxis == Axis.Horizontal ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
-        _gridLayoutGroup.constraintCount = cellCount;
-        if (cellCount > 1)
+        private GridLayoutGroup _gridLayoutGroup;
+        private RectTransform _rectTransform;
+
+        void Start()
         {
-            var scaledSpacing = availableSpace / ((float)(cellCount - 1));
-            var layoutSpacing = _gridLayoutGroup.spacing;
-            layoutSpacing[(int)scaleAxis] = Mathf.Floor(scaledSpacing);
-            _gridLayoutGroup.spacing = layoutSpacing;
-            return;
+            _rectTransform = transform as RectTransform;
+            if (_rectTransform == null) Debug.LogError("GameObject Transform is not a Rect Transform");
+            _gridLayoutGroup = gameObject.GetComponent<GridLayoutGroup>();
+            if (_gridLayoutGroup == null) Debug.LogError("GameObject does not include a GridLayoutGroup");
+        }
+
+        void LateUpdate()
+        {
+            var contianerSize = Mathf.Floor(_rectTransform.rect.size[(int)scaleAxis]);
+            var spacing = minSpacing[(int)scaleAxis];
+            var elementSize = _gridLayoutGroup.cellSize[(int)scaleAxis];
+            var padding = scaleAxis == Axis.Horizontal ? _gridLayoutGroup.padding.horizontal : _gridLayoutGroup.padding.vertical;
+
+            if (elementSize + spacing <= 0)
+            {
+                return;
+            }
+
+            var cellCount = Mathf.Max(1, Mathf.FloorToInt((contianerSize - padding + spacing + 0.001f) / (elementSize + spacing)));
+            var availableSpace = contianerSize - (cellCount * elementSize);
+
+            _gridLayoutGroup.constraint = scaleAxis == Axis.Horizontal ? GridLayoutGroup.Constraint.FixedColumnCount : GridLayoutGroup.Constraint.FixedRowCount;
+            _gridLayoutGroup.constraintCount = cellCount;
+            if (cellCount > 1)
+            {
+                var scaledSpacing = availableSpace / ((float)(cellCount - 1));
+                var layoutSpacing = _gridLayoutGroup.spacing;
+                layoutSpacing[(int)scaleAxis] = Mathf.Floor(scaledSpacing);
+                _gridLayoutGroup.spacing = layoutSpacing;
+                return;
+            }
         }
     }
 }

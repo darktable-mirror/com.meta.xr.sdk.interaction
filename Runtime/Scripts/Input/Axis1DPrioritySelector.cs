@@ -42,8 +42,14 @@ namespace Oculus.Interaction
 
             public void Initialize()
             {
-                ActiveState = _activeState as IActiveState;
-                Axis = _axis as IAxis1D;
+                if (ActiveState == null)
+                {
+                    ActiveState = _activeState as IActiveState;
+                }
+                if (Axis == null)
+                {
+                    Axis = _axis as IAxis1D;
+                }
             }
 
             public void Validate(Component context)
@@ -70,7 +76,10 @@ namespace Oculus.Interaction
                 axisDatum.Initialize();
             }
 
-            FallbackIfNoMatchAxis = _fallbackIfNoMatchAxis as IAxis1D;
+            if (FallbackIfNoMatchAxis == null)
+            {
+                FallbackIfNoMatchAxis = _fallbackIfNoMatchAxis as IAxis1D;
+            }
         }
 
         protected virtual void Start()

@@ -37,6 +37,7 @@ namespace Oculus.Interaction
         private Dictionary<Rigidbody, HashSet<TInteractable>> _rigidbodyCollisionMap;
         private Dictionary<Rigidbody, InteractableTriggerBroadcaster> _broadcasters;
         private Dictionary<TInteractable, (Action<Rigidbody>, Action<Rigidbody>)> _handlers;
+        private List<Rigidbody> _emptyKeys;
 
         public CollisionInteractionRegistry() : base()
         {
@@ -67,6 +68,8 @@ namespace Oculus.Interaction
         {
             base.Unregister(interactable);
 
+            PurgeInteractableFromCollisionMap(interactable);
+
             InteractableTriggerBroadcaster broadcaster;
             if (_broadcasters.TryGetValue(interactable.Rigidbody, out broadcaster))
             {
@@ -86,6 +89,36 @@ namespace Oculus.Interaction
             }
         }
 
+
+        private void PurgeInteractableFromCollisionMap(TInteractable interactable)
+        {
+            // In normal scenarios the interactor exits the trigger before the
+            // interactable unregisters, so the map is already empty and
+            // this is a no-op. The purge only does real work during scene
+            // transitions when unregistration happens while overlapping.
+            if (_rigidbodyCollisionMap.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var kvp in _rigidbodyCollisionMap)
+            {
+                if (kvp.Value.Remove(interactable) && kvp.Value.Count == 0)
+                {
+                    _emptyKeys ??= new List<Rigidbody>();
+                    _emptyKeys.Add(kvp.Key);
+                }
+            }
+            if (_emptyKeys != null && _emptyKeys.Count > 0)
+            {
+                foreach (Rigidbody rb in _emptyKeys)
+                {
+                    _rigidbodyCollisionMap.Remove(rb);
+                }
+                _emptyKeys.Clear();
+            }
+        }
+
         private void HandleTriggerEntered(TInteractable interactable, Rigidbody rigidbody)
         {
             if (!_rigidbodyCollisionMap.ContainsKey(rigidbody))
@@ -99,12 +132,13 @@ namespace Oculus.Interaction
 
         private void HandleTriggerExited(TInteractable interactable, Rigidbody rigidbody)
         {
-            HashSet<TInteractable> interactables = _rigidbodyCollisionMap[rigidbody];
-            interactables.Remove(interactable);
-
-            if (interactables.Count == 0)
+            if (_rigidbodyCollisionMap.TryGetValue(rigidbody, out HashSet<TInteractable> interactables))
             {
-                _rigidbodyCollisionMap.Remove(rigidbody);
+                interactables.Remove(interactable);
+                if (interactables.Count == 0)
+                {
+                    _rigidbodyCollisionMap.Remove(rigidbody);
+                }
             }
         }
 

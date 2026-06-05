@@ -151,7 +151,10 @@ namespace Oculus.Interaction.Input.UnityXR
         protected override void Awake()
         {
             base.Awake();
-            TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            if (TrackingToWorldTransformer == null)
+            {
+                TrackingToWorldTransformer = _trackingToWorldTransformer as ITrackingToWorldTransformer;
+            }
             UpdateConfig();
         }
 

@@ -33,7 +33,7 @@ namespace Oculus.Interaction.Feedback
     /// </summary>
     [CreateAssetMenu(
         fileName = "FeedbackConfig",
-        menuName = "Meta/Interaction/SDK/Feedback/Configuration")]
+        menuName = "Meta/Interaction SDK/Feedback/Configuration")]
     public class FeedbackConfig : ScriptableObject
     {
         /// <summary>

@@ -47,7 +47,7 @@ namespace Oculus.Interaction.Editor
             }
         }
 
-        public void UpdateClipColors(AnimationClip[] clips, ElementColors colors, string prefix)
+        private void UpdateClipColors(AnimationClip[] clips, ElementColors colors, string prefix)
         {
             foreach (var clip in clips)
             {
@@ -74,12 +74,14 @@ namespace Oculus.Interaction.Editor
                 EditorUtility.SetDirty(clip);
             }
         }
-        public void UpdateToggleCilps(AnimationClip[] clips, ElementColors unselectedColors, ElementColors selectedColors)
+
+        private void UpdateToggleClips(AnimationClip[] clips, ElementColors unselectedColors, ElementColors selectedColors)
         {
             UpdateClipColors(clips, unselectedColors, "");
             UpdateClipColors(clips, selectedColors, "Selected");
         }
-        public void UpdateAnimationClips(UITheme selectedTheme)
+
+        private void UpdateAnimationClips(UITheme selectedTheme)
         {
             UpdateClipColors(selectedTheme.acPrimaryButton.animationClips, selectedTheme.primaryButton, "");
             UpdateClipColors(selectedTheme.acSecondaryButton.animationClips, selectedTheme.secondaryButton, "");
@@ -88,10 +90,10 @@ namespace Oculus.Interaction.Editor
 
             UpdateClipColors(selectedTheme.acTextInputField.animationClips, selectedTheme.secondaryButton, "");
 
-            UpdateToggleCilps(selectedTheme.acToggleButton.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
-            UpdateToggleCilps(selectedTheme.acToggleBorderlessButton.animationClips, selectedTheme.borderlessButton, selectedTheme.primaryButton);
-            UpdateToggleCilps(selectedTheme.acToggleSwitch.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
-            UpdateToggleCilps(selectedTheme.acToggleCheckboxRadio.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
+            UpdateToggleClips(selectedTheme.acToggleButton.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
+            UpdateToggleClips(selectedTheme.acToggleBorderlessButton.animationClips, selectedTheme.borderlessButton, selectedTheme.primaryButton);
+            UpdateToggleClips(selectedTheme.acToggleSwitch.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
+            UpdateToggleClips(selectedTheme.acToggleCheckboxRadio.animationClips, selectedTheme.secondaryButton, selectedTheme.primaryButton);
 
             // Writes all unsaved asset changes to disk
             AssetDatabase.SaveAssets();
@@ -100,7 +102,7 @@ namespace Oculus.Interaction.Editor
             Debug.Log("Theme and animation clips updated.");
         }
 
-        void ColorCurve(AnimationClip clip, Color targetColor, string propName)
+        private void ColorCurve(AnimationClip clip, Color targetColor, string propName)
         {
             UITheme selectedTheme = (UITheme)target;
 

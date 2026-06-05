@@ -42,6 +42,7 @@ namespace Oculus.Interaction
         public Color buttonPlateColor;
         public Color sectionPlateColor;
         public Color tooltipColor;
+        public Color rippleCursorColor = Color.white;
 
         [Header("Shared")]
         public Color textPrimaryColor;
@@ -79,7 +80,9 @@ namespace Oculus.Interaction
         public RuntimeAnimatorController acToggleBorderlessButton;
         public RuntimeAnimatorController acToggleSwitch;
         public RuntimeAnimatorController acToggleCheckboxRadio;
+        public RuntimeAnimatorController acToggleThumbnail;
         public RuntimeAnimatorController acTextInputField;
+
         [Space(10)]
         public string colorPath = "Content/Background";
     }

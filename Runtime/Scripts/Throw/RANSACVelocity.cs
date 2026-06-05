@@ -65,12 +65,6 @@ namespace Oculus.Interaction.Throw
         private RandomSampleConsensus<Vector3>.GenerateModel _torqueModel;
         private RandomSampleConsensus<Vector3>.EvaluateModelScore _torqueScorer;
 
-        [Obsolete("The minHighConfidenceSamples parameter will be ignored. Use the constructor without it")]
-        public RANSACVelocity(int samplesCount = 10, int samplesDeadZone = 2, int minHighConfidenceSamples = 2)
-            : this(samplesCount, samplesDeadZone)
-        {
-        }
-
         /// <summary>
         /// Creates a new RANSACVelocity for estimating velocity.
         /// </summary>

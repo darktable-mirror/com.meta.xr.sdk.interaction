@@ -35,7 +35,7 @@ namespace Oculus.Interaction.PoseDetection
     /// described hand shape has been recognized or not. In this sense, ShapeRecognizer might be thought of as
     /// a definition or descriptor of a hand shape.
     /// </remarks>
-    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Pose Detection/Shape")]
+    [CreateAssetMenu(menuName = "Meta/Interaction SDK/Pose Detection/Shape")]
     public class ShapeRecognizer : ScriptableObject
     {
         /// <summary>

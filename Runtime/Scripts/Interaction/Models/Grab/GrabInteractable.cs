@@ -73,14 +73,6 @@ namespace Oculus.Interaction
         [SerializeField]
         private bool _resetGrabOnGrabsUpdated = true;
 
-        /// <summary>
-        /// The <cref="PhysicsGrabbable" /> used when you grab the interactable.
-        /// </summary>
-        [Tooltip("The PhysicsGrabbable used when you grab the interactable.")]
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete("Use " + nameof(Grabbable) + " and/or " + nameof(RigidbodyKinematicLocker) + " instead")]
-        private PhysicsGrabbable _physicsGrabbable = null;
-
         private static CollisionInteractionRegistry<GrabInteractor, GrabInteractable> _grabRegistry = null;
 
         /// <summary>
@@ -172,21 +164,6 @@ namespace Oculus.Interaction
             return _grabSource.GetPose();
         }
 
-        /// <summary>
-        /// Applies specified linear and angular velocities to the interactable's Rigidbody, if it has one, facilitating realistic physics interactions.
-        /// </summary>
-        /// <param name="linearVelocity">The linear velocity to apply.</param>
-        /// <param name="angularVelocity">The angular velocity to apply.</param>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
-        {
-            if (_physicsGrabbable == null)
-            {
-                return;
-            }
-            _physicsGrabbable.ApplyVelocities(linearVelocity, angularVelocity);
-        }
-
         #region Inject
 
         /// <summary>
@@ -222,16 +199,6 @@ namespace Oculus.Interaction
         public void InjectOptionalReleaseDistance(float releaseDistance)
         {
             _releaseDistance = releaseDistance;
-        }
-
-        /// <summary>
-        /// Optionally adds a PhysicsGrabbable component to the interactable, which is now deprecated and should be replaced with <see cref="Grabbable"/>.
-        /// </summary>
-        /// <param name="physicsGrabbable">The PhysicsGrabbable component to be added.</param>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalPhysicsGrabbable(PhysicsGrabbable physicsGrabbable)
-        {
-            _physicsGrabbable = physicsGrabbable;
         }
         #endregion
     }

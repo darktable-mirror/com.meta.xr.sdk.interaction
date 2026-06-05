@@ -36,7 +36,10 @@ namespace Oculus.Interaction.Samples
 
         protected virtual void Awake()
         {
-            HandVisual = _handVisual as IHandVisual;
+            if (HandVisual == null)
+            {
+                HandVisual = _handVisual as IHandVisual;
+            }
         }
 
         protected virtual void Start()

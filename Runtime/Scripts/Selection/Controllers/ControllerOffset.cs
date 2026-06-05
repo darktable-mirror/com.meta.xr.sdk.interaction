@@ -55,6 +55,10 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Controller.WhenUpdated += HandleUpdated;
+                if (Controller.IsConnected)
+                {
+                    HandleUpdated();
+                }
             }
         }
 

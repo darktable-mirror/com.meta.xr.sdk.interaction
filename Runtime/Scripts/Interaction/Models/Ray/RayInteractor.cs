@@ -122,7 +122,10 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            Selector = _selector as ISelector;
+            if (Selector == null)
+            {
+                Selector = _selector as ISelector;
+            }
             _nativeId = 0x52617949746f7220;
         }
 

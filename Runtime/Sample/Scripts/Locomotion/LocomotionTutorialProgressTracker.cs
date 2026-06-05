@@ -55,7 +55,10 @@ namespace Oculus.Interaction.Samples
 
         protected virtual void Awake()
         {
-            LocomotionHandler = _locomotionHandler as ILocomotionEventHandler;
+            if (LocomotionHandler == null)
+            {
+                LocomotionHandler = _locomotionHandler as ILocomotionEventHandler;
+            }
         }
 
         protected virtual void Start()

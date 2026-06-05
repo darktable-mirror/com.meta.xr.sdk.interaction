@@ -172,8 +172,14 @@ namespace Oculus.Interaction
         protected override void Awake()
         {
             base.Awake();
-            OneGrabTransformer = _oneGrabTransformer as ITransformer;
-            TwoGrabTransformer = _twoGrabTransformer as ITransformer;
+            if (OneGrabTransformer == null)
+            {
+                OneGrabTransformer = _oneGrabTransformer as ITransformer;
+            }
+            if (TwoGrabTransformer == null)
+            {
+                TwoGrabTransformer = _twoGrabTransformer as ITransformer;
+            }
         }
 
         protected override void Start()

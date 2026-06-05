@@ -22,7 +22,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace Oculus.Interaction.Demo
+namespace Oculus.Interaction.Samples
 {
     [RequireComponent(typeof(MeshFilter))]
     public class MeshBlit : MonoBehaviour

@@ -21,25 +21,28 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[ExecuteAlways]
-[RequireComponent(typeof(RectTransform))]
-public class RectSizeConstraint : UIBehaviour
+namespace Oculus.Interaction.Samples
 {
-    public RectTransform target;
-
-    private RectTransform _rectTransform;
-
-    protected override void Awake()
+    [ExecuteAlways]
+    [RequireComponent(typeof(RectTransform))]
+    public class RectSizeConstraint : UIBehaviour
     {
-        _rectTransform = (RectTransform)transform;
-    }
+        public RectTransform target;
 
-    protected virtual void LateUpdate()
-    {
-        if (target != null)
+        private RectTransform _rectTransform;
+
+        protected override void Awake()
         {
-            _rectTransform.sizeDelta = new Vector2(target.rect.width, target.rect.height);
-            _rectTransform.ForceUpdateRectTransforms();
+            _rectTransform = (RectTransform)transform;
+        }
+
+        protected virtual void LateUpdate()
+        {
+            if (target != null)
+            {
+                _rectTransform.sizeDelta = new Vector2(target.rect.width, target.rect.height);
+                _rectTransform.ForceUpdateRectTransforms();
+            }
         }
     }
 }

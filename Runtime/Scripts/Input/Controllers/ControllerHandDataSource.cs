@@ -18,32 +18,23 @@
  * limitations under the License.
  */
 
-using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Oculus.Interaction.Input
 {
     public class ControllerHandDataSource : DataSource<HandDataAsset>
     {
-        [SerializeField]
-        private DataSource<ControllerDataAsset> _controllerSource;
-
-        [SerializeField]
-        private Transform _root;
+        [SerializeField, Interface(typeof(IDataSource<ControllerDataAsset>))]
+        private UnityEngine.Object _controllerSource;
+        private IDataSource<ControllerDataAsset> ControllerSource { get; set; }
 
         [SerializeField]
         private Transform _openXRRoot;
 
         public Transform Root
         {
-#if ISDK_OPENXR_HAND
             get => _openXRRoot;
             set => _openXRRoot = value;
-#else
-            get => _root;
-            set => _root = value;
-#endif
         }
 
         [SerializeField]
@@ -55,20 +46,11 @@ namespace Oculus.Interaction.Input
         }
 
         [SerializeField]
-        [FormerlySerializedAs("_bones")]
-        [FormerlySerializedAs("_joints")]
-        private Transform[] _jointTransforms;
-
-        [SerializeField]
         private Transform[] _openXRJointTransforms;
 
         public Transform[] Joints
         {
-#if ISDK_OPENXR_HAND
             get => _openXRJointTransforms;
-#else
-            get => _jointTransforms;
-#endif
         }
 
         private HandDataSourceConfig _config;
@@ -90,45 +72,29 @@ namespace Oculus.Interaction.Input
 
         protected virtual void Awake()
         {
-#if ISDK_OPENXR_HAND
-            if (_root != null)
+            if (ControllerSource == null)
             {
-                _root.gameObject.SetActive(false);
+                ControllerSource = _controllerSource as IDataSource<ControllerDataAsset>;
             }
             if (_openXRRoot != null)
             {
                 _openXRRoot.gameObject.SetActive(true);
             }
-#else
-            if (_root != null)
-            {
-                _root.gameObject.SetActive(true);
-            }
-            if (_openXRRoot != null)
-            {
-                _openXRRoot.gameObject.SetActive(false);
-            }
-#endif
         }
 
         protected override void Start()
         {
             this.BeginStart(ref _started, () => base.Start());
-            this.AssertField(_controllerSource, nameof(_controllerSource));
-#if ISDK_OPENXR_HAND
+            this.AssertField(ControllerSource, nameof(_controllerSource));
             this.AssertCollectionField(_openXRJointTransforms, nameof(_openXRJointTransforms));
             this.AssertField(_openXRRoot, nameof(_openXRRoot));
-#else
-            this.AssertCollectionField(_jointTransforms, nameof(_jointTransforms));
-            this.AssertField(_root, nameof(_root));
-#endif
             UpdateConfig();
             this.EndStart(ref _started);
         }
 
         private void UpdateConfig()
         {
-            ControllerDataSourceConfig controllerConfig = _controllerSource.GetData().Config;
+            ControllerDataSourceConfig controllerConfig = ControllerSource.GetData().Config;
 
             Config.Handedness = controllerConfig.Handedness;
             Config.TrackingToWorldTransformer = controllerConfig.TrackingToWorldTransformer;
@@ -137,7 +103,7 @@ namespace Oculus.Interaction.Input
 
         protected override void UpdateData()
         {
-            ControllerDataAsset controllerData = _controllerSource.GetData();
+            ControllerDataAsset controllerData = ControllerSource.GetData();
             _handDataAsset.Config = Config;
             _handDataAsset.IsDataValid = controllerData.IsDataValid;
             _handDataAsset.IsConnected = controllerData.IsConnected;
@@ -194,9 +160,7 @@ namespace Oculus.Interaction.Input
 #pragma warning disable 0618
                 _handDataAsset.Joints[i] = Joints[i].localRotation;
 #pragma warning restore 0618
-#if ISDK_OPENXR_HAND
                 _handDataAsset.JointPoses[i] = PoseUtils.Delta(Root, Joints[i]);
-#endif
             }
 
             if (_rootIsLocal)
@@ -218,31 +182,22 @@ namespace Oculus.Interaction.Input
         #region Inject
 
         public void InjectAllControllerHandDataSource(UpdateModeFlags updateMode, IDataSource updateAfter,
-            DataSource<ControllerDataAsset> controllerSource, Transform[] jointTransforms)
+            IDataSource<ControllerDataAsset> controllerSource, Transform[] jointTransforms)
         {
             base.InjectAllDataSource(updateMode, updateAfter);
             InjectControllerSource(controllerSource);
             InjectJointTransforms(jointTransforms);
         }
 
-        public void InjectControllerSource(DataSource<ControllerDataAsset> controllerSource)
+        public void InjectControllerSource(IDataSource<ControllerDataAsset> controllerSource)
         {
-            _controllerSource = controllerSource;
-        }
-
-        [Obsolete("Use " + nameof(InjectJointTransforms) + " instead")]
-        public void InjectBones(Transform[] joints)
-        {
-            InjectJointTransforms(joints);
+            _controllerSource = controllerSource as UnityEngine.Object;
+            ControllerSource = controllerSource;
         }
 
         public void InjectJointTransforms(Transform[] jointTransforms)
         {
-#if ISDK_OPENXR_HAND
             _openXRJointTransforms = jointTransforms;
-#else
-            _jointTransforms = jointTransforms;
-#endif
         }
         #endregion
     }

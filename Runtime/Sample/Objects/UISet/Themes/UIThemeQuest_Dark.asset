@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeQuest_Dark
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   _themeVersion: 2
   backplateColor: {r: 1, g: 1, b: 1, a: 1}
   backplateGradientMaterial: {fileID: 2100000, guid: d6e192b5359c267428b5fe9a29ea1010,
@@ -60,5 +60,6 @@ MonoBehaviour:
   acToggleSwitch: {fileID: 9100000, guid: 26f1b9b1dfdb2af4cb21f810aec35b9c, type: 2}
   acToggleCheckboxRadio: {fileID: 9100000, guid: ecdab7d4efd5b134bb7862b57ab1188c,
     type: 2}
+  acToggleThumbnail: {fileID: 9100000, guid: 414dc865838fe36449743c9525815ac2, type: 2}
   acTextInputField: {fileID: 9100000, guid: ebffd02e23b79524e9142997edbf75a5, type: 2}
   colorPath: Content/Background

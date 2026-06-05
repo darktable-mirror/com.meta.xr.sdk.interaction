@@ -58,16 +58,22 @@ namespace Oculus.Interaction
         private readonly HashSet<string> _excludeTagSet =
             new HashSet<string>();
 
-        protected virtual void Start()
+        protected virtual void Awake()
         {
-            foreach (string requireTag in _requireTags)
+            if (_requireTags != null)
             {
-                _requireTagSet.Add(requireTag);
+                foreach (string requireTag in _requireTags)
+                {
+                    _requireTagSet.Add(requireTag);
+                }
             }
 
-            foreach (string excludeTag in _excludeTags)
+            if (_excludeTags != null)
             {
-                _excludeTagSet.Add(excludeTag);
+                foreach (string excludeTag in _excludeTags)
+                {
+                    _excludeTagSet.Add(excludeTag);
+                }
             }
         }
 
@@ -156,6 +162,14 @@ namespace Oculus.Interaction
         public void InjectOptionalRequireTags(string[] requireTags)
         {
             _requireTags = requireTags;
+            _requireTagSet.Clear();
+            if (_requireTags != null)
+            {
+                foreach (string requireTag in _requireTags)
+                {
+                    _requireTagSet.Add(requireTag);
+                }
+            }
         }
 
         /// <summary>
@@ -165,6 +179,14 @@ namespace Oculus.Interaction
         public void InjectOptionalExcludeTags(string[] excludeTags)
         {
             _excludeTags = excludeTags;
+            _excludeTagSet.Clear();
+            if (_excludeTags != null)
+            {
+                foreach (string excludeTag in _excludeTags)
+                {
+                    _excludeTagSet.Add(excludeTag);
+                }
+            }
         }
 
         #endregion

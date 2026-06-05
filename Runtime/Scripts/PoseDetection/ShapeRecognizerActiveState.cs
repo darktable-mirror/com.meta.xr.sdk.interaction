@@ -34,20 +34,6 @@ namespace Oculus.Interaction.PoseDetection
     public class ShapeRecognizerActiveState : MonoBehaviour, IActiveState
     {
         /// <summary>
-        /// The hand to read for state data.
-        /// </summary>
-        [SerializeField, Interface(typeof(IHand))]
-        [Optional(OptionalAttribute.Flag.Obsolete)]
-        private UnityEngine.Object _hand;
-
-        /// <summary>
-        /// The <see cref="IHand"/> to be observed. While this hand adopts a pose which meets the requirements of any of the
-        /// specified <see cref="Shapes"/>, <see cref="Active"/> will be true.
-        /// </summary>
-        [Obsolete]
-        public IHand Hand { get; private set; }
-
-        /// <summary>
         /// Provides the current state of the tracked hand's fingers.
         /// </summary>
         [SerializeField, Interface(typeof(IFingerFeatureStateProvider))]
@@ -66,13 +52,6 @@ namespace Oculus.Interaction.PoseDetection
         /// </summary>
         public IReadOnlyList<ShapeRecognizer> Shapes => _shapes;
 
-        /// <summary>
-        /// The <see cref="Handedness"/> of the ShapeRecognizerActiveState. This is a convenience method which wraps
-        /// a call to the <see cref="Hand.Handedness"/> property of the <see cref="Hand"/>
-        /// </summary>
-        [Obsolete]
-        public Handedness Handedness => Hand.Handedness;
-
         struct FingerFeatureStateUsage
         {
             public HandFinger handFinger;
@@ -86,9 +65,6 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            Hand = _hand as IHand;
-#pragma warning restore CS0612 // Type or member is obsolete
             if (FingerFeatureStateProvider == null)
             {
                 FingerFeatureStateProvider = _fingerFeatureStateProvider as IFingerFeatureStateProvider;
@@ -178,26 +154,8 @@ namespace Oculus.Interaction.PoseDetection
         #region Inject
         /// <summary>
         /// Sets all required dependencies for a dynamically instantiated ShapeRecognizerActiveState. This is a convenience
-        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
-        /// <see cref="InjectFingerFeatureStateProvider(IFingerFeatureStateProvider)"/>, and <see cref="InjectShapes(ShapeRecognizer[])"/>.
-        /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
-        /// usage.
-        /// </summary>
-        [Obsolete("Use InjectAllShapeRecognizerActiveState(IFingerFeatureStateProvider, ShapeRecognizer[]) instead")]
-        public void InjectAllShapeRecognizerActiveState(IHand hand,
-            IFingerFeatureStateProvider fingerFeatureStateProvider,
-            ShapeRecognizer[] shapes)
-        {
-            InjectHand(hand);
-            InjectFingerFeatureStateProvider(fingerFeatureStateProvider);
-            InjectShapes(shapes);
-        }
-
-
-        /// <summary>
-        /// Sets all required dependencies for a dynamically instantiated ShapeRecognizerActiveState. This is a convenience
-        /// method which wraps invocations of <see cref="InjectHand(IHand)"/>,
-        /// <see cref="InjectFingerFeatureStateProvider(IFingerFeatureStateProvider)"/>, and <see cref="InjectShapes(ShapeRecognizer[])"/>.
+        /// method which wraps invocations of <see cref="InjectFingerFeatureStateProvider(IFingerFeatureStateProvider)"/>,
+        /// and <see cref="InjectShapes(ShapeRecognizer[])"/>.
         /// This method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
         /// usage.
         /// </summary>
@@ -207,18 +165,6 @@ namespace Oculus.Interaction.PoseDetection
         {
             InjectFingerFeatureStateProvider(fingerFeatureStateProvider);
             InjectShapes(shapes);
-        }
-
-        /// <summary>
-        /// Sets an <see cref="IHand"/> as the <see cref="Hand"/> for a dynamically instantiated ShapeRecognizerActiveState. This
-        /// method exists to support Interaction SDK's dependency injection pattern and is not needed for typical Unity Editor-based
-        /// usage.
-        /// </summary>
-        [Obsolete]
-        public void InjectHand(IHand hand)
-        {
-            _hand = hand as UnityEngine.Object;
-            Hand = hand;
         }
 
         /// <summary>

@@ -27,6 +27,7 @@ namespace Oculus.Interaction.Samples.PalmMenu
     /// <summary>
     /// Filters to one set of GameObjects or the other, depending on which hand is the user's dominant hand.
     /// </summary>
+    [System.Obsolete("HandOnHand sample has been removed. This class will be deleted in a future release.", true)]
     public class DominantHandGameObjectFilter : MonoBehaviour, IGameObjectFilter
     {
         [SerializeField, Interface(typeof(IHand))]

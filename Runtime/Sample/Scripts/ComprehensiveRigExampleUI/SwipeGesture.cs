@@ -22,57 +22,61 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-/// <summary>
-/// The SwipeGesture component listens to the drag events to detect if a gesture happened on a particular element in the local X or Y axis.
-/// </summary>
-public class SwipeGesture : UIBehaviour, IBeginDragHandler, IEndDragHandler
+
+namespace Oculus.Interaction.Samples
 {
-    public float gestureMaxDuration = 1;
-    public float gestureMinDistanceNormalized = 0.15f;
-    [Space(10)]
-    public bool invertScroll;
-    public enum Axis
+    /// <summary>
+    /// The SwipeGesture component listens to the drag events to detect if a gesture happened on a particular element in the local X or Y axis.
+    /// </summary>
+    public class SwipeGesture : UIBehaviour, IBeginDragHandler, IEndDragHandler
     {
-        Horizontal = 0,
-        Vertical = 1
-    }
-    public Axis swipeAxis;
-
-    private float startTime;
-    private Vector2 startLocalPosition;
-    [Space(10)]
-    [SerializeField] private UnityEvent<int> swipeExecuted;
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        startTime = Time.time;
-        var viewRect = (RectTransform)transform;
-        Vector2 pointerLocalPosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out pointerLocalPosition);
-        startLocalPosition = pointerLocalPosition;
-    }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        var duration = Time.time - startTime;
-        Vector2 pointerLocalPosition;
-        var viewRect = (RectTransform)transform;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out pointerLocalPosition);
-
-        var positionDelta = pointerLocalPosition - startLocalPosition;
-        var isDragOnAxis = Mathf.Abs(positionDelta.normalized[(int)swipeAxis]) > 0.5f;
-
-        var isValidGestureDuration = duration < gestureMaxDuration;
-
-        var size = swipeAxis == Axis.Horizontal ? viewRect.rect.width : viewRect.rect.height;
-        var movementOverAxis = Mathf.Abs(positionDelta[(int)swipeAxis]);
-        var minRequiredTravelDistance = size * gestureMinDistanceNormalized;
-        var isProperSwipeDistance = movementOverAxis > minRequiredTravelDistance;
-
-        if (isDragOnAxis && isProperSwipeDistance && isValidGestureDuration)
+        public float gestureMaxDuration = 1;
+        public float gestureMinDistanceNormalized = 0.15f;
+        [Space(10)]
+        public bool invertScroll;
+        public enum Axis
         {
-            var direction = (int)Mathf.Sign(positionDelta[(int)swipeAxis]);
-            direction *= invertScroll ? -1 : 1;
-            swipeExecuted.Invoke(direction);
+            Horizontal = 0,
+            Vertical = 1
+        }
+        public Axis swipeAxis;
+
+        private float startTime;
+        private Vector2 startLocalPosition;
+        [Space(10)]
+        [SerializeField] private UnityEvent<int> swipeExecuted;
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            startTime = Time.time;
+            var viewRect = (RectTransform)transform;
+            Vector2 pointerLocalPosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out pointerLocalPosition);
+            startLocalPosition = pointerLocalPosition;
+        }
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            var duration = Time.time - startTime;
+            Vector2 pointerLocalPosition;
+            var viewRect = (RectTransform)transform;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out pointerLocalPosition);
+
+            var positionDelta = pointerLocalPosition - startLocalPosition;
+            var isDragOnAxis = Mathf.Abs(positionDelta.normalized[(int)swipeAxis]) > 0.5f;
+
+            var isValidGestureDuration = duration < gestureMaxDuration;
+
+            var size = swipeAxis == Axis.Horizontal ? viewRect.rect.width : viewRect.rect.height;
+            var movementOverAxis = Mathf.Abs(positionDelta[(int)swipeAxis]);
+            var minRequiredTravelDistance = size * gestureMinDistanceNormalized;
+            var isProperSwipeDistance = movementOverAxis > minRequiredTravelDistance;
+
+            if (isDragOnAxis && isProperSwipeDistance && isValidGestureDuration)
+            {
+                var direction = (int)Mathf.Sign(positionDelta[(int)swipeAxis]);
+                direction *= invertScroll ? -1 : 1;
+                swipeExecuted.Invoke(direction);
+            }
         }
     }
 }

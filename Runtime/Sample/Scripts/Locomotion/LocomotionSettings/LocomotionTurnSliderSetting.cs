@@ -23,6 +23,7 @@ using UnityEngine.UI;
 
 namespace Oculus.Interaction.Locomotion
 {
+    [System.Obsolete("Use " + nameof(TurningSetting) + " instead")]
     public class LocomotionTurnSliderSetting : MonoBehaviour
     {
         [SerializeField]

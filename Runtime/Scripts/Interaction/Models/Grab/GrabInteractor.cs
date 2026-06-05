@@ -50,14 +50,6 @@ namespace Oculus.Interaction
         public Rigidbody Rigidbody => _rigidbody;
 
         /// <summary>
-        /// The center of the grab.
-        /// </summary>
-        [Tooltip("The center of the grab.")]
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete]
-        private Transform _grabCenter;
-
-        /// <summary>
         /// The location where the interactable will move when selected.
         /// </summary>
         [Tooltip("The location where the interactable will move when selected.")]
@@ -68,28 +60,16 @@ namespace Oculus.Interaction
         private Tween _tween;
         private bool _outsideReleaseDist = false;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        /// <summary>
-        /// Determines how the object will move when thrown.
-        /// </summary>
-        [Tooltip("Determines how the object will move when thrown.")]
-        [SerializeField, Interface(typeof(IThrowVelocityCalculator)), Optional(OptionalAttribute.Flag.Obsolete)]
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        private UnityEngine.Object _velocityCalculator;
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public IThrowVelocityCalculator VelocityCalculator { get; set; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
         private GrabInteractable _selectedInteractableOverride;
         private bool _isSelectionOverriden = false;
 
         protected override void Awake()
         {
             base.Awake();
-            Selector = _selector as ISelector;
-#pragma warning disable CS0618 // Type or member is obsolete
-            VelocityCalculator = _velocityCalculator as IThrowVelocityCalculator;
-#pragma warning restore CS0618 // Type or member is obsolete
+            if (Selector == null)
+            {
+                Selector = _selector as ISelector;
+            }
             _nativeId = 0x4772616249746f72;
         }
 
@@ -115,27 +95,9 @@ namespace Oculus.Interaction
                 _grabTarget = Rigidbody.transform;
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (_velocityCalculator != null)
-            {
-                this.AssertField(VelocityCalculator, nameof(VelocityCalculator));
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             _tween = new Tween(Pose.identity);
 
             this.EndStart(ref _started);
-        }
-
-        protected override void DoPreprocess()
-        {
-#pragma warning disable CS0612 // Type or member is obsolete
-            if (_grabCenter != null)
-            {
-                transform.position = _grabCenter.position;
-                transform.rotation = _grabCenter.rotation;
-            }
-#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         protected override GrabInteractable ComputeCandidate()
@@ -218,18 +180,6 @@ namespace Oculus.Interaction
             base.InteractableSelected(interactable);
 
             _tween.MoveTo(target);
-        }
-
-        protected override void InteractableUnselected(GrabInteractable interactable)
-        {
-            base.InteractableUnselected(interactable);
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            ReleaseVelocityInformation throwVelocity = VelocityCalculator != null ?
-                VelocityCalculator.CalculateThrowVelocity(interactable.transform) :
-                new ReleaseVelocityInformation(Vector3.zero, Vector3.zero, Vector3.zero);
-            interactable.ApplyVelocities(throwVelocity.LinearVelocity, throwVelocity.AngularVelocity);
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected override void HandlePointerEventRaised(PointerEvent evt)
@@ -343,32 +293,12 @@ namespace Oculus.Interaction
         }
 
         /// <summary>
-        /// Optionally adds a grab center to a dynamically instantiated GameObject,
-        /// allowing for precise control over the center of grabbing operations by providing an external grab center transform.
-        /// </summary>
-        [Obsolete]
-        public void InjectOptionalGrabCenter(Transform grabCenter)
-        {
-            _grabCenter = grabCenter;
-        }
-
-        /// <summary>
         /// Optionally adds a grab target to a dynamically instantiated GameObject,
         /// enabling targeted grabbing operations by providing an external grab target transform.
         /// </summary>
         public void InjectOptionalGrabTarget(Transform grabTarget)
         {
             _grabTarget = grabTarget;
-        }
-
-        /// <summary>
-        /// Adds a velocity calculator to a dynamically instantiated GameObject.
-        /// </summary>
-        [Obsolete("Use " + nameof(Grabbable) + " instead")]
-        public void InjectOptionalVelocityCalculator(IThrowVelocityCalculator velocityCalculator)
-        {
-            _velocityCalculator = velocityCalculator as UnityEngine.Object;
-            VelocityCalculator = velocityCalculator;
         }
 
         #endregion

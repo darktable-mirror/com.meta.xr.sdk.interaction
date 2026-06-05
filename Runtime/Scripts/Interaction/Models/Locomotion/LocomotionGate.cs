@@ -231,9 +231,18 @@ namespace Oculus.Interaction.Locomotion
 
         protected virtual void Awake()
         {
-            Hand = _hand as IHand;
-            EnableShape = _enableShape as IActiveState;
-            DisableShape = _disableShape as IActiveState;
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
+            if (EnableShape == null)
+            {
+                EnableShape = _enableShape as IActiveState;
+            }
+            if (DisableShape == null)
+            {
+                DisableShape = _disableShape as IActiveState;
+            }
         }
 
         protected virtual void Start()

@@ -88,8 +88,14 @@ namespace Oculus.Interaction.Input
 
         protected virtual void Awake()
         {
-            LeftHand = _leftHand as IHand;
-            RightHand = _rightHand as IHand;
+            if (LeftHand == null)
+            {
+                LeftHand = _leftHand as IHand;
+            }
+            if (RightHand == null)
+            {
+                RightHand = _rightHand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -108,6 +114,14 @@ namespace Oculus.Interaction.Input
             {
                 LeftHand.WhenHandUpdated += HandleLeftHandUpdated;
                 RightHand.WhenHandUpdated += HandleRightHandUpdated;
+                if (LeftHand.IsConnected)
+                {
+                    HandleLeftHandUpdated();
+                }
+                if (RightHand.IsConnected)
+                {
+                    HandleRightHandUpdated();
+                }
             }
         }
 

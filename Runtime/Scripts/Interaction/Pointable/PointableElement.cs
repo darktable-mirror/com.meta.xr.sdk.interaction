@@ -142,7 +142,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            ForwardElement = _forwardElement as IPointableElement;
+            if (ForwardElement == null)
+            {
+                ForwardElement = _forwardElement as IPointableElement;
+            }
 
             _points = new List<Pose>();
             _pointIds = new List<int>();

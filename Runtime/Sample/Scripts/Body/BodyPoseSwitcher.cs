@@ -82,8 +82,14 @@ namespace Oculus.Interaction.Body.Samples
 
         protected virtual void Awake()
         {
-            PoseA = _poseA as IBodyPose;
-            PoseB = _poseB as IBodyPose;
+            if (PoseA == null)
+            {
+                PoseA = _poseA as IBodyPose;
+            }
+            if (PoseB == null)
+            {
+                PoseB = _poseB as IBodyPose;
+            }
         }
 
         protected virtual void Start()

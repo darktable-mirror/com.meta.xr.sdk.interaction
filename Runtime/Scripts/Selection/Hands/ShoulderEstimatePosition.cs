@@ -45,8 +45,14 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hmd = _hmd as IHmd;
-            Hand = _hand as IHand;
+            if (Hmd == null)
+            {
+                Hmd = _hmd as IHmd;
+            }
+            if (Hand == null)
+            {
+                Hand = _hand as IHand;
+            }
         }
 
         protected virtual void Start()
@@ -62,6 +68,7 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hmd.WhenUpdated += HandleHmdUpdated;
+                HandleHmdUpdated();
             }
         }
 
@@ -75,7 +82,10 @@ namespace Oculus.Interaction
 
         protected virtual void HandleHmdUpdated()
         {
-            Hmd.TryGetRootPose(out Pose headPose);
+            if (!Hmd.TryGetRootPose(out Pose headPose))
+            {
+                return;
+            }
             Quaternion shoulderYaw = Quaternion.Euler(0f, headPose.rotation.eulerAngles.y, 0f);
             Vector3 offset = ShoulderOffset * Hand.Scale;
             if (Hand.Handedness == Handedness.Left)

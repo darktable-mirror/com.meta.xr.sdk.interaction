@@ -28,6 +28,7 @@ namespace Oculus.Interaction.Samples.PalmMenu
     /// buttons with several possible icons, the states of those buttons are controlled by the PalmMenuExampleButtonHandlers script,
     /// which manages the state of the various handlers.
     /// </summary>
+    [System.Obsolete("HandOnHand sample has been removed. This class will be deleted in a future release.", true)]
     public class PalmMenuExample : MonoBehaviour
     {
         [SerializeField]

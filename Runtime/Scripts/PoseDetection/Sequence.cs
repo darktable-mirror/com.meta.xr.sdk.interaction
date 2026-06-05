@@ -201,7 +201,10 @@ namespace Oculus.Interaction.PoseDetection
 
         protected virtual void Awake()
         {
-            RemainActiveWhile = _remainActiveWhile as IActiveState;
+            if (RemainActiveWhile == null)
+            {
+                RemainActiveWhile = _remainActiveWhile as IActiveState;
+            }
 
             ResetState();
         }

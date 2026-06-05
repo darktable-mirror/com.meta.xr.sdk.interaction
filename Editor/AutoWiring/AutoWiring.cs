@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace Oculus.Interaction.Editor
@@ -66,6 +67,25 @@ namespace Oculus.Interaction.Editor
             string fieldName,
             FieldWiringStrategy[] wiringMethods)
         {
+            // Prevent auto-wiring from modifying immutable staged prefabs
+            if (monoBehaviour != null && monoBehaviour.gameObject != null &&
+                monoBehaviour.gameObject.scene.IsValid() &&
+                EditorSceneManager.IsPreviewScene(monoBehaviour.gameObject.scene))
+            {
+                var stage = PrefabStageUtility.GetPrefabStage(monoBehaviour.gameObject);
+                var instanceRoot = stage?.openedFromInstanceRoot;
+                var contentsRoot = stage?.prefabContentsRoot;
+
+                if (instanceRoot != null && PrefabUtility.IsPartOfImmutablePrefab(instanceRoot))
+                {
+                    return false;
+                }
+                if (contentsRoot != null && PrefabUtility.IsPartOfImmutablePrefab(contentsRoot))
+                {
+                    return false;
+                }
+            }
+
             FieldInfo field = FindField(fieldName, monoBehaviour.GetType());
             if (field == null)
             {

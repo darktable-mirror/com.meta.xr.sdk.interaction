@@ -41,7 +41,10 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            Hmd = _hmd as IHmd;
+            if (Hmd == null)
+            {
+                Hmd = _hmd as IHmd;
+            }
         }
 
         protected virtual void Start()
@@ -56,6 +59,7 @@ namespace Oculus.Interaction
             if (_started)
             {
                 Hmd.WhenUpdated += HandleUpdated;
+                HandleUpdated();
             }
         }
 

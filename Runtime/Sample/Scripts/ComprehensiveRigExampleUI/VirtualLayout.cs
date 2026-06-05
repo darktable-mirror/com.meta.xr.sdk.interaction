@@ -22,109 +22,113 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[ExecuteAlways]
-public class VirtualLayout : UIBehaviour
+
+namespace Oculus.Interaction.Samples
 {
-    public float animationSpeed;
-    [SerializeField] private RectTransform _layoutParent;
-
-    private List<RectTransform> _rectChildren;
-    private List<RectTransform> _virtualLayoutChildren;
-
-    protected override void OnEnable()
+    [ExecuteAlways]
+    public class VirtualLayout : UIBehaviour
     {
-        if (_layoutParent == null) return;
-        var layoutChildren = _layoutParent.gameObject.GetComponentsInChildren<RectTransform>();
-        for (int i = 1; i < layoutChildren.Length; i++)
+        public float animationSpeed;
+        [SerializeField] private RectTransform _layoutParent;
+
+        private List<RectTransform> _rectChildren;
+        private List<RectTransform> _virtualLayoutChildren;
+
+        protected override void OnEnable()
         {
-            var child = layoutChildren[i];
-            if (Application.isPlaying)
+            if (_layoutParent == null) return;
+            var layoutChildren = _layoutParent.gameObject.GetComponentsInChildren<RectTransform>();
+            for (int i = 1; i < layoutChildren.Length; i++)
             {
-                Destroy(child.gameObject);
+                var child = layoutChildren[i];
+                if (Application.isPlaying)
+                {
+                    Destroy(child.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(child.gameObject);
+                }
             }
-            else
+
+            var children = gameObject.GetComponentsInChildren<RectTransform>();
+            _rectChildren = new List<RectTransform>();
+            _virtualLayoutChildren = new List<RectTransform>();
+            for (int i = 1; i < children.Length; i++)
             {
-                DestroyImmediate(child.gameObject);
+                var child = children[i];
+                if (child.parent != (RectTransform)transform) continue;
+                _rectChildren.Add(child);
+                ResetChildTransform(child);
+
+
+                var virtualTransform = new GameObject();
+                virtualTransform.hideFlags = HideFlags.HideAndDontSave;
+                virtualTransform.name = child.name;
+                virtualTransform.AddComponent<RectTransform>();
+                var virtualChild = (RectTransform)virtualTransform.transform;
+                virtualChild.SetParent(_layoutParent, false);
+                ResetChildTransform(virtualChild);
+
+                _virtualLayoutChildren.Add(virtualChild);
+            }
+
+            _layoutParent.ForceUpdateRectTransforms();
+        }
+
+        private void ResetChildTransform(RectTransform child)
+        {
+            child.localPosition = Vector3.zero;
+            child.anchoredPosition = Vector2.zero;
+            child.localScale = Vector3.one;
+            child.localRotation = Quaternion.identity;
+            child.anchorMin = Vector2.zero;
+            child.anchorMax = Vector2.zero;
+            child.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        protected override void OnDisable()
+        {
+            foreach (var child in _virtualLayoutChildren)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(child.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(child.gameObject);
+                }
             }
         }
 
-        var children = gameObject.GetComponentsInChildren<RectTransform>();
-        _rectChildren = new List<RectTransform>();
-        _virtualLayoutChildren = new List<RectTransform>();
-        for (int i = 1; i < children.Length; i++)
+        private void LateUpdate()
         {
-            var child = children[i];
-            if (child.parent != (RectTransform)transform) continue;
-            _rectChildren.Add(child);
-            ResetChildTransform(child);
-
-
-            var virtualTransform = new GameObject();
-            virtualTransform.hideFlags = HideFlags.HideAndDontSave;
-            virtualTransform.name = child.name;
-            virtualTransform.AddComponent<RectTransform>();
-            var virtualChild = (RectTransform)virtualTransform.transform;
-            virtualChild.SetParent(_layoutParent, false);
-            ResetChildTransform(virtualChild);
-
-            _virtualLayoutChildren.Add(virtualChild);
+            if (_layoutParent == null) return;
+            var layoutTransform = (RectTransform)transform;
+            layoutTransform.anchoredPosition = _layoutParent.anchoredPosition;
+            for (int i = 0; i < _virtualLayoutChildren.Count; i++)
+            {
+                var rectChild = _rectChildren[i];
+                var virtualChild = _virtualLayoutChildren[i];
+                if (Application.isPlaying)
+                {
+                    rectChild.anchoredPosition = Vector2.Lerp(rectChild.anchoredPosition, virtualChild.anchoredPosition, animationSpeed * Time.deltaTime);
+                    rectChild.sizeDelta = Vector2.Lerp(rectChild.sizeDelta, virtualChild.sizeDelta, animationSpeed * Time.deltaTime);
+                }
+                else
+                {
+                    rectChild.anchoredPosition = virtualChild.anchoredPosition + _layoutParent.anchoredPosition;
+                    rectChild.sizeDelta = virtualChild.sizeDelta;
+                }
+            }
         }
 
-        _layoutParent.ForceUpdateRectTransforms();
-    }
-
-    private void ResetChildTransform(RectTransform child)
-    {
-        child.localPosition = Vector3.zero;
-        child.anchoredPosition = Vector2.zero;
-        child.localScale = Vector3.one;
-        child.localRotation = Quaternion.identity;
-        child.anchorMin = Vector2.zero;
-        child.anchorMax = Vector2.zero;
-        child.pivot = new Vector2(0.5f, 0.5f);
-    }
-
-    protected override void OnDisable()
-    {
-        foreach (var child in _virtualLayoutChildren)
+        #region Inject
+        public void InjectAllVirtualLayoutElement(RectTransform layoutParent)
         {
-            if (Application.isPlaying)
-            {
-                Destroy(child.gameObject);
-            }
-            else
-            {
-                DestroyImmediate(child.gameObject);
-            }
+            _layoutParent = layoutParent;
         }
+        #endregion
     }
-
-    private void LateUpdate()
-    {
-        if (_layoutParent == null) return;
-        var layoutTransform = (RectTransform)transform;
-        layoutTransform.anchoredPosition = _layoutParent.anchoredPosition;
-        for (int i = 0; i < _virtualLayoutChildren.Count; i++)
-        {
-            var rectChild = _rectChildren[i];
-            var virtualChild = _virtualLayoutChildren[i];
-            if (Application.isPlaying)
-            {
-                rectChild.anchoredPosition = Vector2.Lerp(rectChild.anchoredPosition, virtualChild.anchoredPosition, animationSpeed * Time.deltaTime);
-                rectChild.sizeDelta = Vector2.Lerp(rectChild.sizeDelta, virtualChild.sizeDelta, animationSpeed * Time.deltaTime);
-            }
-            else
-            {
-                rectChild.anchoredPosition = virtualChild.anchoredPosition + _layoutParent.anchoredPosition;
-                rectChild.sizeDelta = virtualChild.sizeDelta;
-            }
-        }
-    }
-
-    #region Inject
-    public void InjectAllVirtualLayoutElement(RectTransform layoutParent)
-    {
-        _layoutParent = layoutParent;
-    }
-    #endregion
 }

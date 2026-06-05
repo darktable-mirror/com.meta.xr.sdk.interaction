@@ -68,9 +68,18 @@ namespace Oculus.Interaction.DistanceReticles
 
         protected virtual void Awake()
         {
-            HandVisual = _handVisual as IHandVisual;
-            HandGrabInteractor = _handGrabInteractor as IHandGrabInteractor;
-            Interactor = _handGrabInteractor as IInteractorView;
+            if (HandVisual == null)
+            {
+                HandVisual = _handVisual as IHandVisual;
+            }
+            if (HandGrabInteractor == null)
+            {
+                HandGrabInteractor = _handGrabInteractor as IHandGrabInteractor;
+            }
+            if (Interactor == null)
+            {
+                Interactor = _handGrabInteractor as IInteractorView;
+            }
         }
 
         protected override void Start()

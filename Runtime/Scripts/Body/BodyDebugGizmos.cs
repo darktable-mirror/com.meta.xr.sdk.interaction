@@ -62,7 +62,10 @@ namespace Oculus.Interaction.Body
 
         protected virtual void Awake()
         {
-            Body = _body as IBody;
+            if (Body == null)
+            {
+                Body = _body as IBody;
+            }
         }
 
         protected virtual void Start()
@@ -77,6 +80,10 @@ namespace Oculus.Interaction.Body
             if (_started)
             {
                 Body.WhenBodyUpdated += HandleBodyUpdated;
+                if (Body.IsConnected)
+                {
+                    HandleBodyUpdated();
+                }
             }
         }
 

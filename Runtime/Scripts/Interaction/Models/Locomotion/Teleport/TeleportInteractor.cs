@@ -54,41 +54,6 @@ namespace Oculus.Interaction.Locomotion
         /// </summary>
         public IPolyline TeleportArc { get; private set; }
 
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete)]
-        [Tooltip("(Meters, World) The threshold below which distances to a interactable " +
-                 "are treated as equal for the purposes of ranking.")]
-        private float _equalDistanceThreshold = 0.1f;
-        /// <summary>
-        /// (Meters, World) The threshold below which distances to an interactable are treated as equal for the purposes of ranking.
-        /// </summary>
-        [Obsolete("This property is obsolete, create a " +
-            nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
-        public float EqualDistanceThreshold
-        {
-            get
-            {
-                return _equalDistanceThreshold;
-            }
-            set
-            {
-                _equalDistanceThreshold = value;
-            }
-        }
-
-        [SerializeField, Optional(OptionalAttribute.Flag.Obsolete), Interface(typeof(IHmd))]
-        [Tooltip("When provided, the Interactor will perform an extra check to ensure" +
-            "nothing is blocking the line between the Hmd and the teleport origin")]
-        private UnityEngine.Object _hmd;
-        /// <summary>
-        /// When provided, the interactor will perform an extra check to ensure nothing
-        /// is blocking the line between the <see cref="IHmd"/> (head of the player) and the teleport
-        /// origin (hand), making it impossible to teleport if the user is placing their
-        /// hands behind a virtual wall.
-        /// </summary>
-        [Obsolete("This property is obsolete, create a " +
-            nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
-        private IHmd Hmd { get; set; }
-
         [SerializeField, Optional]
         private Context _context;
 
@@ -214,9 +179,6 @@ namespace Oculus.Interaction.Locomotion
             {
                 Selector = _selector as ISelector;
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            Hmd = _hmd as IHmd;
-#pragma warning restore CS0618 // Type or member is obsolete
             _nativeId = 0x4c6f636f6d6f7469;
             _computeCandidateTiebreaker = ComputeCandidateTiebreaker;
         }
@@ -233,15 +195,6 @@ namespace Oculus.Interaction.Locomotion
                 GameObject gameObject = new GameObject("Default CandidateComputer");
                 gameObject.transform.SetParent(this.transform);
                 TeleportCandidateComputer defaultCandidateComputer = gameObject.AddComponent<TeleportCandidateComputer>();
-                defaultCandidateComputer.EqualDistanceThreshold = _equalDistanceThreshold;
-#pragma warning disable CS0618 // Type or member is obsolete
-                if (Hmd != null)
-                {
-                    HmdOffset hmdOffset = gameObject.AddComponent<HmdOffset>();
-                    hmdOffset.InjectAllHmdOffset(Hmd);
-                    defaultCandidateComputer.BlockCheckOrigin = gameObject.transform;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
                 _computeCandidate = defaultCandidateComputer.ComputeCandidate;
             }
 
@@ -321,12 +274,6 @@ namespace Oculus.Interaction.Locomotion
 
         #region Inject
 
-        [Obsolete("Use " + nameof(InjectAllTeleportInteractor) + "with (" + nameof(ISelector) + ", " + nameof(IPolyline) + ") parameters instead")]
-        public void InjectAllTeleportInteractor(ISelector selector)
-        {
-            InjectSelector(selector);
-        }
-
         /// <summary>
         /// Injects all required dependencies for a dynamically instantiated TeleportInteractor; effectively wraps
         /// <see cref="InjectSelector(ISelector)"/>, since all other dependencies are optional. This method exists to support
@@ -353,31 +300,6 @@ namespace Oculus.Interaction.Locomotion
         /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
         /// </summary>
         public void InjectTeleportArc(IPolyline teleportArc)
-        {
-            _teleportArc = teleportArc as UnityEngine.Object;
-            TeleportArc = teleportArc;
-        }
-
-        /// <summary>
-        /// Obsolete method: provide a <see cref="ComputeCandidateDelegate"/> instead.
-        ///
-        /// Sets an <see cref="IHmd"/> for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
-        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
-        /// </summary>
-        [Obsolete("This property is no longer in use, create a " +
-            nameof(ComputeCandidateDelegate) + " if you need custom candidate computing logic")]
-        public void InjectOptionalHmd(IHmd hmd)
-        {
-            _hmd = hmd as UnityEngine.Object;
-            Hmd = hmd;
-        }
-
-        /// <summary>
-        /// Sets the <see cref="IPolyline"/> teleport arc for a dynamically instantiated TeleportInteractor. This method exists to support Interaction SDK's
-        /// dependency injection pattern and is not needed for typical Unity Editor-based usage.
-        /// </summary>
-        [Obsolete("Use " + nameof(InjectTeleportArc) + " instead")]
-        public void InjectOptionalTeleportArc(IPolyline teleportArc)
         {
             _teleportArc = teleportArc as UnityEngine.Object;
             TeleportArc = teleportArc;

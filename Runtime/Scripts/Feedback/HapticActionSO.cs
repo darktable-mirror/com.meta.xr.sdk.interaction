@@ -25,7 +25,7 @@ namespace Oculus.Interaction.Feedback
     /// <summary>
     /// A FeedbackAction ScriptableObject that plays a predefined haptic pattern.
     /// </summary>
-    [CreateAssetMenu(menuName = "Meta/Interaction/SDK/Feedback/Haptic")]
+    [CreateAssetMenu(menuName = "Meta/Interaction SDK/Feedback/Haptic")]
     public class HapticActionSO : FeedbackActionSO
     {
         [Tooltip("The haptic pattern to play when this action is executed.")]
