@@ -134,7 +134,11 @@ namespace Oculus.Interaction.PoseDetection
             this.AssertField(_transformFeatureConfigs, nameof(_transformFeatureConfigs));
             this.AssertField(_transformConfig, nameof(_transformConfig));
 
+#if UNITY_6000_3_OR_NEWER
+            _transformConfig.InstanceId = GetEntityId();
+#else
             _transformConfig.InstanceId = GetInstanceID();
+#endif
             this.EndStart(ref _started);
         }
 

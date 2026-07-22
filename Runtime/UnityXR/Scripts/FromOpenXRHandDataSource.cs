@@ -124,9 +124,6 @@ namespace Oculus.Interaction.Input.UnityXR
         private const float PressThreshold = 0.8f;
         static readonly Vector3 TrackedRemoteAimOffset = new(0.0f, 0.0f, -0.055f);
 
-        [SerializeField, Interface(typeof(IHmd))]
-        private UnityEngine.Object _hmdData;
-        private IHmd HmdData;
 
 #if ISDK_OPENXR_HAND
         protected readonly HandDataAsset _dataAsset = new();
@@ -137,18 +134,27 @@ namespace Oculus.Interaction.Input.UnityXR
         // Meta Hand Aim Mocking
 #if ISDK_OPENXR_HAND
         protected bool _shouldMockHandTrackingAim = false;
-        private PinchGrabAPI _fingerGrabAPI;
+        private HandDataAssetHand _handDataAssetHand;
+
+        [Tooltip("Optional pinch detection API. If not provided, a default PinchGrabConfigurableAPI will be created.")]
+        [SerializeField, Interface(typeof(IFingerAPI)), Optional]
+        private UnityEngine.Object _pinchAPI;
+        private IFingerAPI PinchAPI { get; set; }
 #endif
 
         protected virtual void Awake()
         {
-            HmdData = _hmdData as IHmd;
+#if ISDK_OPENXR_HAND
+            if (PinchAPI == null)
+            {
+                PinchAPI = _pinchAPI as IFingerAPI;
+            }
+#endif
         }
 
         protected override void Start()
         {
             this.BeginStart(ref _started, () => base.Start());
-            this.AssertField(HmdData, nameof(HmdData));
             this.EndStart(ref _started);
         }
 
@@ -216,9 +222,16 @@ namespace Oculus.Interaction.Input.UnityXR
             _dataAsset.IsDominantHand = _dataAsset.Config.Handedness == Handedness.Right;
 
 #if ISDK_OPENXR_HAND
-            var localJointPoses = _dataAsset.JointPoses;
-            _fingerGrabAPI ??= new PinchGrabAPI(HmdData);
-            _fingerGrabAPI.Update(localJointPoses, _dataAsset.Config.Handedness, _dataAsset.Root, _dataAsset.HandScale);
+            if(PinchAPI == null)
+            {
+                PinchAPI = this.gameObject.AddComponent<PinchGrabConfigurableAPI>();
+            }
+            if (_handDataAssetHand == null)
+            {
+                _handDataAssetHand = new HandDataAssetHand();
+            }
+            _handDataAssetHand.Update(_dataAsset);
+            PinchAPI.Update(_handDataAssetHand);
 #endif
             PopulateMockHandTrackingAimFinger(HandFinger.Index);
             PopulateMockHandTrackingAimFinger(HandFinger.Middle);
@@ -232,7 +245,7 @@ namespace Oculus.Interaction.Input.UnityXR
 
 #if ISDK_OPENXR_HAND
             _dataAsset.FingerPinchStrength[fingerIndex] =
-                _fingerGrabAPI.GetFingerGrabScore(finger);
+                PinchAPI.GetFingerGrabScore(finger);
 #else
             _dataAsset.FingerPinchStrength[fingerIndex] = 0.0f;
 #endif
@@ -242,5 +255,143 @@ namespace Oculus.Interaction.Input.UnityXR
 
         protected override HandDataAsset DataAsset => _dataAsset;
 
+        #region Inject
+
+#if ISDK_OPENXR_HAND
+        /// <summary>
+        /// Injects an optional custom <see cref="IFingerAPI"/> implementation for pinch detection.
+        /// If not provided, a default <see cref="PinchGrabConfigurableAPI"/> will be created at runtime.
+        /// </summary>
+        /// <param name="fingerPinchAPI">The custom pinch <see cref="IFingerAPI"/> to inject.</param>
+        public void InjectOptionalFingerPinchAPI(IFingerAPI fingerPinchAPI)
+        {
+            _pinchAPI = fingerPinchAPI as UnityEngine.Object;
+            PinchAPI = fingerPinchAPI;
+        }
+#endif
+
+        #endregion
+
+#if ISDK_OPENXR_HAND
+        private class HandDataAssetHand : IHand
+        {
+            private HandDataAsset _asset;
+            private HandJointCache _jointPosesCache;
+            private int _dataVersion;
+
+            public void Update(HandDataAsset asset)
+            {
+                _asset = asset;
+                _dataVersion++;
+                if (_jointPosesCache == null && asset.IsDataValidAndConnected)
+                {
+                    _jointPosesCache = new HandJointCache();
+                }
+                _jointPosesCache?.Update(asset, _dataVersion);
+            }
+
+            public Handedness Handedness => _asset.Config.Handedness;
+            public bool IsConnected => _asset.IsDataValidAndConnected;
+            public bool IsHighConfidence => _asset.IsHighConfidence;
+            public bool IsDominantHand => _asset.IsDominantHand;
+            public float Scale => _asset.HandScale;
+            public bool IsPointerPoseValid => _asset.PointerPoseOrigin != PoseOrigin.None;
+            public bool IsTrackedDataValid => _asset.IsTracked;
+            public int CurrentDataVersion => _dataVersion;
+
+            public event Action WhenHandUpdated { add { } remove { } }
+
+            public bool GetFingerIsPinching(HandFinger finger)
+            {
+                return _asset.IsFingerPinching[(int)finger];
+            }
+
+            public bool GetIndexFingerIsPinching()
+            {
+                return GetFingerIsPinching(HandFinger.Index);
+            }
+
+            public bool GetPointerPose(out Pose pose)
+            {
+                pose = _asset.PointerPose;
+                return IsPointerPoseValid;
+            }
+
+            public bool GetJointPose(HandJointId handJointId, out Pose pose)
+            {
+                pose = Pose.identity;
+                if (!IsTrackedDataValid || _jointPosesCache == null)
+                {
+                    return false;
+                }
+                pose = _jointPosesCache.GetWorldJointPose(handJointId);
+                return true;
+            }
+
+            public bool GetJointPoseLocal(HandJointId handJointId, out Pose pose)
+            {
+                pose = Pose.identity;
+                if (!GetJointPosesLocal(out var localJointPoses))
+                {
+                    return false;
+                }
+                pose = localJointPoses[(int)handJointId];
+                return true;
+            }
+
+            public bool GetJointPosesLocal(out ReadOnlyHandJointPoses localJointPoses)
+            {
+                if (!IsTrackedDataValid || _jointPosesCache == null)
+                {
+                    localJointPoses = ReadOnlyHandJointPoses.Empty;
+                    return false;
+                }
+                return _jointPosesCache.GetAllLocalPoses(out localJointPoses);
+            }
+
+            public bool GetJointPoseFromWrist(HandJointId handJointId, out Pose pose)
+            {
+                pose = Pose.identity;
+                if (!GetJointPosesFromWrist(out var jointPosesFromWrist))
+                {
+                    return false;
+                }
+                pose = jointPosesFromWrist[(int)handJointId];
+                return true;
+            }
+
+            public bool GetJointPosesFromWrist(out ReadOnlyHandJointPoses jointPosesFromWrist)
+            {
+                if (!IsTrackedDataValid || _jointPosesCache == null)
+                {
+                    jointPosesFromWrist = ReadOnlyHandJointPoses.Empty;
+                    return false;
+                }
+                return _jointPosesCache.GetAllPosesFromWrist(out jointPosesFromWrist);
+            }
+
+            public bool GetPalmPoseLocal(out Pose pose)
+            {
+                pose = _asset.Root;
+                return IsTrackedDataValid;
+            }
+
+            public bool GetFingerIsHighConfidence(HandFinger finger)
+            {
+                return _asset.IsFingerHighConfidence[(int)finger];
+            }
+
+            public float GetFingerPinchStrength(HandFinger finger)
+            {
+                return _asset.FingerPinchStrength[(int)finger];
+            }
+
+            public bool GetRootPose(out Pose pose)
+            {
+                pose = _asset.Root;
+                return IsTrackedDataValid;
+            }
+        }
+#endif
     }
 }

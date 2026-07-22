@@ -65,7 +65,11 @@ namespace Oculus.Interaction.HandGrab.Editor
                 _hand = value;
                 if (_hand != null)
                 {
+#if UNITY_6000_3_OR_NEWER
+                    _handID = value.GetEntityId();
+#else
                     _handID = value.GetInstanceID();
+#endif
                 }
                 else
                 {

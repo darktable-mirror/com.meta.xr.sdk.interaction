@@ -943,6 +943,36 @@ namespace Oculus.Interaction.Editor.QuickActions
         }
 
         /// <summary>
+        /// Ensures a <see cref="PointableCanvasModule"/> exists in the scene,
+        /// adding one to the existing <see cref="EventSystem"/> if found, or
+        /// creating a new GameObject with both components if not.
+        /// No-op if a <see cref="PointableCanvasModule"/> is already present.
+        /// </summary>
+        internal void FixMissingPointableCanvasModule()
+        {
+            if (FindAnyObjectByType<PointableCanvasModule>() != null)
+            {
+                return;
+            }
+
+            GameObject eventSystemGO =
+                FindFirstObjectByType<EventSystem>()?.gameObject;
+
+            Object newObj;
+            if (eventSystemGO != null)
+            {
+                newObj = AddComponent<PointableCanvasModule>(eventSystemGO);
+            }
+            else
+            {
+                newObj = AddObject("Pointable Canvas Module",
+                    typeof(EventSystem), typeof(PointableCanvasModule));
+            }
+
+            Debug.Log($"{nameof(PointableCanvasModule)} Added to Scene.", newObj);
+        }
+
+        /// <summary>
         /// Common messages for the <see cref="QuickActionsWizard"/> window
         /// </summary>
         protected class WizardMessages
@@ -973,32 +1003,13 @@ namespace Oculus.Interaction.Editor.QuickActions
             public IEnumerable<MessageData> MissingPointableCanvasModule<TInteractor>()
                 where TInteractor : Object, IInteractor
             {
-                void FixPointableCanvasModule()
-                {
-                    GameObject eventSystemGO =
-                        FindFirstObjectByType<EventSystem>()?.gameObject;
-
-                    Object newObj;
-                    if (eventSystemGO != null)
-                    {
-                        newObj = _wizard.AddComponent<PointableCanvasModule>(eventSystemGO);
-                    }
-                    else
-                    {
-                        newObj = _wizard.AddObject("Pointable Canvas Module",
-                            typeof(EventSystem), typeof(PointableCanvasModule));
-                    }
-
-                    Debug.Log($"{nameof(PointableCanvasModule)} Added to Scene.", newObj);
-                }
-
                 if (FindAnyObjectByType<PointableCanvasModule>() == null)
                 {
                     string interactorName = typeof(TInteractor).Name;
                     var message = new MessageData(MessageType.Warning,
                         $"No PointableCanvasModule found in scene. The new {interactorName} " +
                         "will not work without a PointableCanvasModule present.",
-                        new ButtonData("Fix", FixPointableCanvasModule));
+                        new ButtonData("Fix", _wizard.FixMissingPointableCanvasModule));
                     return Enumerable.Repeat(message, 1);
                 }
                 return Enumerable.Empty<MessageData>();

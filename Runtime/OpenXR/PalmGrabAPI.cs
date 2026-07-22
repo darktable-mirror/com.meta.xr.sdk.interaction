@@ -27,6 +27,7 @@ namespace Oculus.Interaction.GrabAPI
     /// <summary>
     /// This Finger API uses the curl value of the fingers to detect if they are grabbing
     /// </summary>
+    [System.Obsolete("Use " + nameof(PalmGrabConfigurableAPI) + " instead")]
     public class PalmGrabAPI : IFingerAPI
     {
         private Vector3 _poseVolumeCenterOffset = Vector3.zero;

@@ -118,6 +118,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2928792665249928912, guid: 292035910f8781541aeb438db140bd72,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2967281295969052309, guid: 292035910f8781541aeb438db140bd72,
         type: 3}
       propertyPath: m_TagString
@@ -216,7 +221,7 @@ PrefabInstance:
     - target: {fileID: 6036601228361778171, guid: 292035910f8781541aeb438db140bd72,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 40
+      value: 48
       objectReference: {fileID: 0}
     - target: {fileID: 6036601228361778171, guid: 292035910f8781541aeb438db140bd72,
         type: 3}
@@ -351,7 +356,7 @@ PrefabInstance:
     - target: {fileID: 9210260128077714954, guid: 292035910f8781541aeb438db140bd72,
         type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4294967295
+      value: 3875536895
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 188438165202829920, guid: 292035910f8781541aeb438db140bd72, type: 3}

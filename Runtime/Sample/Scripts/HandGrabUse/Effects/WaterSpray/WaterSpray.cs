@@ -217,7 +217,11 @@ namespace Oculus.Interaction.Samples
             List<MeshFilter> meshFilters = NonAlloc.GetMeshFiltersInChildren(rootObject);
             for (int i = 0; i < meshFilters.Count; i++)
             {
+#if UNITY_6000_3_OR_NEWER
+                EntityId id = meshFilters[i].GetEntityId();
+#else
                 int id = meshFilters[i].GetInstanceID();
+#endif
                 if (!NonAlloc._blits.ContainsKey(id)) { NonAlloc._blits[id] = CreateMeshBlit(meshFilters[i]); }
                 NonAlloc._blits[id].Blit();
             }
@@ -317,7 +321,11 @@ namespace Oculus.Interaction.Samples
         static class NonAlloc
         {
             public static readonly Collider[] _overlapResults = new Collider[12];
+#if UNITY_6000_3_OR_NEWER
+            public static readonly Dictionary<EntityId, MeshBlit> _blits = new Dictionary<EntityId, MeshBlit>();
+#else
             public static readonly Dictionary<int, MeshBlit> _blits = new Dictionary<int, MeshBlit>();
+#endif
             public static MaterialPropertyBlock PropertyBlock => _block != null ? _block : _block = new MaterialPropertyBlock();
 
             private static readonly List<MeshFilter> _meshFilters = new List<MeshFilter>();
@@ -354,8 +362,11 @@ namespace Oculus.Interaction.Samples
             public static void CleanUpDestroyedBlits()
             {
                 if (!_blits.ContainsValue(null)) { return; }
-
+#if UNITY_6000_3_OR_NEWER
+                foreach (EntityId key in new List<EntityId>(_blits.Keys))
+#else
                 foreach (int key in new List<int>(_blits.Keys))
+#endif
                 {
                     if (_blits[key] == null) _blits.Remove(key);
                 }

@@ -18,11 +18,14 @@
  * limitations under the License.
  */
 
+using System;
 using Oculus.Interaction.Input;
 using UnityEngine;
 
 namespace Oculus.Interaction.Unity.Input
 {
+    [Obsolete("InputAxis depends on the Legacy Input Manager. " +
+        "Use InputActionReference with the New Input System instead.")]
     public class InputAxis : MonoBehaviour, IAxis1D
     {
         [SerializeField]
@@ -30,7 +33,11 @@ namespace Oculus.Interaction.Unity.Input
 
         public float Value()
         {
+#if ENABLE_LEGACY_INPUT_MANAGER
             return UnityEngine.Input.GetAxis(_axisName);
+#else
+            return 0f;
+#endif
         }
     }
 }

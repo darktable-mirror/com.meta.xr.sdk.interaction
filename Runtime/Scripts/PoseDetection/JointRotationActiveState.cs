@@ -227,7 +227,11 @@ namespace Oculus.Interaction.PoseDetection
                 allTrackedJoints.Add(config.Feature);
                 _featureStates.Add(config, new JointRotationFeatureState());
             }
+#if UNITY_6000_3_OR_NEWER
+            _jointDeltaConfig = new JointDeltaConfig(GetEntityId(), allTrackedJoints);
+#else
             _jointDeltaConfig = new JointDeltaConfig(GetInstanceID(), allTrackedJoints);
+#endif
 
 
             _lastUpdateTime = _timeProvider();

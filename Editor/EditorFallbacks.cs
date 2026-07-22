@@ -19,8 +19,10 @@
  */
 
 // @generated
+using System;
 using UnityEditor;
 using Oculus.Interaction.Editor;
+using Oculus.Interaction.Unity.Input;
 
 namespace Oculus.Interaction.Editor.Generated
 {
@@ -880,25 +882,25 @@ namespace Oculus.Interaction.UnityCanvas.Editor.Generated
 
 namespace Oculus.Interaction.Unity.Input.Editor.Generated
 {
-    [CustomEditor(typeof(InputAxis), false, isFallback = true), CanEditMultipleObjects]
+    [Obsolete, CustomEditor(typeof(InputAxis), false, isFallback = true), CanEditMultipleObjects]
     public class InputAxisEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Unity.Input.Editor.Generated
 {
-    [CustomEditor(typeof(InputButton), false, isFallback = true), CanEditMultipleObjects]
+    [Obsolete, CustomEditor(typeof(InputButton), false, isFallback = true), CanEditMultipleObjects]
     public class InputButtonEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Unity.Input.Editor.Generated
 {
-    [CustomEditor(typeof(InputKey), false, isFallback = true), CanEditMultipleObjects]
+    [Obsolete, CustomEditor(typeof(InputKey), false, isFallback = true), CanEditMultipleObjects]
     public class InputKeyEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.Unity.Input.Editor.Generated
 {
-    [CustomEditor(typeof(InputMouseButton), false, isFallback = true), CanEditMultipleObjects]
+    [Obsolete, CustomEditor(typeof(InputMouseButton), false, isFallback = true), CanEditMultipleObjects]
     public class InputMouseButtonEditorFallback : SimplifiedEditor { }
 }
 
@@ -1668,6 +1670,18 @@ namespace Oculus.Interaction.GrabAPI.Editor.Generated
 {
     [CustomEditor(typeof(FingerRawPinchInjector), false, isFallback = true), CanEditMultipleObjects]
     public class FingerRawPinchInjectorEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.GrabAPI.Editor.Generated
+{
+    [CustomEditor(typeof(PalmGrabConfigurableAPI), false, isFallback = true), CanEditMultipleObjects]
+    public class PalmGrabConfigurableAPIEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.GrabAPI.Editor.Generated
+{
+    [CustomEditor(typeof(PinchGrabConfigurableAPI), false, isFallback = true), CanEditMultipleObjects]
+    public class PinchGrabConfigurableAPIEditorFallback : SimplifiedEditor { }
 }
 
 namespace Oculus.Interaction.GrabAPI.Editor.Generated

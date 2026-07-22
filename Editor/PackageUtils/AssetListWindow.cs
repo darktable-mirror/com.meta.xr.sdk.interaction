@@ -31,10 +31,21 @@ namespace Oculus.Interaction.Editor
         public class AssetInfo
         {
             public readonly string AssetPath;
+#if UNITY_6000_3_OR_NEWER
+            public readonly EntityId EntityId;
+#endif
             public readonly string DisplayName;
             public readonly Action ClickAction;
 
             public AssetInfo(string assetPath) : this(assetPath, assetPath) { }
+
+#if UNITY_6000_3_OR_NEWER
+            public AssetInfo(string assetPath, string displayName, Action clickAction, EntityId entity) :
+                this(assetPath, displayName, clickAction)
+            {
+                EntityId = entity;
+            }
+#endif
 
             public AssetInfo(string assetPath, string displayName, Action clickAction) :
                 this(assetPath, displayName)

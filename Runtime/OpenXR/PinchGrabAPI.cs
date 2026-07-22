@@ -28,6 +28,7 @@ namespace Oculus.Interaction.GrabAPI
     /// This Finger API uses an advanced calculation for the pinch value of the fingers
     /// to detect if they are grabbing
     /// </summary>
+    [System.Obsolete("Use " + nameof(PinchGrabConfigurableAPI) + " instead")]
     public class PinchGrabAPI : IFingerAPI
     {
         private bool _isPinchVisibilityGood;
@@ -186,11 +187,7 @@ namespace Oculus.Interaction.GrabAPI
         {
             ClearState();
             _shadowHand.SetRoot(Pose.identity);
-#if ISDK_OPENXR_HAND
             _shadowHand.FromJoints(handPoses, false);
-#else
-            _shadowHand.FromJoints(handPoses, handedness == Handedness.Left);
-#endif
 
             _rootPose = rootPose;
             _handScale = handScale;

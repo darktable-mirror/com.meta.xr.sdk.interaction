@@ -18,10 +18,12 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Locomotion
 {
+    [Obsolete("Use " + nameof(AudioTrigger) + " instead")]
     [RequireComponent(typeof(AudioSource))]
     public class AdjustableAudio : MonoBehaviour
     {

@@ -27,10 +27,18 @@ namespace Oculus.Interaction.PoseDetection
 {
     public class JointDeltaConfig
     {
+#if UNITY_6000_3_OR_NEWER
+        public readonly EntityId InstanceID;
+#else
         public readonly int InstanceID;
+#endif
         public readonly IEnumerable<HandJointId> JointIDs;
 
+#if UNITY_6000_3_OR_NEWER
+        public JointDeltaConfig(EntityId instanceID, IEnumerable<HandJointId> jointIDs)
+#else
         public JointDeltaConfig(int instanceID, IEnumerable<HandJointId> jointIDs)
+#endif
         {
             InstanceID = instanceID;
             JointIDs = jointIDs;
@@ -92,9 +100,13 @@ namespace Oculus.Interaction.PoseDetection
         private HashSet<HandJointId> _trackedJoints =
             new HashSet<HandJointId>();
 
+#if UNITY_6000_3_OR_NEWER
+        private Dictionary<EntityId, List<HandJointId>> _requestors =
+            new Dictionary<EntityId, List<HandJointId>>();
+#else
         private Dictionary<int, List<HandJointId>> _requestors =
             new Dictionary<int, List<HandJointId>>();
-
+#endif
         private int PrevDataIndex => 1 - CurDataIndex;
         private int CurDataIndex = 0;
 

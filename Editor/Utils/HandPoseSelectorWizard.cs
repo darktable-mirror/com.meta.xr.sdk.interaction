@@ -27,6 +27,9 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Oculus.Interaction.HandGrab.Editor
 {
@@ -64,8 +67,10 @@ namespace Oculus.Interaction.HandGrab.Editor
 
         private const string DefaultTransformFeatureStateThresholdsGUID = "039cf5a7424e1e046b79287e9375cf09";
 
-        [SerializeField]
-        private KeyCode _recordKey = KeyCode.Space;
+        private const KeyCode RECORD_KEY = KeyCode.Space;
+#if ENABLE_INPUT_SYSTEM
+        private const Key RECORD_KEY_NEW = Key.Space;
+#endif
 
         [SerializeField]
         private string _newPoseName = "NewHandPoseSelector";
@@ -149,7 +154,14 @@ namespace Oculus.Interaction.HandGrab.Editor
                 {
                     while (true)
                     {
-                        if (UnityEngine.Input.GetKeyDown(_recordKey))
+#if ENABLE_LEGACY_INPUT_MANAGER
+                        if (UnityEngine.Input.GetKeyDown(RECORD_KEY))
+#elif ENABLE_INPUT_SYSTEM
+                        if (Keyboard.current != null &&
+                            Keyboard.current[RECORD_KEY_NEW].wasPressedThisFrame)
+#else
+#error "No input system enabled. Set Player Settings > Active Input Handling to Legacy, New, or Both."
+#endif
                         {
                             Context.Global.GetInstance().StartCoroutine(RecordPoseCoroutine());
                         }
@@ -188,7 +200,7 @@ namespace Oculus.Interaction.HandGrab.Editor
         {
             Event e = Event.current;
             if (e.type == EventType.KeyDown
-                && e.keyCode == _recordKey)
+                && e.keyCode == RECORD_KEY)
             {
                 Context.Global.GetInstance().StartCoroutine(RecordPoseCoroutine());
                 e.Use();
@@ -220,8 +232,13 @@ namespace Oculus.Interaction.HandGrab.Editor
                 _fingerFeatureStateProvider = _transformFeatureStateProvider.gameObject.GetComponent<FingerFeatureStateProvider>();
             }
 
+#if UNITY_6000_3_OR_NEWER
+            if (_fingerFeatureStateProvider != null) _fingerFeatureStateProviderInstanceId = _fingerFeatureStateProvider.GetEntityId();
+            if (_transformFeatureStateProvider != null) _transformFeatureStateProviderInstanceId = _transformFeatureStateProvider.GetEntityId();
+#else
             if (_fingerFeatureStateProvider != null) _fingerFeatureStateProviderInstanceId = _fingerFeatureStateProvider.GetInstanceID();
             if (_transformFeatureStateProvider != null) _transformFeatureStateProviderInstanceId = _transformFeatureStateProvider.GetInstanceID();
+#endif
 
             GUILayout.Label("\nOptionally, you can also choose a name for your new recording.\n");
             _newPoseName = EditorGUILayout.TextField("New pose name:", _newPoseName);
@@ -235,9 +252,8 @@ namespace Oculus.Interaction.HandGrab.Editor
 
             GUILayout.Label($"\n<size=20>2.</size>\t" +
                 "Go to <b>Play Mode</b> to record your hand pose. Press the big <b>Record</b> button with your free hand or the " +
-                $"<b>{_recordKey}</b> key to record a new pose and create a selector for it <b>(requires focus on either this " +
+                $"<b>{RECORD_KEY}</b> key to record a new pose and create a selector for it <b>(requires focus on either this " +
                 "window or the scene view playing the scene)</b>.\n", _richTextStyle);
-            _recordKey = (KeyCode)EditorGUILayout.EnumPopup(_recordKey);
             if (GUILayout.Button("Record New Hand Pose Selector", GUILayout.Height(100)))
             {
                 Context.Global.GetInstance().StartCoroutine(RecordPoseCoroutine());
@@ -453,7 +469,11 @@ namespace Oculus.Interaction.HandGrab.Editor
             if (_autoAddPrefabAfterRecording)
             {
                 _prefabPathToAdd = prefabPath;
+#if UNITY_6000_3_OR_NEWER
+                _handInstanceId = (hand as UnityEngine.Object).GetEntityId();
+#else
                 _handInstanceId = (hand as UnityEngine.Object).GetInstanceID();
+#endif
             }
         }
     }

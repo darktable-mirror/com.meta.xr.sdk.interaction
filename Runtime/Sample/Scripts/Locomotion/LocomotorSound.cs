@@ -22,6 +22,7 @@ using UnityEngine;
 
 namespace Oculus.Interaction.Locomotion
 {
+    [System.Obsolete("Use " + nameof(LocomotionHandlerUnityEventWrapper) + " instead")]
     public class LocomotorSound : MonoBehaviour
     {
         [SerializeField, Interface(typeof(ILocomotionEventHandler))]

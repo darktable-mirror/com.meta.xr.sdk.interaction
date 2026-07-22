@@ -83,16 +83,22 @@ namespace Oculus.Interaction
 
         public bool ComputeIsPointing(Collider[] colliders, bool isSelecting, out float bestScore, out Vector3 bestHitPoint)
         {
-            ConicalFrustum searchFrustrum = (isSelecting || _frustums.DeselectionFrustum == null) ?
+            ConicalFrustum searchFrustum = (isSelecting || _frustums.DeselectionFrustum == null) ?
                 _frustums.SelectionFrustum : _frustums.DeselectionFrustum;
+
             bestHitPoint = Vector3.zero;
             bestScore = float.NegativeInfinity;
-            bool anyHit = false;
 
+            if (!searchFrustum.isActiveAndEnabled)
+            {
+                return false;
+            }
+
+            bool anyHit = false;
             foreach (Collider collider in colliders)
             {
                 float score = 0f;
-                if (!searchFrustrum.HitsCollider(collider, out score, out Vector3 hitPoint))
+                if (!searchFrustum.HitsCollider(collider, out score, out Vector3 hitPoint))
                 {
                     continue;
                 }
@@ -129,8 +135,8 @@ namespace Oculus.Interaction
 
         public bool IsWithinDeselectionRange(Collider[] colliders)
         {
-            return IsPointingAtColliders(colliders, _frustums.DeselectionFrustum)
-                || IsPointingAtColliders(colliders, _frustums.SelectionFrustum);
+            return (_frustums.DeselectionFrustum != null && _frustums.DeselectionFrustum.isActiveAndEnabled && IsPointingAtColliders(colliders, _frustums.DeselectionFrustum))
+                || (_frustums.SelectionFrustum.isActiveAndEnabled && IsPointingAtColliders(colliders, _frustums.SelectionFrustum));
         }
 
         private bool IsPointingAtColliders(Collider[] colliders, ConicalFrustum frustum)

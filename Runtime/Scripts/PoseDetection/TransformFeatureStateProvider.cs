@@ -45,7 +45,11 @@ namespace Oculus.Interaction.PoseDetection
             RotationOffset = Vector3.zero;
             UpVectorType = UpVectorType.Head;
             FeatureThresholds = null;
+#if UNITY_6000_3_OR_NEWER
+            InstanceId = default;
+#else
             InstanceId = 0;
+#endif
         }
 
         // Position offset relative to the reference transform.
@@ -59,7 +63,11 @@ namespace Oculus.Interaction.PoseDetection
         public TransformFeatureStateThresholds FeatureThresholds;
 
         // set via component that uses this class
+#if UNITY_6000_3_OR_NEWER
+        public EntityId InstanceId { get; set; }
+#else
         public int InstanceId { get; set; }
+#endif
     }
 
     public class TransformJointData
@@ -86,8 +94,13 @@ namespace Oculus.Interaction.PoseDetection
             public FeatureStateProvider<TransformFeature, string> StateProvider;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private Dictionary<EntityId, TransformStateInfo> _idToTransformStateInfo =
+            new Dictionary<EntityId, TransformStateInfo>();
+#else
         private Dictionary<int, TransformStateInfo> _idToTransformStateInfo =
             new Dictionary<int, TransformStateInfo>();
+#endif
 
         public void RegisterConfig(TransformConfig transformConfig, TransformJointData jointData,
             Func<float> timeProvider)
@@ -119,12 +132,20 @@ namespace Oculus.Interaction.PoseDetection
             return _idToTransformStateInfo[transformConfig.InstanceId].StateProvider;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        public void SetConfig(EntityId configId, TransformConfig config)
+#else
         public void SetConfig(int configId, TransformConfig config)
+#endif
         {
             _idToTransformStateInfo[configId].Config = config;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        public TransformConfig GetConfig(EntityId configId)
+#else
         public TransformConfig GetConfig(int configId)
+#endif
         {
             return _idToTransformStateInfo[configId].Config;
         }

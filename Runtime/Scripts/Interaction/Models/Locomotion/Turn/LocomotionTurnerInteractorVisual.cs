@@ -91,7 +91,7 @@ namespace Oculus.Interaction.Locomotion
                 if (_turner != null)
                 {
                     _turner.WhenStateChanged += HandleTurnerStateChanged;
-                    _turner.WhenPreprocessed += HandleTurnerPostprocessed;
+                    _turner.WhenPostprocessed += HandleTurnerPostprocessed;
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace Oculus.Interaction.Locomotion
                 if (_turner != null)
                 {
                     _turner.WhenStateChanged -= HandleTurnerStateChanged;
-                    _turner.WhenPreprocessed -= HandleTurnerPostprocessed;
+                    _turner.WhenPostprocessed -= HandleTurnerPostprocessed;
                 }
             }
         }

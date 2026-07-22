@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 839850345116820442}
   - component: {fileID: 4499839522263794455}
   - component: {fileID: 8657723340700776172}
+  - component: {fileID: 22330588533030719}
   m_Layer: 0
   m_Name: HandGrabUseInteractor
   m_TagString: Untagged
@@ -81,6 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hand: {fileID: 1619235989396027011}
+  _grabAPI: {fileID: 22330588533030719}
 --- !u!114 &8657723340700776172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,6 +97,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _primaryInteractor: {fileID: 0}
   _secondaryInteractor: {fileID: 839850345116820442}
+--- !u!114 &22330588533030719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2782522118248471868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38ebfbc609979234c8f5bd08befffebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _startThreshold: 0.9
+  _releaseThreshold: 0.6
+  _thumbRange: {x: 190, y: 220}
+  _indexRange: {x: 180, y: 250}
+  _middleRange: {x: 180, y: 250}
+  _ringRange: {x: 180, y: 250}
+  _pinkyRange: {x: 180, y: 245}
 --- !u!1 &5918811762101095862
 GameObject:
   m_ObjectHideFlags: 0

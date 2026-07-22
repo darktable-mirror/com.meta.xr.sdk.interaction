@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 484167e684014224c9a8bff92b293c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hmd: {fileID: 0}
+  _hmd: {fileID: 1625204916}
 --- !u!114 &4477030763668379298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,8 +437,6 @@ MonoBehaviour:
   _data: {fileID: 0}
   _selector: {fileID: 4477030762966297145}
   _teleportArc: {fileID: 4477030763668379299}
-  _equalDistanceThreshold: 0.1
-  _hmd: {fileID: 1625204916}
   _context: {fileID: 0}
 --- !u!114 &4477030763668379299
 MonoBehaviour:
@@ -533,7 +531,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _activeState: {fileID: 4477030762513766343}
   _includeChildrenAsDependents: 0
-  _ignoreDisabledElements: 0
   _gameObjects:
   - {fileID: 4477030762966297150}
   _monoBehaviours: []

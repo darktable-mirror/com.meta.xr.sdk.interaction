@@ -77,7 +77,12 @@ namespace Oculus.Interaction.Samples
                 createFunc: () =>
                 {
                     GameObject instance = Instantiate(_cursorPrefab, this.transform);
-                    instance.name = $"{_cursorPrefab.name}_Pooled{instance.GetInstanceID()}";
+#if UNITY_6000_3_OR_NEWER
+                    var instanceId = instance.GetEntityId();
+#else
+                    var instanceId = instance.GetInstanceID();
+#endif
+                    instance.name = $"{_cursorPrefab.name}_Pooled{instanceId}";
                     return instance.GetComponent<Renderer>();
                 },
                 actionOnGet: (renderer) => renderer.gameObject.SetActive(true),

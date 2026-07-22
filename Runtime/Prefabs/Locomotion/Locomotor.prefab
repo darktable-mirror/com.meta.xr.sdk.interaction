@@ -590,7 +590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 484167e684014224c9a8bff92b293c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hmd: {fileID: 0}
+  _hmd: {fileID: 5568758619435239313}
 --- !u!114 &5568758619435239312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -753,8 +753,6 @@ MonoBehaviour:
   _data: {fileID: 0}
   _selector: {fileID: 609183853692604661}
   _teleportArc: {fileID: 5568758620377301190}
-  _equalDistanceThreshold: 0.1
-  _hmd: {fileID: 0}
   _context: {fileID: 0}
 --- !u!114 &5568758620377301190
 MonoBehaviour:

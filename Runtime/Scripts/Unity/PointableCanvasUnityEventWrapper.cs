@@ -36,7 +36,7 @@ namespace Oculus.Interaction
         /// </summary>
         [SerializeField, Interface(typeof(IPointableCanvas))]
         private UnityEngine.Object _pointableCanvas;
-        private IPointableCanvas PointableCanvas;
+        private IPointableCanvas PointableCanvas { get; set; }
 
         /// <summary>
         /// If true, hover events will be ignored while the pointer is dragging.
@@ -45,43 +45,11 @@ namespace Oculus.Interaction
         private bool _suppressWhileDragging = true;
 
         /// <summary>
-        /// Raised when any Selectable on the canvas is hovered.
-        /// </summary>
-        [Obsolete("This event is obsolete. Use _whenBeginHighlightWithObject instead.")]
-        [SerializeField]
-        [Tooltip("Raised when beginning hover of a uGUI selectable")]
-        private UnityEvent _whenBeginHighlight;
-
-        /// <summary>
-        /// Raised when any Selectable on the canvas is unhovered.
-        /// </summary>
-        [Obsolete("This event is obsolete. Use _whenEndHighlightWithObject instead.")]
-        [SerializeField]
-        [Tooltip("Raised when ending hover of a uGUI selectable")]
-        private UnityEvent _whenEndHighlight;
-
-        /// <summary>
-        /// Raised when a pointer press happens on a Selectable.
-        /// </summary>
-        [Obsolete("This event is obsolete. Use _whenSelectedHoveredWithObject instead.")]
-        [SerializeField]
-        [Tooltip("Raised when selecting a hovered uGUI selectable")]
-        private UnityEvent _whenSelectedHovered;
-
-        /// <summary>
         /// Raised when a pointer press happens over an empty area.
         /// </summary>
         [SerializeField]
         [Tooltip("Raised when selecting with no uGUI selectable hovered")]
         private UnityEvent _whenSelectedEmpty;
-
-        /// <summary>
-        /// Raised when a pointer release happens on a Selectable.
-        /// </summary>
-        [Obsolete("This event is obsolete. Use _whenUnselectedHoveredWithObject instead.")]
-        [SerializeField]
-        [Tooltip("Raised when deselecting a hovered uGUI selectable")]
-        private UnityEvent _whenUnselectedHovered;
 
         /// <summary>
         /// Raised when a pointer release happens over an empty area.
@@ -143,10 +111,6 @@ namespace Oculus.Interaction
         {
             if (ShouldFireEvent(args))
             {
-                // Fire original event for backwards compatibility
-#pragma warning disable 0618                
-                _whenBeginHighlight.Invoke();
-#pragma warning restore 0618
                 // Fire new parameterized event if the GameObject is available
                 if (args.Hovered != null)
                 {
@@ -159,10 +123,6 @@ namespace Oculus.Interaction
         {
             if (ShouldFireEvent(args))
             {
-                // Fire original event for backwards compatibility
-#pragma warning disable 0618
-                _whenEndHighlight.Invoke();
-#pragma warning restore 0618
                 // Fire new parameterized event if the GameObject is available
                 if (args.Hovered != null)
                 {
@@ -181,10 +141,6 @@ namespace Oculus.Interaction
                 }
                 else
                 {
-                    // Fire original event for backwards compatibility
-#pragma warning disable 0618
-                    _whenSelectedHovered.Invoke();
-#pragma warning restore 0618
                     // Fire new parameterized event
                     _whenSelectedHoveredWithObject.Invoke(args.Hovered);
                 }
@@ -201,10 +157,6 @@ namespace Oculus.Interaction
                 }
                 else
                 {
-                    // Fire original event for backwards compatibility
-#pragma warning disable 0618
-                    _whenUnselectedHovered.Invoke();
-#pragma warning restore 0618
                     // Fire new parameterized event
                     _whenUnselectedHoveredWithObject.Invoke(args.Hovered);
                 }
@@ -213,13 +165,16 @@ namespace Oculus.Interaction
 
         protected virtual void Awake()
         {
-            PointableCanvas = _pointableCanvas as IPointableCanvas;
+            if (PointableCanvas == null)
+            {
+                PointableCanvas = _pointableCanvas as IPointableCanvas;
+            }
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            this.AssertField(PointableCanvas, nameof(PointableCanvas));
+            this.AssertField(PointableCanvas, nameof(_pointableCanvas));
             this.EndStart(ref _started);
         }
 
@@ -244,5 +199,20 @@ namespace Oculus.Interaction
                 PointableCanvasModule.WhenUnselected -= PointableCanvasModule_WhenSelectableUnselected;
             }
         }
+
+        #region Inject
+
+        public void InjectAllPointableCanvasUnityEventWrapper(IPointableCanvas pointableCanvas)
+        {
+            InjectPointableCanvas(pointableCanvas);
+        }
+
+        public void InjectPointableCanvas(IPointableCanvas pointableCanvas)
+        {
+            _pointableCanvas = pointableCanvas as UnityEngine.Object;
+            PointableCanvas = pointableCanvas;
+        }
+
+        #endregion
     }
 }

@@ -77,7 +77,15 @@ namespace Oculus.Interaction
 
             if (material == null)
             {
-                material = new Material(Shader.Find("Custom/PolylineUnlit"));
+                Shader shader = Shader.Find("Custom/PolylineUnlit");
+                if (shader == null)
+                {
+                    Debug.LogError("Custom/PolylineUnlit shader not found. " +
+                        "Polyline rendering will be disabled. Ensure the shader is included " +
+                        "in your project's Graphics Settings under 'Always Included Shaders'.");
+                    return;
+                }
+                material = new Material(shader);
             }
 
             _material = new Material(material);
@@ -114,6 +122,10 @@ namespace Oculus.Interaction
 
         public void Cleanup()
         {
+            if (_material == null)
+            {
+                return;
+            }
             _positionBuffer.Release();
             _colorBuffer.Release();
             _argsBuffer.Release();
@@ -129,6 +141,11 @@ namespace Oculus.Interaction
 
         public void SetLines(List<Vector4> positions, Color color)
         {
+            if (_material == null)
+            {
+                return;
+            }
+
             SetPositions(positions.Count, positions);
             SetDrawCount(positions.Count / 2);
             SetColor(positions.Count, color);
@@ -136,6 +153,11 @@ namespace Oculus.Interaction
 
         public void SetLines(List<Vector4> positions, List<Color> colors, int maxCount = -1)
         {
+            if (_material == null)
+            {
+                return;
+            }
+
             int count = maxCount < 0 ? positions.Count : maxCount;
             SetPositions(count, positions);
             SetDrawCount(count / 2);
@@ -255,6 +277,11 @@ namespace Oculus.Interaction
 
         public void RenderLines()
         {
+            if (_material == null)
+            {
+                return;
+            }
+
             if (_positionsNeedUpdate)
             {
                 _positionBuffer.SetData(_positions);

@@ -18,6 +18,11 @@
             "define": "ISDK_OPENXR_HAND"
         },
         {
+            "name": "com.meta.xr.sdk.core",
+            "expression": "",
+            "define": "HAS_META_XR_SDK_CORE"
+        },
+        {
             "define": "OVR_UNITY_PACKAGE_MANAGER",
             "name": "com.meta.xr.sdk.interaction",
             "expression": ""

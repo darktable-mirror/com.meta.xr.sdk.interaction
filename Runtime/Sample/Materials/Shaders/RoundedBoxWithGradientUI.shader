@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-Shader "Unlit/RoundedBoxWithGradientUI"
+Shader "Hidden/Interaction/Deprecated/RoundedBoxWithGradientUI"
 {
     Properties
     {

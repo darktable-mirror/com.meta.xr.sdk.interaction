@@ -42,7 +42,47 @@ namespace Oculus.Interaction
 
         void Awake()
         {
+#if UNITY_EDITOR
+            EnsureRequiredTagsRegistered();
+#endif
         }
+
+#if UNITY_EDITOR
+        private static readonly string[] _requiredTags =
+        {
+            "QDSUIIcon",
+            "QDSUIAccentColor",
+            "QDSUISharedThemeColor",
+            "QDSUIDestructiveButton",
+            "QDSUIBorderlessButton",
+            "QDSUIToggleBorderlessButton",
+            "QDSUISecondaryButton",
+            "QDSUIToggleButton",
+            "QDSUISection",
+            "QDSUITooltip",
+            "QDSUITextInputField",
+            "QDSUILineDrawing",
+            "QDSUIBackplate",
+            "QDSUIBackplateGradient",
+            "QDSUITextInvertedColor",
+            "QDSUITextSecondaryColor",
+            "QDSUITextSecondaryInvertedColor",
+            "QDSUIPrimaryButton",
+            "QDSUIToggleSwitch",
+            "QDSUIToggleCheckboxRadio",
+            "QDSUIToggleThumbnail",
+        };
+
+        private void OnValidate() => EnsureRequiredTagsRegistered();
+
+        private static void EnsureRequiredTagsRegistered()
+        {
+            foreach (var tag in _requiredTags)
+            {
+                UnityEditorInternal.InternalEditorUtility.AddTag(tag);
+            }
+        }
+#endif
 
         protected virtual void Start()
         {

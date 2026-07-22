@@ -18,11 +18,14 @@
  * limitations under the License.
  */
 
+using System;
 using Oculus.Interaction.Input;
 using UnityEngine;
 
 namespace Oculus.Interaction.Unity.Input
 {
+    [Obsolete("InputMouseButton depends on the Legacy Input Manager. " +
+        "Use Mouse.current from the New Input System instead.")]
     public class InputMouseButton : MonoBehaviour, IButton
     {
         [SerializeField]
@@ -30,7 +33,11 @@ namespace Oculus.Interaction.Unity.Input
 
         public bool Value()
         {
+#if ENABLE_LEGACY_INPUT_MANAGER
             return UnityEngine.Input.GetMouseButton(_button);
+#else
+            return false;
+#endif
         }
     }
 }

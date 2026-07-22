@@ -48,8 +48,13 @@ namespace Oculus.Interaction.Editor
 
         private static ISDKEditorStyles _styles = new ISDKEditorStyles();
 
+#if UNITY_6000_3_OR_NEWER
+        private static Dictionary<AssetListWindow, Dictionary<EntityId, UnityEditor.Editor>> _cachedEditors
+            = new Dictionary<AssetListWindow, Dictionary<EntityId, UnityEditor.Editor>>();
+#else
         private static Dictionary<AssetListWindow, Dictionary<int, UnityEditor.Editor>> _cachedEditors
             = new Dictionary<AssetListWindow, Dictionary<int, UnityEditor.Editor>>();
+#endif
 
         [MenuItem("Meta/Interaction SDK/OpenXR Migration Tool")]
         public static void ShowWindow()
@@ -57,9 +62,13 @@ namespace Oculus.Interaction.Editor
             //unified entry point for populating the table
             Action<AssetListWindow> handleEnabled = (window) =>
             {
+#if UNITY_6000_3_OR_NEWER
+                GetAssets(out List<AssetInfo> assets,
+                    out Dictionary<EntityId, UnityEditor.Editor> editors);
+#else
                 GetAssets(out List<AssetInfo> assets,
                     out Dictionary<int, UnityEditor.Editor> editors);
-
+#endif
                 ClearEditors(window);
                 _cachedEditors.Add(window, editors);
                 window.SetAssets(assets);
@@ -95,7 +104,11 @@ namespace Oculus.Interaction.Editor
             window.WhenDestroyed += handleDestroyed;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static void GetAssets(out List<AssetInfo> assets, out Dictionary<EntityId, UnityEditor.Editor> editors)
+#else
         private static void GetAssets(out List<AssetInfo> assets, out Dictionary<int, UnityEditor.Editor> editors)
+#endif
         {
             List<UnityEngine.Object> foundObjects = FindAllObjects();
             assets = ToAssetInfos(foundObjects);
@@ -121,21 +134,44 @@ namespace Oculus.Interaction.Editor
         {
             List<AssetInfo> infos = objects.Select(obj =>
             {
+#if UNITY_6000_3_OR_NEWER
+                EntityId instanceID = obj.GetEntityId();
+#else
                 int instanceID = obj.GetInstanceID();
-                return new AssetInfo(instanceID.ToString(),
+#endif
+
+#if UNITY_6000_3_OR_NEWER
+                var assetInfo = new AssetInfo(instanceID.ToString(),
+                    obj.name,
+                    null,
+                    instanceID);
+#else
+                var assetInfo = new AssetInfo(instanceID.ToString(),
                     obj.name,
                     null);
+#endif
+                return assetInfo;
             }).ToList();
             return infos;
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static Dictionary<EntityId, UnityEditor.Editor> CreateEditors(List<UnityEngine.Object> objects)
+        {
+            Dictionary<EntityId, UnityEditor.Editor> editors = new Dictionary<EntityId, UnityEditor.Editor>();
+#else
         private static Dictionary<int, UnityEditor.Editor> CreateEditors(List<UnityEngine.Object> objects)
         {
             Dictionary<int, UnityEditor.Editor> editors = new Dictionary<int, UnityEditor.Editor>();
+#endif
             foreach (var obj in objects)
             {
                 var editor = UnityEditor.Editor.CreateEditor(obj);
+#if UNITY_6000_3_OR_NEWER
+                editors.Add(obj.GetEntityId(), editor);
+#else
                 editors.Add(obj.GetInstanceID(), editor);
+#endif
             }
             return editors;
         }
@@ -162,13 +198,26 @@ namespace Oculus.Interaction.Editor
         {
             editor = null;
             return (_cachedEditors.TryGetValue(window, out var editors)
+#if UNITY_6000_3_OR_NEWER
+                && editors.TryGetValue(obj.GetEntityId(), out editor));
+#else
                 && editors.TryGetValue(obj.GetInstanceID(), out editor));
+#endif
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static bool  TryGetInstanceId(AssetInfo info, out EntityId instanceId)
+        {
+            instanceId = info.EntityId;
+            return info.EntityId != EntityId.None;
+        }
+#else
         private static bool TryGetInstanceId(AssetInfo info, out int instanceId)
         {
             return int.TryParse(info.AssetPath, out instanceId);
         }
+#endif
+
 
         private static void DrawContent(AssetListWindow window, int index, AssetInfo assetInfo)
         {
@@ -195,26 +244,32 @@ namespace Oculus.Interaction.Editor
 
         private static void SelectAsset(AssetInfo info)
         {
+#if UNITY_6000_3_OR_NEWER
+            if (TryGetInstanceId(info, out EntityId instanceID))
+            {
+                Selection.activeEntityId = instanceID;
+            }
+#else
             if (TryGetInstanceId(info, out int instanceID))
             {
-#if UNITY_6000_3_OR_NEWER
-                Selection.activeEntityId = instanceID;
-#else
                 Selection.activeInstanceID = instanceID;
-#endif
             }
+#endif
         }
 
         private static UnityEngine.Object GetObject(AssetInfo info)
         {
+#if UNITY_6000_3_OR_NEWER
+            if (TryGetInstanceId(info, out EntityId instanceID))
+            {
+                return EditorUtility.EntityIdToObject(instanceID);
+            }
+#else
             if (TryGetInstanceId(info, out int instanceID))
             {
-#if UNITY_6000_3_OR_NEWER
-                return EditorUtility.EntityIdToObject(instanceID);
-#else
                 return EditorUtility.InstanceIDToObject(instanceID);
-#endif
             }
+#endif
             return null;
         }
 

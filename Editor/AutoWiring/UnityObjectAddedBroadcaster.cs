@@ -37,8 +37,11 @@ namespace Oculus.Interaction.Editor
 
         static UnityObjectAddedBroadcaster()
         {
+#if UNITY_6000_3_OR_NEWER
+            HashSet<EntityId> knownIds = new HashSet<EntityId>();
+#else
             HashSet<int> knownIds = new HashSet<int>();
-
+#endif
             EditorSceneManager.SceneOpenedCallback handleSceneOpened = (scene, mode) =>
             {
                 UnityObjectAddedBroadcaster.HandleSceneOpened(scene, mode, knownIds);
@@ -82,7 +85,11 @@ namespace Oculus.Interaction.Editor
             }
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static void HandleSceneOpened(Scene scene, OpenSceneMode mode, HashSet<EntityId> knownIds)
+#else
         private static void HandleSceneOpened(Scene scene, OpenSceneMode mode, HashSet<int> knownIds)
+#endif
         {
             if (mode == OpenSceneMode.Single)
             {
@@ -106,7 +113,11 @@ namespace Oculus.Interaction.Editor
         /// selection variable, upon which this handler relies.
         /// </summary>
         /// <param name="knownIds">Cache of known GameObject instance IDs</param>
+#if UNITY_6000_3_OR_NEWER
+        private static void HandleHierarchyChanged(HashSet<EntityId> knownIds)
+#else
         private static void HandleHierarchyChanged(HashSet<int> knownIds)
+#endif
         {
             if (EditorApplication.isPlaying)
             {
@@ -125,7 +136,11 @@ namespace Oculus.Interaction.Editor
                 return;
             }
 
+#if UNITY_6000_3_OR_NEWER
+            if (!knownIds.Contains(selection.GetEntityId()))
+#else
             if (!knownIds.Contains(selection.GetInstanceID()))
+#endif
             {
                 AddInstanceIdsFromSubHierarchyToCache(knownIds, selection);
 
@@ -182,11 +197,19 @@ namespace Oculus.Interaction.Editor
             EndUndoGroup();
         }
 
+#if UNITY_6000_3_OR_NEWER
+        private static void AddInstanceIdsFromSubHierarchyToCache(HashSet<EntityId> cache, params GameObject[] subHierarchyRoots)
+#else
         private static void AddInstanceIdsFromSubHierarchyToCache(HashSet<int> cache, params GameObject[] subHierarchyRoots)
+#endif
         {
             foreach (var gameObject in subHierarchyRoots)
             {
+#if UNITY_6000_3_OR_NEWER
+                cache.Add(gameObject.GetEntityId());
+#else
                 cache.Add(gameObject.GetInstanceID());
+#endif
                 for (int idx = 0; idx < gameObject.transform.childCount; ++idx)
                 {
                     AddInstanceIdsFromSubHierarchyToCache(cache, gameObject.transform.GetChild(idx).gameObject);

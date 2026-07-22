@@ -263,8 +263,11 @@ namespace Oculus.Interaction.PoseDetection
                 this.AssertIsTrue(config.RelativeTo != RelativeTo.Head || Hmd != null,
                     $"One of the {AssertUtils.Nicify(nameof(FeatureConfigs))} is not relative to the head or the {nameof(Hmd)}");
             }
+#if UNITY_6000_3_OR_NEWER
+            _jointDeltaConfig = new JointDeltaConfig(GetEntityId(), allTrackedJoints);
+#else
             _jointDeltaConfig = new JointDeltaConfig(GetInstanceID(), allTrackedJoints);
-
+#endif
 
             _lastUpdateTime = _timeProvider();
             this.EndStart(ref _started);

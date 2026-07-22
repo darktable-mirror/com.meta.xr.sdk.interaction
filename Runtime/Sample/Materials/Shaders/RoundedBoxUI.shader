@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-Shader "Unlit/RoundedBoxUI"
+Shader "Hidden/Interaction/Deprecated/RoundedBoxUI"
 {
     Properties
     {
