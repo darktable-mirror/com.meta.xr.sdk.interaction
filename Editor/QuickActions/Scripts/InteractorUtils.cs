@@ -44,6 +44,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         All = (1 << 5) - 1,
         //Experimental types will be hidden by the UI drawer
         TouchGrab = 1 << 5,
+        Gaze = 1 << 6,
     }
 
     [Flags]
@@ -70,6 +71,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
             [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor),
+            [InteractorTypes.Gaze] = typeof(GazeInteractor)
         };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerTypeLookup = new()
@@ -79,6 +81,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = typeof(RayInteractor),
             [InteractorTypes.DistanceGrab] = typeof(DistanceGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
+            [InteractorTypes.Gaze] = typeof(GazeInteractor)
         };
 
         private static readonly Dictionary<InteractorTypes, Type> _controllerHandTypeLookup = new()
@@ -89,6 +92,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.DistanceGrab] = typeof(DistanceHandGrabInteractor),
             [InteractorTypes.Teleport] = typeof(TeleportInteractor),
             [InteractorTypes.TouchGrab] = typeof(TouchHandGrabInteractor),
+            [InteractorTypes.Gaze] = typeof(GazeInteractor)
         };
 
         private static readonly Dictionary<InputModality, string> _modalityGroupNames = new()
@@ -487,6 +491,10 @@ namespace Oculus.Interaction.Editor.QuickActions
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<HandRef>().InjectHand(hand);
 
+                    if (interactor == InteractorTypes.Gaze)
+                    {
+                        WireGazeInteractor(newInteractor);
+                    }
 
                     newInteractors.Add(newInteractor);
                 }
@@ -512,6 +520,10 @@ namespace Oculus.Interaction.Editor.QuickActions
                     GameObject newInteractor = AddInteractor(template, hmd, parentTransform, group);
                     newInteractor.GetComponent<ControllerRef>().InjectController(controller);
 
+                    if (interactor == InteractorTypes.Gaze)
+                    {
+                        WireGazeInteractor(newInteractor);
+                    }
 
                     newInteractors.Add(newInteractor);
                 }
@@ -543,10 +555,35 @@ namespace Oculus.Interaction.Editor.QuickActions
                     {
                         handRef.InjectHand(hand);
                     }
+
+                    if (interactor == InteractorTypes.Gaze)
+                    {
+                        WireGazeInteractor(newInteractor);
+                    }
+
                     newInteractors.Add(newInteractor);
                 }
             }
             return newInteractors;
+        }
+
+        /// <summary>
+        /// Wires a newly created gaze interactor to the scene's eye-gaze system,
+        /// creating that system if it does not yet exist. Component look-ups are
+        /// guarded so this is a no-op for any component the interactor lacks.
+        /// </summary>
+        private static void WireGazeInteractor(GameObject newInteractor)
+        {
+            EyeGaze eyeGaze = CreateEyeGazeSystem();
+            if (eyeGaze != null && newInteractor.TryGetComponent<EyeGazeRef>(out var gazeRef))
+            {
+                gazeRef.InjectAllEyeGazeRef(eyeGaze);
+            }
+            GazeConecaster gazeConecaster = GetGazeConecaster();
+            if (gazeConecaster != null && newInteractor.TryGetComponent<GazeInteractor>(out var gazeInteractor))
+            {
+                gazeInteractor.InjectHitTester(gazeConecaster);
+            }
         }
 
         internal static GameObject AddInteractor(InteractorTemplate template, Hmd hmd,
@@ -587,9 +624,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         public static IEnumerable<Hand> GetHands()
         {
             //get all devices (exact type)
-#pragma warning disable CS0618 // Type or member is obsolete
-            IEnumerable<Hand> devices = Object.FindObjectsOfType<Hand>()
-#pragma warning restore CS0618 // Type or member is obsolete
+            IEnumerable<Hand> devices = Object.FindObjectsByType<Hand>(FindObjectsSortMode.None)
                 .Where(device => device.GetType() == typeof(Hand));
 
             //get just the final devices of the data stack and the hierarchy
@@ -613,9 +648,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// </summary>
         public static IEnumerable<Controller> GetControllers()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            IEnumerable<Controller> controllers = Object.FindObjectsOfType<Controller>()
-#pragma warning restore CS0618 // Type or member is obsolete
+            IEnumerable<Controller> controllers = Object.FindObjectsByType<Controller>(FindObjectsSortMode.None)
                 .Where(device => device.GetType() == typeof(Controller));
             //get just the final devices of the data stack
             var devices2 = controllers.Where(device => !controllers.Any(other =>
@@ -634,9 +667,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// </summary>
         public static IEnumerable<(Controller, Hand)> GetControllerHands()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            IEnumerable<(Controller, Hand)> devices = Object.FindObjectsOfType<Controller>()
-#pragma warning restore CS0618 // Type or member is obsolete
+            IEnumerable<(Controller, Hand)> devices = Object.FindObjectsByType<Controller>(FindObjectsSortMode.None)
                 .Where(device => device.GetType() == typeof(Controller))
                 .Where(device => device.TryGetComponent(out Hand hand) && hand.GetType() == typeof(Hand))
                 .Select(device => (device, device.GetComponent<Hand>()));
@@ -653,13 +684,170 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// </summary>
         public static Hmd GetHmd()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            return Object.FindObjectsOfType<Hmd>()
+            return Object.FindObjectsByType<Hmd>(FindObjectsSortMode.None)
                 .Where(h => h.GetType() == typeof(Hmd))
                 .FirstOrDefault();
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
+        /// <summary>
+        /// Find existing EyeGaze component in the scene.
+        /// </summary>
+        public static EyeGaze GetEyeGaze()
+        {
+            return Object.FindObjectsByType<EyeGaze>(FindObjectsSortMode.None)
+                .Where(e => e.GetType() == typeof(EyeGaze))
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Find existing GazeConecaster component in the scene.
+        /// </summary>
+        public static GazeConecaster GetGazeConecaster()
+        {
+            return Object.FindObjectsByType<GazeConecaster>(FindObjectsSortMode.None)
+                .Where(e => e.GetType() == typeof(GazeConecaster))
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Create the eye gaze system from template if it doesn't already exist.
+        /// </summary>
+        /// <returns>The existing or newly created EyeGaze component</returns>
+        public static EyeGaze CreateEyeGazeSystem()
+        {
+            static bool CheckIsOVRRig(Hmd hmd)
+            {
+                var ovrRigType = Type.GetType("OVRCameraRig, Oculus.VR");
+                return ovrRigType != null && hmd.GetComponentInParent(ovrRigType) != null;
+            }
+
+            EyeGaze existingEyeGaze = GetEyeGaze();
+            if (existingEyeGaze != null)
+            {
+                return existingEyeGaze;
+            }
+
+            Hmd hmd = GetHmd();
+            if (hmd == null)
+            {
+                Debug.LogError("Cannot create EyeGaze system: HMD not found in scene.");
+                return null;
+            }
+
+            Template eyeGazeTemplate = CheckIsOVRRig(hmd) ?
+                new Template("OVREyeGaze", "fa67d7a229b4f944ebe85912157d8d30") :
+                new Template("UnityXREyeGaze", "541c85193db7fbb438ff13729bff184c");
+
+            string assetPath = AssetDatabase.GUIDToAssetPath(eyeGazeTemplate.AssetGUID);
+            Object templateAsset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+
+            if (templateAsset == null)
+            {
+                Debug.LogError("Cannot create EyeGaze system: EyeGaze template asset not found.");
+                return null;
+            }
+
+            GameObject eyeGazeObject = Templates.CreateFromTemplate(hmd.transform.parent, eyeGazeTemplate);
+            eyeGazeObject.transform.SetSiblingIndex(hmd.transform.GetSiblingIndex() + 1);
+
+            EyeGaze eyeGaze = eyeGazeObject.GetComponent<EyeGaze>();
+            GameObject conecasterGO = new GameObject("GazeConecaster");
+            conecasterGO.transform.SetParent(eyeGazeObject.transform, false);
+            GazeConecaster gazeConecaster = conecasterGO.AddComponent<GazeConecaster>();
+
+            if (eyeGaze != null)
+            {
+                gazeConecaster.InjectGaze(eyeGaze);
+            }
+
+            UnityObjectAddedBroadcaster.HandleObjectWasAdded(eyeGazeObject);
+            return eyeGaze;
+        }
+
+        /// <summary>
+        /// Find or create the GazeActiveState component in the scene.
+        /// </summary>
+        /// <returns>The existing GazeActiveState component, or null if not found</returns>
+        public static IActiveState GetGazeActiveState()
+        {
+            EyeGaze eyeGaze = GetEyeGaze();
+            if (eyeGaze == null)
+            {
+                return null;
+            }
+            return eyeGaze;
+        }
+
+        /// <summary>
+        /// Configures RayInteractors with ActiveStateTagSetFilter to enable Gaze/Ray fallback.
+        /// When gaze tracking is active, Ray interactors will be blocked from interacting with
+        /// objects tagged with GAZE_RAY_FALLBACK_TAG. When gaze tracking becomes unavailable,
+        /// Ray interactors can interact with those objects.
+        /// </summary>
+        /// <param name="gazeActiveState">The GazeActiveState to monitor</param>
+        /// <param name="deviceTypes">Device types to configure (Hands, Controllers, ControllerDrivenHands)</param>
+        public static void ConfigureRayInteractorsForGazeFallback(
+            IActiveState gazeActiveState, DeviceTypes deviceTypes)
+        {
+            if (gazeActiveState == null)
+            {
+                Debug.LogWarning("Cannot configure Ray interactors: GazeActiveState is null");
+                return;
+            }
+
+            List<RayInteractor> rayInteractors = new List<RayInteractor>();
+
+            if (deviceTypes.HasFlag(DeviceTypes.Hands))
+            {
+                foreach (var hand in GetHands())
+                {
+                    if (TryFindInteractorsGroup(hand, out InteractorGroup group, out Transform holder))
+                    {
+                        rayInteractors.AddRange(holder.GetComponentsInChildren<RayInteractor>(true)
+                            .Where(r => r.GetComponent<IHand>() != null && r.GetComponent<IController>() == null));
+                    }
+                }
+            }
+
+            if (deviceTypes.HasFlag(DeviceTypes.Controllers))
+            {
+                foreach (var controller in GetControllers())
+                {
+                    if (TryFindInteractorsGroup(controller, out InteractorGroup group, out Transform holder))
+                    {
+                        rayInteractors.AddRange(holder.GetComponentsInChildren<RayInteractor>(true)
+                            .Where(r => r.GetComponent<IController>() != null && r.GetComponent<IHand>() == null));
+                    }
+                }
+            }
+
+            if (deviceTypes.HasFlag(DeviceTypes.ControllerDrivenHands))
+            {
+                foreach (var controllerHand in GetControllerHands())
+                {
+                    if (TryFindInteractorsGroup(controllerHand.Item1, out InteractorGroup group, out Transform holder))
+                    {
+                        rayInteractors.AddRange(holder.GetComponentsInChildren<RayInteractor>(true)
+                            .Where(r => r.GetComponent<IController>() != null && r.GetComponent<IHand>() != null));
+                    }
+                }
+            }
+
+            // Add ActiveStateTagSetFilter to each Ray interactor
+            foreach (RayInteractor rayInteractor in rayInteractors)
+            {
+                // Check if ActiveStateTagSetFilter already exists
+                ActiveStateTagSetFilter filter = rayInteractor.GetComponent<ActiveStateTagSetFilter>();
+                if (filter == null)
+                {
+                    filter = rayInteractor.gameObject.AddComponent<ActiveStateTagSetFilter>();
+                    filter.InjectAllActiveStateTagSetFilter(gazeActiveState);
+                    filter.Tag = GazeQuickActionsConstants.GAZE_RAY_FALLBACK_TAG;
+                    rayInteractor.InjectOptionalInteractableFilters(new List<IGameObjectFilter> { filter });
+                    Undo.RegisterCreatedObjectUndo(filter, "Add ActiveStateTagSetFilter to RayInteractor");
+                }
+            }
+        }
 
         /// <summary>
         /// GetComponent but only matches the base (non-derived) type.

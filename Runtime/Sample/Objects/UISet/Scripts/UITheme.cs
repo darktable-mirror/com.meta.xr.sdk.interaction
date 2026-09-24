@@ -83,6 +83,18 @@ namespace Oculus.Interaction
         public RuntimeAnimatorController acToggleThumbnail;
         public RuntimeAnimatorController acTextInputField;
 
+        [Header("Gaze Animator Controllers")]
+        public RuntimeAnimatorController acPrimaryButtonGaze;
+        public RuntimeAnimatorController acSecondaryButtonGaze;
+        public RuntimeAnimatorController acBorderlessButtonGaze;
+        public RuntimeAnimatorController acDestructiveButtonGaze;
+        public RuntimeAnimatorController acToggleButtonGaze;
+        public RuntimeAnimatorController acToggleBorderlessButtonGaze;
+        public RuntimeAnimatorController acToggleSwitchGaze;
+        public RuntimeAnimatorController acToggleCheckboxRadioGaze;
+        public RuntimeAnimatorController acToggleThumbnailGaze;
+        public RuntimeAnimatorController acTextInputFieldGaze;
+
         [Space(10)]
         public string colorPath = "Content/Background";
     }

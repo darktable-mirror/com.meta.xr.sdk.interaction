@@ -135,6 +135,7 @@ namespace Oculus.Interaction
                 GetPositionOnRegion(handVisual, jointIdStart, minRegion, sideLength);
             Vector2 endPosition =
                 GetPositionOnRegion(handVisual, jointIdEnd, minRegion, sideLength);
+            startPosition = Vector2.LerpUnclamped(startPosition, endPosition, -0.05f);
             endPosition = Vector2.LerpUnclamped(startPosition, endPosition, lineScale);
             return new Vector4(startPosition.x, startPosition.y, endPosition.x, endPosition.y);
         }
@@ -160,16 +161,28 @@ namespace Oculus.Interaction
             //The following numbers generate good looking lines for the current hand model
             var fingerLineScales = new float[Constants.NUM_FINGERS] { 0.9f, 0.91f, 0.9f, 0.87f, 0.87f };
             var fingerLines = GenerateFingerLines(handVisual, minPosition, maxLength, fingerLineScales);
+
             //The thumb line is going to be perpendicularly aligned to the wrist direction
+#if ISDK_OPENXR_HAND
+            fingerLines[0].w = Mathf.Lerp(fingerLines[0].w, fingerLines[0].y, 0.3f);
+            fingerLines[0].y = fingerLines[0].w;
+#else
             fingerLines[0].z = Mathf.Lerp(fingerLines[0].z, fingerLines[0].x, 0.3f);
             fingerLines[0].x = fingerLines[0].z;
+#endif
 
             var palmFingerLineScales = new float[Constants.NUM_FINGERS] { 1.2f, 1.25f, 1.25f, 1.25f, 1.25f };
             var palmFingerLines =
                 GenerateFingerLines(handVisual, minPosition, maxLength, palmFingerLineScales);
+
             //The thumb line is going to be perpendicularly aligned to the wrist direction
+#if ISDK_OPENXR_HAND
+            float thumbOffset = Mathf.Abs(palmFingerLines[0].y - palmFingerLines[0].w) * 0.1f;
+            palmFingerLines[0].w += thumbOffset;
+#else
             float thumbOffset = Mathf.Abs(palmFingerLines[0].x - palmFingerLines[0].z) * 0.1f;
             palmFingerLines[0].z += thumbOffset;
+#endif
 
             for (int i = 0; i < Constants.NUM_FINGERS; i++)
             {

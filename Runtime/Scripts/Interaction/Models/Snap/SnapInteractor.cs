@@ -295,6 +295,13 @@ namespace Oculus.Interaction
                 }
             }
 
+            if (evt.Identifier != Identifier &&
+                evt.Type == PointerEventType.Select &&
+                State == InteractorState.Select)
+            {
+                _shouldUnselect = true;
+            }
+
             if (evt.Identifier == Identifier &&
                 evt.Type == PointerEventType.Cancel &&
                 Interactable != null)

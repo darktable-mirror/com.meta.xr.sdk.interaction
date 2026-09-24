@@ -59,11 +59,11 @@ namespace Oculus.Interaction.Samples
             _deltaTimeProvider = deltaTimeProvider;
         }
 
-        private readonly int columnDirectionID = Shader.PropertyToID("columnDirection");
-        private readonly int rowDirectionID = Shader.PropertyToID("rowDirection");
-        private readonly int animationTimeID = Shader.PropertyToID("animationTime");
-        private readonly int colorAID = Shader.PropertyToID("colorA");
-        private readonly int colorBID = Shader.PropertyToID("colorB");
+        private readonly int columnDirectionID = Shader.PropertyToID("_ColumnDirection");
+        private readonly int rowDirectionID = Shader.PropertyToID("_RowDirection");
+        private readonly int animationTimeID = Shader.PropertyToID("_AnimationTime");
+        private readonly int colorAID = Shader.PropertyToID("_ColorA");
+        private readonly int colorBID = Shader.PropertyToID("_ColorB");
 
         private struct BoxAnimation
         {
@@ -165,6 +165,7 @@ namespace Oculus.Interaction.Samples
         public void OnSliderValueChange()
         {
             animationTime = timeSlider.value * animationDuration;
+            SetPaused();
         }
 
         public void TogglePlayPause()

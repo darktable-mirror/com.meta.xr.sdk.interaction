@@ -29,7 +29,6 @@ namespace Oculus.Interaction.Editor.Telemetry
     [InitializeOnLoad]
     internal static class ISDKTelemetryPopupDisplayer
     {
-        private const int ToolId = 1; // ISDK tool ID for telemetry consent
         private static bool _hasChecked;
 
         static ISDKTelemetryPopupDisplayer()
@@ -54,7 +53,15 @@ namespace Oculus.Interaction.Editor.Telemetry
 
             try
             {
-                if (ISDKEngineTelemetryNative.ShouldShowTelemetryNotification(ToolId))
+                // Path 1: no consent on this machine yet, show consent popup.
+                if (ISDKEngineTelemetryNative.ShouldShowTelemetryConsentWindow(ISDKTelemetryConsent.ToolId))
+                {
+                    ISDKTelemetryConsentWindow.Show();
+                    return;
+                }
+
+                // Path 2: consent already set by another tool, show non-blocking notification.
+                if (ISDKEngineTelemetryNative.ShouldShowTelemetryNotification(ISDKTelemetryConsent.ToolId))
                 {
                     ShowNotification();
                 }
@@ -63,7 +70,7 @@ namespace Oculus.Interaction.Editor.Telemetry
             {
                 Debug.LogWarning(
                     "[ISDK Telemetry] ISDKEngineTelemetry native library not found. " +
-                    "Telemetry notification will not be shown.");
+                    "Consent UI will not be shown.");
             }
         }
 
@@ -73,7 +80,7 @@ namespace Oculus.Interaction.Editor.Telemetry
             try
             {
                 markdownText = ISDKEngineTelemetryNative.GetConsentNotificationMarkdownText(
-                    "Oculus > Interaction > Telemetry Settings");
+                    "Meta > Interaction SDK > Telemetry Settings");
             }
             catch (System.Exception)
             {
@@ -90,7 +97,7 @@ namespace Oculus.Interaction.Editor.Telemetry
             {
                 try
                 {
-                    ISDKEngineTelemetryNative.SetNotificationShown(ToolId);
+                    ISDKEngineTelemetryNative.SetNotificationShown(ISDKTelemetryConsent.ToolId);
                 }
                 catch (System.Exception e)
                 {

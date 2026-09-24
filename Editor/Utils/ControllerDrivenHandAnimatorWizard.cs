@@ -112,7 +112,7 @@ namespace Oculus.Interaction.Utils
         private const string PINCH_PARAM = "Pinch";
         private const string INDEXSLIDE_PARAM = "IndexSlide";
 
-        [MenuItem("Meta/Interaction SDK/Controller Driven Hand Animator Recorder")]
+        [MenuItem("Window/Meta/Interaction SDK/Controller Driven Hand Animator Recorder", false, 2303)]
         private static void CreateWizard()
         {
             ControllerDrivenHandAnimatorWizard window = EditorWindow.GetWindow<ControllerDrivenHandAnimatorWizard>();

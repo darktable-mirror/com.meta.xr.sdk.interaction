@@ -104,6 +104,10 @@ namespace Oculus.Interaction
         /// </summary>
         public static event Action<PointableCanvasEventArgs> WhenSelectableUnhovered;
 
+        internal static event Action<PointableCanvasEventArgs> WhenObjectHovered;
+
+        internal static event Action<PointableCanvasEventArgs> WhenObjectUnhovered;
+
         /// <summary>
         /// Global event invoked whenever a new <see cref="Pointer"/> is started. Though this event itself is static, it is
         /// invoked by the PointableCanvasModule instance in the scene as part of <see cref="Process"/>.
@@ -322,6 +326,9 @@ namespace Oculus.Interaction
             private GameObject _hoveredSelectable;
             public GameObject HoveredSelectable => _hoveredSelectable;
 
+            private GameObject _hoveredObj;
+            public GameObject HoveredObj => _hoveredObj;
+
             private bool _pressing = false;
             private bool _pressed;
             private bool _released;
@@ -371,6 +378,11 @@ namespace Oculus.Interaction
             public void SetHoveredSelectable(GameObject hoveredSelectable)
             {
                 _hoveredSelectable = hoveredSelectable;
+            }
+
+            public void SetHoveredObject(GameObject hoveredObject)
+            {
+                _hoveredObj = hoveredObject;
             }
         }
 
@@ -617,19 +629,31 @@ namespace Oculus.Interaction
                 RemovePointerData(pointerEventData);
             }
 
-            HandleSelectableHover(pointer, wasDragging);
+            HandleObjectHover(pointer, wasDragging);
             HandleSelectablePress(pointer, pressed, released, wasDragging);
 
             pointer.InvokeWhenUpdated();
         }
 
-        private void HandleSelectableHover(PointerImpl pointer, bool wasDragging)
+        private void HandleObjectHover(PointerImpl pointer, bool wasDragging)
         {
             bool dragging = pointer.PointerEventData.dragging || wasDragging;
 
-            GameObject currentOverGo = pointer.PointerEventData.pointerCurrentRaycast.gameObject;
+            GameObject prevHoveredObj = pointer.HoveredObj;
+            GameObject newHoveredObj = pointer.PointerEventData.pointerCurrentRaycast.gameObject;
+            pointer.SetHoveredObject(newHoveredObj);
+
+            if (newHoveredObj != null && newHoveredObj != prevHoveredObj)
+            {
+                WhenObjectHovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredObj, dragging, pointer.Identifier));
+            }
+            else if (prevHoveredObj != null && newHoveredObj == null)
+            {
+                WhenObjectUnhovered?.Invoke(new PointableCanvasEventArgs(pointer.Canvas, pointer.HoveredObj, dragging, pointer.Identifier));
+            }
+
             GameObject prevHoveredSelectable = pointer.HoveredSelectable;
-            GameObject newHoveredSelectable = ExecuteEvents.GetEventHandler<ISelectHandler>(currentOverGo);
+            GameObject newHoveredSelectable = ExecuteEvents.GetEventHandler<ISelectHandler>(newHoveredObj);
             pointer.SetHoveredSelectable(newHoveredSelectable);
 
             if (newHoveredSelectable != null && newHoveredSelectable != prevHoveredSelectable)

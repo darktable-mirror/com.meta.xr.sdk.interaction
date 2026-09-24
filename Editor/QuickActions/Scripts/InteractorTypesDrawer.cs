@@ -26,24 +26,44 @@ using System;
 namespace Oculus.Interaction.Editor.QuickActions
 {
     /// <summary>
-    /// Draws a mask field for InteractorTypes, but ignoring the
-    /// harcoded InteractorTypes.None and InteractorTypes.All in favor of the Unity ones;
-    /// and all experimental values set beyonf InteractorTypes.All.
+    /// Draws a mask field for InteractorTypes, ignoring the composite
+    /// InteractorTypes.None and InteractorTypes.All in favor of Unity's own
+    /// Nothing/Everything entries. Standard types plus Gaze are selectable;
+    /// other experimental values remain hidden.
     /// </summary>
     [CustomPropertyDrawer(typeof(InteractorTypes))]
     public class InteractorTypesDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            int visibleValues = property.intValue & (int)InteractorTypes.All;
-            InteractorTypes currentFlags = (InteractorTypes)Enum.ToObject(typeof(InteractorTypes), visibleValues);
-
-            string[] options = Enum.GetValues(typeof(InteractorTypes))
+            InteractorTypes[] visibleValues = Enum.GetValues(typeof(InteractorTypes))
                 .Cast<InteractorTypes>()
-                .Where(value => value > InteractorTypes.None && value < InteractorTypes.All)
-                .Select(value => value.ToString()).ToArray();
+                .Where(value => (value > InteractorTypes.None && value < InteractorTypes.All)
+                    || value == InteractorTypes.Gaze)
+                .ToArray();
+            string[] options = visibleValues.Select(value => value.ToString()).ToArray();
 
-            property.intValue = EditorGUI.MaskField(position, label, visibleValues, options);
+            // MaskField works on option indices, so map the stored flags to/from them.
+            int mask = 0;
+            for (int i = 0; i < visibleValues.Length; i++)
+            {
+                if ((property.intValue & (int)visibleValues[i]) != 0)
+                {
+                    mask |= 1 << i;
+                }
+            }
+
+            mask = EditorGUI.MaskField(position, label, mask, options);
+
+            int result = 0;
+            for (int i = 0; i < visibleValues.Length; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                {
+                    result |= (int)visibleValues[i];
+                }
+            }
+            property.intValue = result;
         }
     }
 }

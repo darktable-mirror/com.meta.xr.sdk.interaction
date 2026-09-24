@@ -32,6 +32,13 @@ namespace Oculus.Interaction.Telemetry
         // Native API currently writes at most ~2KB for consent markdown text.
         private const int TextBufferSize = 4096;
 
+        // Must match the bundled ISDKEngineTelemetry version.
+        // If this falls out of sync with the deployed DLL, Init() logs a warning.
+        public const string ExpectedNativeVersion = "1.207.0";
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr engineTelemetry_GetVersion();
+
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void engineTelemetry_Init();
 
@@ -163,6 +170,28 @@ namespace Oculus.Interaction.Telemetry
 
             engineTelemetry_Init();
             _initialized = true;
+
+            var nativeVersion = GetNativeVersion();
+            if (nativeVersion != null && nativeVersion != ExpectedNativeVersion)
+            {
+                UnityEngine.Debug.LogWarning(
+                    $"[Interaction SDK] Telemetry native library version mismatch " +
+                    $"(found {nativeVersion}, expected {ExpectedNativeVersion}). " +
+                    "Please update the Meta Interaction SDK package to the latest version.");
+            }
+        }
+
+        public static string GetNativeVersion()
+        {
+            try
+            {
+                var ptr = engineTelemetry_GetVersion();
+                return ptr != IntPtr.Zero ? Marshal.PtrToStringAnsi(ptr) : null;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
         }
 
         public static void ShutDown()
@@ -203,6 +232,13 @@ namespace Oculus.Interaction.Telemetry
             int isRuntime = OptionalTelemetryBool_NotSet,
             string eventStatus = null)
         {
+            if (batchMode == OptionalTelemetryBool_NotSet)
+            {
+                batchMode = UnityEngine.Application.isBatchMode
+                    ? TelemetryBool_True
+                    : TelemetryBool_False;
+            }
+
             return engineTelemetry_SendUnifiedEvent(
                 isEssential ? TelemetryBool_True : TelemetryBool_False,
                 productType,
@@ -250,6 +286,82 @@ namespace Oculus.Interaction.Telemetry
             var sb = new StringBuilder(TextBufferSize);
             int result = engineTelemetry_GetMachineID(sb);
             return result == TelemetryBool_True ? sb.ToString() : null;
+        }
+
+        public static bool SaveUnifiedConsent(int toolId, int consentValue)
+        {
+            try
+            {
+                return engineTelemetry_SaveUnifiedConsent(toolId, consentValue) == TelemetryBool_True;
+            }
+            catch (DllNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public static int GetUnifiedConsent(int toolId)
+        {
+            try
+            {
+                return engineTelemetry_GetUnifiedConsent(toolId);
+            }
+            catch (DllNotFoundException)
+            {
+                return TelemetryOptionalBool_Unknown;
+            }
+        }
+
+        public static bool ShouldShowTelemetryConsentWindow(int toolId)
+        {
+            try
+            {
+                return engineTelemetry_ShouldShowTelemetryConsentWindow(toolId) == TelemetryBool_True;
+            }
+            catch (DllNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public static bool IsConsentSettingsChangeEnabled(int toolId)
+        {
+            try
+            {
+                return engineTelemetry_IsConsentSettingsChangeEnabled(toolId) == TelemetryBool_True;
+            }
+            catch (DllNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public static string GetConsentSettingsChangeText()
+        {
+            try
+            {
+                var sb = new StringBuilder(TextBufferSize);
+                int result = engineTelemetry_GetConsentSettingsChangeText(sb);
+                return result == TelemetryBool_True ? sb.ToString() : null;
+            }
+            catch (DllNotFoundException)
+            {
+                return null;
+            }
+        }
+
+        public static string GetConsentMarkdownText()
+        {
+            try
+            {
+                var sb = new StringBuilder(TextBufferSize);
+                int result = engineTelemetry_GetConsentMarkdownText(sb);
+                return result == TelemetryBool_True ? sb.ToString() : null;
+            }
+            catch (DllNotFoundException)
+            {
+                return null;
+            }
         }
     }
 }

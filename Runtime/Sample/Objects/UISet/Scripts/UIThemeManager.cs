@@ -19,7 +19,6 @@
  */
 
 using Oculus.Interaction.Samples;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,9 +38,21 @@ namespace Oculus.Interaction
         private int _currentThemeIndex = -1;
         public int CurrentThemeIndex => _currentThemeIndex;
 
+        [Header("Gaze Input")]
+        [Optional]
+        [SerializeField, Interface(typeof(IActiveState))]
+        [Tooltip("Optional: Active state indicating gaze availability. " +
+                 "When active, uses gaze-optimized animator controllers if the theme supports them.")]
+        private UnityEngine.Object _gazeActiveState;
+        private IActiveState GazeActiveState;
+        private bool _isGazeMode;
 
-        void Awake()
+        protected virtual void Awake()
         {
+            if (GazeActiveState == null)
+            {
+                GazeActiveState = _gazeActiveState as IActiveState;
+            }
 #if UNITY_EDITOR
             EnsureRequiredTagsRegistered();
 #endif
@@ -86,9 +97,22 @@ namespace Oculus.Interaction
 
         protected virtual void Start()
         {
+            _isGazeMode = GazeActiveState?.Active ?? false;
             ApplyTheme(_currentThemeIndex);
         }
 
+        protected virtual void Update()
+        {
+            if (GazeActiveState == null) return;
+            if (_themes == null || _currentThemeIndex < 0 || _currentThemeIndex >= _themes.Length) return;
+
+            bool gazeActive = GazeActiveState.Active;
+            if (gazeActive != _isGazeMode)
+            {
+                _isGazeMode = gazeActive;
+                ApplyAnimators(_themes[_currentThemeIndex]);
+            }
+        }
 
         public void ApplyCurrentTheme()
         {
@@ -109,6 +133,14 @@ namespace Oculus.Interaction
             ApplyAnimators(_themes[_currentThemeIndex]);
         }
 
+        /// <summary>
+        /// Sets the gaze mode for editor preview purposes.
+        /// This allows the inspector to preview gaze animators without runtime gaze detection.
+        /// </summary>
+        public void SetGazeModePreview(bool useGaze)
+        {
+            _isGazeMode = useGaze;
+        }
 
         public void ResetIndex()
         {
@@ -135,7 +167,6 @@ namespace Oculus.Interaction
 
             _currentThemeIndex = index;
             UITheme selectedTheme = _themes[index];
-
 
             ApplyAnimators(selectedTheme);
             ApplyCursor(selectedTheme);
@@ -279,6 +310,14 @@ namespace Oculus.Interaction
 
         private RuntimeAnimatorController GetControllerForTag(string tag, UITheme theme)
         {
+            if (_isGazeMode)
+            {
+                var gazeController = GetGazeControllerForTag(tag, theme);
+                if (gazeController != null)
+                {
+                    return gazeController;
+                }
+            }
 
             return tag switch
             {
@@ -292,6 +331,24 @@ namespace Oculus.Interaction
                 "QDSUIToggleCheckboxRadio" => theme.acToggleCheckboxRadio,
                 "QDSUIToggleThumbnail" => theme.acToggleThumbnail,
                 "QDSUITextInputField" => theme.acTextInputField,
+                _ => null
+            };
+        }
+
+        private RuntimeAnimatorController GetGazeControllerForTag(string tag, UITheme theme)
+        {
+            return tag switch
+            {
+                "QDSUIPrimaryButton" => theme.acPrimaryButtonGaze,
+                "QDSUISecondaryButton" => theme.acSecondaryButtonGaze,
+                "QDSUIBorderlessButton" => theme.acBorderlessButtonGaze,
+                "QDSUIDestructiveButton" => theme.acDestructiveButtonGaze,
+                "QDSUIToggleButton" => theme.acToggleButtonGaze,
+                "QDSUIToggleBorderlessButton" => theme.acToggleBorderlessButtonGaze,
+                "QDSUIToggleSwitch" => theme.acToggleSwitchGaze,
+                "QDSUIToggleCheckboxRadio" => theme.acToggleCheckboxRadioGaze,
+                "QDSUIToggleThumbnail" => theme.acToggleThumbnailGaze,
+                "QDSUITextInputField" => theme.acTextInputFieldGaze,
                 _ => null
             };
         }

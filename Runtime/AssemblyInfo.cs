@@ -21,3 +21,5 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.Editor")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.UnityXR")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.Tests.Editor")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Oculus.Interaction.OVR")]

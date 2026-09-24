@@ -220,6 +220,22 @@ namespace Oculus.Interaction.GrabAPI
             _unselectMode = FingerUnselectMode.AllReleased
         };
 
+        /// <summary>
+        /// Rule with all fingers set to <see cref="FingerRequirement.Ignored"/>.
+        /// Used as a quick-path when a grab type is not supported by a <see cref="GrabbingRuleProvider"/>,
+        /// effectively preventing the grab from ever triggering.
+        /// </summary>
+        public static GrabbingRule UnsupportedRule { get; } = new GrabbingRule()
+        {
+            _thumbRequirement = FingerRequirement.Ignored,
+            _indexRequirement = FingerRequirement.Ignored,
+            _middleRequirement = FingerRequirement.Ignored,
+            _ringRequirement = FingerRequirement.Ignored,
+            _pinkyRequirement = FingerRequirement.Ignored,
+
+            _unselectMode = FingerUnselectMode.AllReleased
+        };
+
         #endregion
     }
 }

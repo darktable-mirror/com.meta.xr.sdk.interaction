@@ -62,7 +62,7 @@ namespace Oculus.Interaction.Editor
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Fix", GUILayout.MaxWidth(100), GUILayout.MaxHeight(40)))
                 {
-                    MoveFromTargetProvider movementProvider = _interactable.gameObject.AddComponent<MoveFromTargetProvider>();
+                    MoveFromTargetAtAnchorProvider movementProvider = _interactable.gameObject.AddComponent<MoveFromTargetAtAnchorProvider>();
                     _movementProviderProperty.objectReferenceValue = movementProvider;
                     serializedObject.ApplyModifiedProperties();
                 }

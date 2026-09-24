@@ -45,6 +45,7 @@ namespace Oculus.Interaction
         public void MoveTo(Pose target)
         {
             _originalTarget = target;
+            UpdateTarget(target);
         }
 
         public void UpdateTarget(Pose target)

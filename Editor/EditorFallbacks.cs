@@ -22,7 +22,90 @@
 using System;
 using UnityEditor;
 using Oculus.Interaction.Editor;
-using Oculus.Interaction.Unity.Input;
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(GazeConecaster), false, isFallback = true), CanEditMultipleObjects]
+    public class GazeConecasterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(ConecastableCanvas), false, isFallback = true), CanEditMultipleObjects]
+    public class ConecastableCanvasEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(ConecastableCanvasTarget), false, isFallback = true), CanEditMultipleObjects]
+    public class ConecastableCanvasTargetEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(GazeInteractable), false, isFallback = true), CanEditMultipleObjects]
+    public class GazeInteractableEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(GazeInteractor), false, isFallback = true), CanEditMultipleObjects]
+    public class GazeInteractorEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(CoronaryMovementProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class CoronaryMovementProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(MaintainOffsetFromTargetProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class MaintainOffsetFromTargetProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(MatchTargetAtSourceProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class MatchTargetAtSourceProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(PanToRotateProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class PanToRotateProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(DiscreteScrollInputProvider), false, isFallback = true), CanEditMultipleObjects]
+    public class DiscreteScrollInputProviderEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(EyeGaze), false, isFallback = true), CanEditMultipleObjects]
+    public class EyeGazeEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Input.Editor.Generated
+{
+    [CustomEditor(typeof(EyeGazeRef), false, isFallback = true), CanEditMultipleObjects]
+    public class EyeGazeRefEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(ActiveStateTagSetFilter), false, isFallback = true), CanEditMultipleObjects]
+    public class ActiveStateTagSetFilterEditorFallback : SimplifiedEditor { }
+}
+
+namespace Oculus.Interaction.Editor.Generated
+{
+    [CustomEditor(typeof(SelectBlendedTransform), false, isFallback = true), CanEditMultipleObjects]
+    public class SelectBlendedTransformEditorFallback : SimplifiedEditor { }
+}
 
 namespace Oculus.Interaction.Editor.Generated
 {

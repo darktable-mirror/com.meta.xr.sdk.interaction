@@ -147,18 +147,21 @@ namespace Oculus.Interaction.HandGrab
                     _interpolationCache.overResult.HandPose, t, ref result.HandPose);
                 PoseUtils.Lerp(_interpolationCache.underResult.RelativePose,
                     _interpolationCache.overResult.RelativePose, t, ref result.RelativePose);
+                result.RelativeTo = _interpolationCache.underResult.RelativeTo;
             }
             else if (_interpolationCache.underResult.HasHandPose)
             {
                 result.HasHandPose = true;
                 result.HandPose.CopyFrom(_interpolationCache.underResult.HandPose);
                 result.RelativePose.CopyFrom(_interpolationCache.underResult.RelativePose);
+                result.RelativeTo = _interpolationCache.underResult.RelativeTo;
             }
             else if (_interpolationCache.overResult.HasHandPose)
             {
                 result.HasHandPose = true;
                 result.HandPose.CopyFrom(_interpolationCache.overResult.HandPose);
                 result.RelativePose.CopyFrom(_interpolationCache.overResult.RelativePose);
+                result.RelativeTo = _interpolationCache.overResult.RelativeTo;
             }
 
             result.Score = GrabPoseScore.Lerp(

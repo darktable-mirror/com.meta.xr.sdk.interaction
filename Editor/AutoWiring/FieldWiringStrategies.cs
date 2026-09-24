@@ -47,7 +47,7 @@ namespace Oculus.Interaction.Editor
             for (var transform = target.transform.parent; transform != null; transform = transform.parent)
             {
                 var component = transform.gameObject.GetComponent(targetType);
-                if (component)
+                if (component != null)
                 {
                     field.SetValue(target, component);
                     EditorUtility.SetDirty(target);
@@ -64,7 +64,7 @@ namespace Oculus.Interaction.Editor
             foreach (var rootGameObject in rootObjs)
             {
                 var component = rootGameObject.GetComponentInChildren(targetType, true);
-                if (component != null)
+                if (component != null && component != target)
                 {
                     field.SetValue(target, component);
                     EditorUtility.SetDirty(target);
@@ -86,7 +86,7 @@ namespace Oculus.Interaction.Editor
                 if (gameObject != null)
                 {
                     var component = gameObject.GetComponentInChildren(targetType, true);
-                    if (component != null)
+                    if (component != null && component != target)
                     {
                         field.SetValue(target, component);
                         EditorUtility.SetDirty(target);
@@ -161,6 +161,10 @@ namespace Oculus.Interaction.Editor
             Component bestComponent = null;
             foreach (Component component in components)
             {
+                if (component == target)
+                {
+                    continue;
+                }
                 List<Transform> ancestorsB = GetAncestors(component.transform);
                 int score = GetHierarchyScore(ancestors, ancestorsB, 1, 3);
                 if (score < bestScore)

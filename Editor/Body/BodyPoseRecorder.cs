@@ -55,7 +55,7 @@ namespace Oculus.Interaction.Body.Editor
         private float TimeUntilCapture =>
             Mathf.Max(_nextCaptureTime - Time.unscaledTime, 0);
 
-        [MenuItem("Meta/Interaction SDK/Body Pose Recorder")]
+        [MenuItem("Window/Meta/Interaction SDK/Body Pose Recorder", false, 2300)]
         private static void ShowWindow()
         {
             BodyPoseRecorder window = GetWindow<BodyPoseRecorder>();

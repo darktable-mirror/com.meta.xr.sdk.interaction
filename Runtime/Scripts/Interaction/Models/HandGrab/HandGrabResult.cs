@@ -27,8 +27,9 @@ namespace Oculus.Interaction.HandGrab
     {
         public bool HasHandPose;
         public HandPose HandPose;
-        public Pose RelativePose;
         public GrabPoseScore Score;
+        public Pose RelativePose;
+        public Transform RelativeTo;
 
         public HandGrabResult()
         {
@@ -42,6 +43,19 @@ namespace Oculus.Interaction.HandGrab
             HandPose.CopyFrom(other.HandPose);
             RelativePose.CopyFrom(other.RelativePose);
             Score = other.Score;
+            RelativeTo = other.RelativeTo;
+        }
+
+        public Pose GetTargetPose()
+        {
+            if (RelativeTo != null)
+            {
+                return PoseUtils.GlobalPose(RelativeTo, RelativePose);
+            }
+            else
+            {
+                return RelativePose;
+            }
         }
     }
 }

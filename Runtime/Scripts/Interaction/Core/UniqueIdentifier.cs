@@ -83,7 +83,7 @@ namespace Oculus.Interaction
         {
             while (true)
             {
-                int identifier = Random.Next(Int32.MaxValue);
+                int identifier = Random.Next(1, Int32.MaxValue);
                 if (_identifierSet.Contains(identifier)) continue;
                 _identifierSet.Add(identifier);
                 return new UniqueIdentifier(identifier, Context.Global.GetInstance());
@@ -103,7 +103,7 @@ namespace Oculus.Interaction
         {
             while (true)
             {
-                int identifier = Random.Next(Int32.MaxValue);
+                int identifier = Random.Next(1, Int32.MaxValue);
                 if (_identifierSet.Contains(identifier)) continue;
 
                 _identifierSet.Add(identifier);

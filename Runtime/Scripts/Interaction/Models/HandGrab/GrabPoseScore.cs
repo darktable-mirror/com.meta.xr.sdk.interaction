@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using System;
 using UnityEngine;
 
 namespace Oculus.Interaction.Grab
@@ -29,7 +30,7 @@ namespace Oculus.Interaction.Grab
     /// for that end 2 scalars and a weight are saved and then compared against other scores
     /// to decide which one is higher.
     /// </summary>
-    public struct GrabPoseScore
+    public struct GrabPoseScore : IComparable<GrabPoseScore>
     {
         private float _translationScore;
         private float _rotationScore;
@@ -156,6 +157,19 @@ namespace Oculus.Interaction.Grab
             return (testScoreValue < 0 && referenceScoreValue > 0)
                    || (testScoreValue < 0 && referenceScoreValue < 0 && testScoreValue > referenceScoreValue)
                    || (testScoreValue > 0 && referenceScoreValue > 0 && testScoreValue < referenceScoreValue);
+        }
+
+        public int CompareTo(GrabPoseScore other)
+        {
+            if (this.IsBetterThan(other))
+            {
+                return -1;
+            }
+            else if (other.IsBetterThan(this))
+            {
+                return 1;
+            }
+            return 0;
         }
     }
 }

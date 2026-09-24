@@ -106,6 +106,11 @@ namespace Oculus.Interaction.Editor.QuickActions
                 _controller, _hand, _hmd, _transform, _interactorGroup);
         }
 
+        public void InjectInteractorTypes(InteractorTypes interactorTypes)
+        {
+            _interactorTypes = interactorTypes;
+        }
+
         protected override void InitializeFieldsExtra()
         {
             base.InitializeFieldsExtra();
@@ -160,7 +165,7 @@ namespace Oculus.Interaction.Editor.QuickActions
                     }
                 }
             }
-            if ((_interactorTypes & InteractorTypes.All) == 0)
+            if (_interactorTypes == InteractorTypes.None)
             {
                 messages = messages.Append(new MessageData(MessageType.Error,
                     "No interactor types selected."));

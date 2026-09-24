@@ -26,12 +26,15 @@ namespace Oculus.Interaction.Telemetry
 {
     internal static class ISDKTelemetryInitializer
     {
+        private static float _sessionStartTime;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
             try
             {
                 ISDKEngineTelemetryNative.Init();
+                _sessionStartTime = Time.realtimeSinceStartup;
                 Application.quitting += OnApplicationQuitting;
             }
             catch (DllNotFoundException)
@@ -48,6 +51,8 @@ namespace Oculus.Interaction.Telemetry
         {
             try
             {
+                var duration = Time.realtimeSinceStartup - _sessionStartTime;
+                ISDKTelemetryRuntimeEvents.SendSessionDuration(duration);
                 ISDKEngineTelemetryNative.ShutDown();
             }
             catch (Exception)

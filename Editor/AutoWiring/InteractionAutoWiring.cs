@@ -287,6 +287,57 @@ namespace Oculus.Interaction.Editor
             );
             #endregion
 
+            #region Scroll
+
+            AutoWiring.Register(
+                typeof(DiscreteScrollInputProvider),
+                new[] {
+                    new ComponentWiringStrategyConfig("_interactor", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors
+                        }),
+                }
+            );
+
+            #endregion
+
+            #region Gaze
+
+            AutoWiring.Register(
+                typeof(GazeInteractor),
+                new[] {
+                    new ComponentWiringStrategyConfig("_candidateProvider", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors,
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToNearestComponent(monoBehaviour, field, targetType)
+                        })
+                }
+            );
+
+            AutoWiring.Register(
+            typeof(GazeConecaster),
+            new[] {
+                    new ComponentWiringStrategyConfig("_gaze", new FieldWiringStrategy[]
+                        {
+                            (MonoBehaviour monoBehaviour, FieldInfo field, System.Type targetType)
+                                => FieldWiringStrategies.WireFieldToNearestComponent(monoBehaviour, field, typeof(EyeGaze))
+                        })
+                }
+            );
+
+            AutoWiring.Register(
+                typeof(EyeGazeRef),
+                new[] {
+                    new ComponentWiringStrategyConfig("_gaze", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors,
+                            FieldWiringStrategies.WireFieldToNearestComponent,
+                        })
+                }
+            );
+
+            #endregion Gaze
         }
     }
 }

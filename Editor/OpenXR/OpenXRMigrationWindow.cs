@@ -56,7 +56,7 @@ namespace Oculus.Interaction.Editor
             = new Dictionary<AssetListWindow, Dictionary<int, UnityEditor.Editor>>();
 #endif
 
-        [MenuItem("Meta/Interaction SDK/OpenXR Migration Tool")]
+        [MenuItem("Window/Meta/Interaction SDK/OpenXR Migration Tool", false, 2301)]
         public static void ShowWindow()
         {
             //unified entry point for populating the table

@@ -116,7 +116,7 @@ namespace Oculus.Interaction.HandGrab.Editor
         [SerializeField]
         private string _prefabPathToAdd = null;
 
-        [MenuItem("Meta/Interaction SDK/Hand Pose Selector Recorder")]
+        [MenuItem("Window/Meta/Interaction SDK/Hand Pose Selector Recorder", false, 2306)]
         private static void CreateWizard()
         {
             var window = EditorWindow.GetWindow<HandPoseSelectorWizard>();

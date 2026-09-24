@@ -81,11 +81,12 @@ namespace Oculus.Interaction.DistanceReticles
 
         protected bool _started;
         private bool _shouldDrawLine;
-        private DummyPointReticle _dummyTarget = new DummyPointReticle();
+        private DummyPointReticle _dummyTarget;
 
         private void Awake()
         {
             DistanceInteractor = _distanceInteractor as IDistanceInteractor;
+            _dummyTarget = new DummyPointReticle();
         }
 
         protected virtual void Start()
@@ -161,18 +162,24 @@ namespace Oculus.Interaction.DistanceReticles
             }
         }
 
-        protected virtual void InteractableSet(IRelativeToRef interactable)
+        protected virtual void InteractableSet(IRelativeToRef relativeToRef)
         {
-            Component component = interactable as Component;
-            if (component == null)
+            if (relativeToRef == null)
             {
                 _target = null;
                 return;
             }
 
-            if (!component.TryGetComponent(out _target))
+            if (relativeToRef is IReticleData reticleData)
             {
-                _dummyTarget.Target = interactable.RelativeTo;
+                _target = reticleData;
+                return;
+            }
+
+            if (!(relativeToRef is Component component) ||
+                !component.TryGetComponent(out _target))
+            {
+                _dummyTarget.Target = relativeToRef.RelativeTo;
                 _target = _dummyTarget;
             }
         }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4269851187205048589}
   - component: {fileID: 2381289382052524804}
-  - component: {fileID: 277020152774245443}
+  - component: {fileID: -2885819823828592566}
   m_Layer: 0
   m_Name: Template_RayGrabInteraction
   m_TagString: Untagged
@@ -52,9 +52,9 @@ MonoBehaviour:
   _pointableElement: {fileID: 0}
   _surface: {fileID: 0}
   _selectSurface: {fileID: 0}
-  _movementProvider: {fileID: 277020152774245443}
+  _movementProvider: {fileID: -2885819823828592566}
   _tiebreakerScore: 0
---- !u!114 &277020152774245443
+--- !u!114 &-2885819823828592566
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -63,6 +63,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 3461684424311264183}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 953054d108799b942815afb3405983ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 752996c4b93b38143ba6af7d8538adee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

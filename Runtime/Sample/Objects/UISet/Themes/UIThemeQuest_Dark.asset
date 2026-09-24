@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d77c0fe66c705c541ada54398115658d, type: 3}
   m_Name: UIThemeQuest_Dark
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _themeVersion: 2
   backplateColor: {r: 1, g: 1, b: 1, a: 1}
   backplateGradientMaterial: {fileID: 2100000, guid: d6e192b5359c267428b5fe9a29ea1010,
@@ -63,3 +63,20 @@ MonoBehaviour:
   acToggleThumbnail: {fileID: 9100000, guid: 414dc865838fe36449743c9525815ac2, type: 2}
   acTextInputField: {fileID: 9100000, guid: ebffd02e23b79524e9142997edbf75a5, type: 2}
   colorPath: Content/Background
+  acPrimaryButtonGaze: {fileID: 9100000, guid: 3ba1934fcb90b824f985b412b06daad3, type: 2}
+  acSecondaryButtonGaze: {fileID: 9100000, guid: 817950dd80ac95e4d8df20ccbcfa0ec6,
+    type: 2}
+  acBorderlessButtonGaze: {fileID: 9100000, guid: 24569b9ff8bf4e34ea5b5de7637352eb,
+    type: 2}
+  acDestructiveButtonGaze: {fileID: 9100000, guid: 7a5fa7637bbc0fe44ba15f502c1b1e1a,
+    type: 2}
+  acToggleButtonGaze: {fileID: 9100000, guid: 20f14b971872a3245b07c4fb78c75df8, type: 2}
+  acToggleBorderlessButtonGaze: {fileID: 9100000, guid: ee3717dc84365fc40961193fc91afaff,
+    type: 2}
+  acToggleSwitchGaze: {fileID: 9100000, guid: bc195e7e04669854190c2ea311e7f01d, type: 2}
+  acToggleCheckboxRadioGaze: {fileID: 9100000, guid: 1a94e8bdd9e1bf6448c3ce4ddf340612,
+    type: 2}
+  acToggleThumbnailGaze: {fileID: 9100000, guid: eb36f58bfc91f3f468b2dc89e8b6c891,
+    type: 2}
+  acTextInputFieldGaze: {fileID: 9100000, guid: e0e854d6d0badd940affbb7e4b796c52,
+    type: 2}

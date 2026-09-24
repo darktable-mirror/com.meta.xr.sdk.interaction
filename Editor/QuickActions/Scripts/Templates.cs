@@ -144,6 +144,15 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "ISDK_TeleportInteraction",
                 "70cf16e50c457a54cad0b0a504b7d646");
 
+        public static readonly Template GazeInteractable =
+            new Template(
+                "ISDK_GazeInteraction",
+                "73cb9f79efed94a4d9222f3f3a2917e9");
+
+        public static readonly Template GazeCanvasInteractable =
+            new Template(
+                "ISDK_GazeCanvasInteraction",
+                "20293a222852bdb49ae4a60ba5defc57");
 
         #endregion Interactables
 
@@ -239,6 +248,17 @@ namespace Oculus.Interaction.Editor.QuickActions
                 "dd6fa3a95e908604fa8656608ea793a1",
                 InputModality.Controller);
 
+        public static readonly InteractorTemplate HandGazeInteractor =
+            new InteractorTemplate(
+                "HandGazeInteractor",
+                "0138d08fefc9f54478d05f8060afce3e",
+                InputModality.HandAndNoController);
+
+        public static readonly InteractorTemplate ControllerGazeInteractor =
+            new InteractorTemplate(
+                "ControllerGazeInteractor",
+                "a5997e9c9ed7eca438558a339e0b2dc9",
+                InputModality.Controller);
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _handInteractorTemplates = new()
         {
@@ -248,6 +268,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.DistanceGrab] = DistanceHandGrabInteractor,
             [InteractorTypes.Teleport] = HandTeleportInteractor,
             [InteractorTypes.TouchGrab] = TouchHandGrabInteractor,
+            [InteractorTypes.Gaze] = HandGazeInteractor,
         };
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _controllerInteractorTemplates = new()
@@ -257,6 +278,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.Ray] = ControllerRayInteractor,
             [InteractorTypes.DistanceGrab] = ControllerDistanceGrabInteractor,
             [InteractorTypes.Teleport] = ControllerTeleportInteractor,
+            [InteractorTypes.Gaze] = ControllerGazeInteractor,
         };
 
         private static Dictionary<InteractorTypes, InteractorTemplate> _controllerHandInteractorTemplates = new()
@@ -267,6 +289,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             [InteractorTypes.DistanceGrab] = DistanceControllerHandGrabInteractor,
             [InteractorTypes.Teleport] = ControllerTeleportInteractor,
             [InteractorTypes.TouchGrab] = TouchControllerHandGrabInteractor,
+            [InteractorTypes.Gaze] = ControllerGazeInteractor,
         };
 
         /// <summary>

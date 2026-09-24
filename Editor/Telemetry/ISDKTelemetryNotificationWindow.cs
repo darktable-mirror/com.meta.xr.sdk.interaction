@@ -231,7 +231,7 @@ namespace Oculus.Interaction.Editor.Telemetry
             return new Rect(0, 0, Screen.currentResolution.width, Screen.currentResolution.height);
         }
 
-        private static string ConvertMarkdownToRichText(string markdown)
+        internal static string ConvertMarkdownToRichText(string markdown)
         {
             if (string.IsNullOrEmpty(markdown))
             {

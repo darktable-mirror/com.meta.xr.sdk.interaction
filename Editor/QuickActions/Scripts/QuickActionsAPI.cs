@@ -72,6 +72,8 @@ namespace Oculus.Interaction.Editor.QuickActions
         DistanceGrab = 1 << 3,
         /// <summary>Teleport interactor for locomotion.</summary>
         Teleport = 1 << 4,
+        /// <summary>Gaze (eye tracking) interactor. Opt-in; not included in <see cref="All"/>.</summary>
+        Gaze = 1 << 5,
         /// <summary>All standard interactor types.</summary>
         All = Poke | Grab | Ray | DistanceGrab | Teleport,
     }
@@ -245,23 +247,86 @@ namespace Oculus.Interaction.Editor.QuickActions
         /// Adds interactors to a controller input device.
         /// </summary>
         /// <param name="target">The Controller GameObject to add interactors to.</param>
+        /// <param name="interactorTypes">The types of interactors to add. Defaults to all
+        /// standard types.</param>
         /// <returns>The root GameObjects created by the wizard.</returns>
-        public static List<GameObject> AddControllerInteractors(GameObject target)
+        public static List<GameObject> AddControllerInteractors(
+            GameObject target,
+            QuickActionInteractorTypes interactorTypes = QuickActionInteractorTypes.All)
         {
-            return QuickActionsWizard.CreateWithDefaults<ControllerInteractorWizard>(target).ToList();
+            return QuickActionsWizard.CreateWithDefaults<ControllerInteractorWizard>(target,
+                injections: w => w.InjectInteractorTypes(
+                    ToInternalInteractorTypes(interactorTypes))).ToList();
         }
 
         /// <summary>
         /// Adds interactors to a controller-driven hand.
         /// </summary>
         /// <param name="target">The controller-driven Hand GameObject to add interactors to.</param>
+        /// <param name="interactorTypes">The types of interactors to add. Defaults to all
+        /// standard types.</param>
         /// <returns>The root GameObjects created by the wizard.</returns>
-        public static List<GameObject> AddControllerHandInteractors(GameObject target)
+        public static List<GameObject> AddControllerHandInteractors(
+            GameObject target,
+            QuickActionInteractorTypes interactorTypes = QuickActionInteractorTypes.All)
         {
-            return QuickActionsWizard.CreateWithDefaults<ControllerHandInteractorWizard>(target).ToList();
+            return QuickActionsWizard.CreateWithDefaults<ControllerHandInteractorWizard>(target,
+                injections: w => w.InjectInteractorTypes(
+                    ToInternalInteractorTypes(interactorTypes))).ToList();
         }
 
 
+        /// <summary>
+        /// Adds a gaze grab interaction to the target GameObject.
+        /// Sets up GazeInteractable with eye tracking and ray fallback.
+        /// </summary>
+        /// <param name="target">The GameObject to add the gaze interaction to.</param>
+        /// <param name="enableRayFallback">Whether to create a parallel RayInteractable
+        /// as a fallback when gaze tracking is unavailable.</param>
+        /// <returns>The root GameObjects created by the wizard.</returns>
+        public static List<GameObject> AddGazeInteraction(
+            GameObject target,
+            bool enableRayFallback = true)
+        {
+            return QuickActionsWizard.CreateWithDefaults<GazeWizard>(target,
+                injections: w =>
+                {
+                    w.InjectOptionalEnableRayFallback(enableRayFallback);
+                }).ToList();
+        }
+
+        /// <summary>
+        /// Adds a gaze interaction to a Canvas.
+        /// Creates a ConecastableCanvas with gaze support and ensures a
+        /// PointableCanvasModule exists in the scene.
+        /// </summary>
+        /// <param name="target">The Canvas GameObject to add the gaze interaction to.</param>
+        /// <param name="enableRayFallback">Whether to create a parallel RayInteractable
+        /// as a fallback when gaze tracking is unavailable.</param>
+        /// <param name="addToChildCanvases">Whether to also add gaze interaction to
+        /// child Canvas elements.</param>
+        /// <param name="fixPointableCanvasModule">When true (default), ensures a
+        /// PointableCanvasModule exists in the scene, adding one if missing.
+        /// Set to false when a PointableCanvasModule is already provided via a
+        /// prefab or additive scene that is not currently loaded.</param>
+        /// <returns>The root GameObjects created by the wizard.</returns>
+        public static List<GameObject> AddGazeCanvasInteraction(
+            GameObject target,
+            bool enableRayFallback = true,
+            bool addToChildCanvases = true,
+            bool fixPointableCanvasModule = true)
+        {
+            return QuickActionsWizard.CreateWithDefaults<GazeCanvasWizard>(target,
+                injections: w =>
+                {
+                    w.InjectOptionalEnableRayFallback(enableRayFallback);
+                    w.InjectOptionalAddToChildCanvases(addToChildCanvases);
+                    if (fixPointableCanvasModule)
+                    {
+                        w.FixMissingPointableCanvasModule();
+                    }
+                }).ToList();
+        }
 
 
         private static DistanceGrabWizard.Mode ToInternalMode(DistanceGrabMode mode)
@@ -308,6 +373,8 @@ namespace Oculus.Interaction.Editor.QuickActions
                 result |= InteractorTypes.DistanceGrab;
             if ((types & QuickActionInteractorTypes.Teleport) != 0)
                 result |= InteractorTypes.Teleport;
+            if ((types & QuickActionInteractorTypes.Gaze) != 0)
+                result |= InteractorTypes.Gaze;
             return result;
         }
     }

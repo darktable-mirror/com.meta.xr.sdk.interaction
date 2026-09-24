@@ -657,6 +657,11 @@ PrefabInstance:
       propertyPath: _activeState
       value: 
       objectReference: {fileID: 2677020287348981254}
+    - target: {fileID: 3757330604088323658, guid: b41a5baa00a50a64787ac18a50c7e87e,
+        type: 3}
+      propertyPath: _whenDeactivated.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4482411141312941608, guid: b41a5baa00a50a64787ac18a50c7e87e,
         type: 3}
       propertyPath: m_Name

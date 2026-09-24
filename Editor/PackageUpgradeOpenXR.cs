@@ -132,13 +132,13 @@ namespace Oculus.Interaction.Editor
     [InitializeOnLoad]
     internal class PackageUpgradeOpenXR
     {
-        private const string MENU_NAME = "Meta/Interaction/Upgrade to OpenXR Hand Skeleton";
+        private const string MENU_NAME = "Window/Meta/Interaction SDK/Upgrade to OpenXR Hand Skeleton";
 
         private const string KEY_BASE = "Oculus_Interaction_PackageUpgradeOpenXR";
         private const string KEY_DONTASK = KEY_BASE + "_DontAsk";
         private const string KEY_ASKLATER = KEY_BASE + "_AskLater";
 
-        [MenuItem(MENU_NAME)]
+        [MenuItem(MENU_NAME, false, 2308)]
         public static void ShowUpgradeWindow()
         {
             EditorPrefs.DeleteKey(KEY_DONTASK);

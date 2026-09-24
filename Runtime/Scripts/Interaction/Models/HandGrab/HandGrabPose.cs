@@ -273,10 +273,10 @@ namespace Oculus.Interaction.HandGrab
             ref HandGrabResult result)
         {
             result.HasHandPose = false;
-
             result.Score = CompareNearPoses(userPose, offset, relativeTo,
                 scoringModifier, out Pose worldPose);
             result.RelativePose = PoseUtils.Delta(relativeTo, worldPose);
+            result.RelativeTo = relativeTo;
             if (HandPose != null)
             {
                 result.HasHandPose = true;

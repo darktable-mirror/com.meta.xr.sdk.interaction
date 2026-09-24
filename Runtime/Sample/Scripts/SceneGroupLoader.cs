@@ -139,8 +139,17 @@ namespace Oculus.Interaction.Samples
 
             _missingSceneWarning.SetActive(anySceneMissing);
 
+            RefreshThemeAnimators();
         }
 
+        private void RefreshThemeAnimators()
+        {
+            var themeManager = _sceneGroupContainer.GetComponentInParent<UIThemeManager>();
+            if (themeManager != null)
+            {
+                themeManager.RefreshAnimators();
+            }
+        }
 
         private void LoadScene(SampleSceneGroup.ISceneInfo sceneInfo)
         {

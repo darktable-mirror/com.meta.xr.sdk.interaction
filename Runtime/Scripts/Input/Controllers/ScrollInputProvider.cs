@@ -31,6 +31,8 @@ namespace Oculus.Interaction.Input
     /// </summary>
     public class ScrollInputProvider : MonoBehaviour
     {
+        #region Serialized Fields
+
         [SerializeField, Interface(typeof(IAxis2D))]
         [Tooltip("Input 2D Axis from which the horizontal and vertical axis will be extracted")]
         private UnityEngine.Object _axis2D;
@@ -62,11 +64,73 @@ namespace Oculus.Interaction.Input
         [Tooltip("Invert the Y axis input.")]
         private bool _invertYAxis = false;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The speed at which scrolling occurs.
+        /// </summary>
+        public float ScrollSpeed
+        {
+            get => _scrollSpeed;
+            set => _scrollSpeed = value;
+        }
+
+        /// <summary>
+        /// The dead zone threshold below which input is ignored.
+        /// </summary>
+        public float DeadZone
+        {
+            get => _deadZone;
+            set => _deadZone = value;
+        }
+
+        /// <summary>
+        /// Whether scrolling on the X axis is enabled.
+        /// </summary>
+        public bool ScrollXAxis
+        {
+            get => _scrollXAxis;
+            set => _scrollXAxis = value;
+        }
+
+        /// <summary>
+        /// Whether scrolling on the Y axis is enabled.
+        /// </summary>
+        public bool ScrollYAxis
+        {
+            get => _scrollYAxis;
+            set => _scrollYAxis = value;
+        }
+
+        /// <summary>
+        /// Whether the X axis input is inverted.
+        /// </summary>
+        public bool InvertXAxis
+        {
+            get => _invertXAxis;
+            set => _invertXAxis = value;
+        }
+
+        /// <summary>
+        /// Whether the Y axis input is inverted.
+        /// </summary>
+        public bool InvertYAxis
+        {
+            get => _invertYAxis;
+            set => _invertYAxis = value;
+        }
+
+        #endregion
+
         private IAxis2D Axis2D { get; set; }
         private IInteractorView InteractorView { get; set; }
         private PointerEventData _pointerEventData;
         private PointableCanvasModule.Pointer _currentPointer;
         private bool _started = false;
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
@@ -84,7 +148,7 @@ namespace Oculus.Interaction.Input
         {
             this.BeginStart(ref _started);
             this.AssertField(_axis2D, nameof(_axis2D));
-            this.AssertField(_interactor, nameof(_interactor));
+            this.AssertField(InteractorView, nameof(_interactor));
             _pointerEventData = new PointerEventData(EventSystem.current);
             this.EndStart(ref _started);
         }
@@ -111,6 +175,10 @@ namespace Oculus.Interaction.Input
             }
         }
 
+        #endregion
+
+        #region Scroll Handling
+
         private void HandlePointerStarted(PointableCanvasModule.Pointer pointer)
         {
             if (pointer.Identifier == InteractorView.Identifier)
@@ -133,7 +201,10 @@ namespace Oculus.Interaction.Input
             {
                 _pointerEventData.scrollDelta = scrollDelta;
                 _pointerEventData.position = pointerEventData.position;
-                ExecuteEvents.ExecuteHierarchy(pointerEventData.pointerCurrentRaycast.gameObject, _pointerEventData, ExecuteEvents.scrollHandler);
+                ExecuteEvents.ExecuteHierarchy(
+                    pointerEventData.pointerCurrentRaycast.gameObject,
+                    _pointerEventData,
+                    ExecuteEvents.scrollHandler);
             }
         }
 
@@ -157,6 +228,8 @@ namespace Oculus.Interaction.Input
 
             return input;
         }
+
+        #endregion
 
         #region Inject
 

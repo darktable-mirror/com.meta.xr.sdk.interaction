@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using Oculus.Interaction.Telemetry;
 using UnityEngine;
 
 namespace Oculus.Interaction
@@ -278,10 +279,17 @@ namespace Oculus.Interaction
 
                 WhenStateChanged(new InteractorStateChangeArgs(previousState, _state));
 
-                // Update native component
-                if (_nativeId != DefaultNativeId && _state == InteractorState.Select)
+                if (_state == InteractorState.Select)
                 {
-                    NativeMethods.isdk_NativeComponent_Activate(_nativeId);
+                    ISDKTelemetryRuntimeEvents.SendInteractorUsed(
+                        typeof(TInteractor).Name,
+                        typeof(TInteractable).Name);
+
+                    // Update native component
+                    if (_nativeId != DefaultNativeId)
+                    {
+                        NativeMethods.isdk_NativeComponent_Activate(_nativeId);
+                    }
                 }
             }
         }

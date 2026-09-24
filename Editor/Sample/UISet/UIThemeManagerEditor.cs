@@ -28,6 +28,8 @@ namespace Oculus.Interaction.Editor
     {
         private SerializedProperty _themesProperty;
         private SerializedProperty _currentThemeIndexProperty;
+        private SerializedProperty _gazeActiveStateProperty;
+        private bool _previewGazeAnimators;
 
         protected override void OnEnable()
         {
@@ -35,6 +37,7 @@ namespace Oculus.Interaction.Editor
 
             _themesProperty = serializedObject.FindProperty("_themes");
             _currentThemeIndexProperty = serializedObject.FindProperty("_currentThemeIndex");
+            _gazeActiveStateProperty = serializedObject.FindProperty("_gazeActiveState");
         }
 
         public override void OnInspectorGUI()
@@ -69,12 +72,26 @@ namespace Oculus.Interaction.Editor
             int currentSelection = _currentThemeIndexProperty.intValue;
             int newSelection = EditorGUILayout.Popup("Select Theme", currentSelection, options);
 
-            bool shouldApply = newSelection != currentSelection || themesChanged;
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Gaze Input", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_gazeActiveStateProperty, new GUIContent("Gaze Active State",
+                "Optional: Active state indicating gaze availability. When active, uses gaze-optimized animator controllers if the theme supports them (UIThemeGaze)."));
+
+            EditorGUI.BeginChangeCheck();
+            _previewGazeAnimators = EditorGUILayout.Toggle(
+                new GUIContent("Preview Gaze Animators",
+                    "Preview gaze-optimized animator controllers in the editor. " +
+                    "Only works if the current theme is a UIThemeGaze asset."),
+                _previewGazeAnimators);
+            bool gazePreviewChanged = EditorGUI.EndChangeCheck();
+
+            bool shouldApply = newSelection != currentSelection || themesChanged || gazePreviewChanged;
 
             if (shouldApply
                 && (newSelection < themesCount)
                 && (_themesProperty.GetArrayElementAtIndex(newSelection).objectReferenceValue is UITheme))
             {
+                themeManager.SetGazeModePreview(_previewGazeAnimators);
                 themeManager.ApplyTheme(newSelection);
             }
 

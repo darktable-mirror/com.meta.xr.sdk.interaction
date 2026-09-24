@@ -86,20 +86,36 @@ namespace Oculus.Interaction.Editor.QuickActions
             return true;
         }
 
-        internal static Collider GenerateCollider(GameObject target)
+        /// <summary>
+        /// Generates a collider that attempts to encapsulate
+        /// the provided root GameObject.
+        /// </summary>
+        /// <param name="root">Generated collider will encapsulate
+        /// objects under this root GameObject.</param>
+        /// <param name="addColliderTo">The generated collider will
+        /// be added to this GameObject. Defaults to root if none
+        /// provided.</param>
+        /// <returns>The generated collider instance</returns>
+        internal static Collider GenerateCollider(GameObject root,
+            GameObject addColliderTo = null)
         {
+            if (addColliderTo == null)
+            {
+                addColliderTo = root;
+            }
+
             Collider collider;
-            if (Utils.TryEncapsulateRenderers(target,
+            if (Utils.TryEncapsulateRenderers(root,
                 out Bounds localBounds))
             {
-                var boxCollider = target.AddComponent<BoxCollider>();
+                var boxCollider = addColliderTo.AddComponent<BoxCollider>();
                 boxCollider.center = localBounds.center;
                 boxCollider.size = localBounds.size;
                 collider = boxCollider;
             }
-            else if (target.TryGetComponent(out RectTransform rectTransform))
+            else if (root.TryGetComponent(out RectTransform rectTransform))
             {
-                var boxCollider = target.AddComponent<BoxCollider>();
+                var boxCollider = addColliderTo.AddComponent<BoxCollider>();
                 boxCollider.center = rectTransform.rect.center;
                 boxCollider.size = new Vector3(
                     rectTransform.rect.size.x,
@@ -110,7 +126,7 @@ namespace Oculus.Interaction.Editor.QuickActions
             }
             else
             {
-                collider = target.AddComponent<SphereCollider>();
+                collider = addColliderTo.AddComponent<SphereCollider>();
             }
             collider.isTrigger = true;
             return collider;
@@ -129,6 +145,7 @@ namespace Oculus.Interaction.Editor.QuickActions
         internal const int RAY_GRAB = 111;
         internal const int DISTANCE_GRAB = 112;
         internal const int TELEPORT_LOCOMOTION = 115;
+        internal const int GAZE = 116;
         // Canvas Interactions
         internal const int RAY_CANVAS = 120;
         internal const int POKE_CANVAS = 121;

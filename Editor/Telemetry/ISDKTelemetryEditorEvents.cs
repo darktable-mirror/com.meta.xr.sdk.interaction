@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Oculus.Interaction.Telemetry;
@@ -47,7 +46,7 @@ namespace Oculus.Interaction.Editor.Telemetry
             {
                 ISDKEngineTelemetryNative.Init();
 
-                var metadataJson = BuildMetadataJson(
+                var metadataJson = ISDKTelemetryUtils.BuildMetadataJson(
                     ISDKTelemetryConstants.Package.Annotation.PackageVersion, GetPackageVersion(),
                     ISDKTelemetryConstants.Package.Annotation.UnityVersion, Application.unityVersion,
                     ISDKTelemetryConstants.Package.Annotation.ProcessorType, SystemInfo.processorType,
@@ -59,9 +58,6 @@ namespace Oculus.Interaction.Editor.Telemetry
                     eventName: ISDKTelemetryConstants.Package.EventName.Imported,
                     eventMetadataJson: metadataJson,
                     projectGuid: Application.identifier ?? string.Empty,
-                    batchMode: Application.isBatchMode
-                        ? ISDKEngineTelemetryNative.TelemetryBool_True
-                        : ISDKEngineTelemetryNative.TelemetryBool_False,
                     isRuntime: ISDKEngineTelemetryNative.TelemetryBool_False);
             }
             catch (System.DllNotFoundException)
@@ -88,34 +84,6 @@ namespace Oculus.Interaction.Editor.Telemetry
             var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
                 typeof(ISDKTelemetryEditorEvents).Assembly);
             return packageInfo?.version ?? "unknown";
-        }
-
-        private static string BuildMetadataJson(params string[] keyValuePairs)
-        {
-            Debug.Assert(keyValuePairs.Length % 2 == 0,
-                "[ISDK Telemetry] BuildMetadataJson requires an even number of arguments (key-value pairs).");
-
-            var sb = new StringBuilder("{");
-            for (int i = 0; i + 1 < keyValuePairs.Length; i += 2)
-            {
-                if (i > 0) sb.Append(",");
-                sb.AppendFormat("\n  \"{0}\": \"{1}\"",
-                    EscapeJsonString(keyValuePairs[i]),
-                    EscapeJsonString(keyValuePairs[i + 1]));
-            }
-            sb.Append("\n}");
-            return sb.ToString();
-        }
-
-        private static string EscapeJsonString(string s)
-        {
-            if (string.IsNullOrEmpty(s))
-                return s;
-            return s.Replace("\\", "\\\\")
-                    .Replace("\"", "\\\"")
-                    .Replace("\n", "\\n")
-                    .Replace("\r", "\\r")
-                    .Replace("\t", "\\t");
         }
     }
 }

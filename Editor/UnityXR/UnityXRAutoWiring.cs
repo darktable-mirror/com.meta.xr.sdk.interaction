@@ -19,7 +19,9 @@
  */
 
 using Oculus.Interaction.Editor;
+using Oculus.Interaction.Input.UnityXR;
 using UnityEditor;
+using UnityEngine;
 
 namespace Oculus.Interaction.UnityXR.Editor
 {
@@ -60,6 +62,22 @@ namespace Oculus.Interaction.UnityXR.Editor
                     new ComponentWiringStrategyConfig("_trackingToWorldTransformer", new FieldWiringStrategy[]
                         {
                             FieldWiringStrategies.WireFieldToAncestors
+                        })
+                }
+            );
+            AutoWiring.Register(
+                typeof(FromUnityXREyeGazeDataSource),
+                new[] {
+                    new ComponentWiringStrategyConfig("_trackingToWorldTransformer", new FieldWiringStrategy[]
+                        {
+                            FieldWiringStrategies.WireFieldToAncestors
+                        }),
+                    new ComponentWiringStrategyConfig("_centerEyeCamera", new FieldWiringStrategy[]
+                        {
+                            (monoBehaviour, field, targetType) =>
+                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType, "TrackingSpace/CenterEyeAnchor"),
+                            (monoBehaviour, field, targetType) =>
+                                FieldWiringStrategies.WireFieldToPathComponent(monoBehaviour, field, targetType,  Camera.main)
                         })
                 }
             );
